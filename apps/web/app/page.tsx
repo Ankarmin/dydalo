@@ -1,9 +1,16 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { ArrowDownRight, ArrowUpRight, Menu, ShoppingBag, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Menu,
+  ShoppingBag,
+  X,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -11,68 +18,74 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 
 const products = [
   {
     id: 1,
-    name: "Midnight Track Set",
-    type: "Ropa",
+    name: 'Midnight Track Set',
+    type: 'Ropa',
     price: 189,
-    image: "/images/easy-tracksuit.jpg",
-    label: "DROP 01",
+    image: '/images/easy-tracksuit.jpg',
+    label: 'DROP 01',
   },
   {
     id: 2,
-    name: "Liquid Black Uniform",
-    type: "Ropa",
+    name: 'Liquid Black Uniform',
+    type: 'Ropa',
     price: 164,
-    image: "/images/easy-satin-set.jpg",
-    label: "PREMIUM",
+    image: '/images/easy-satin-set.jpg',
+    label: 'PREMIUM',
   },
   {
     id: 3,
-    name: "Pure Form Set",
-    type: "Ropa",
+    name: 'Pure Form Set',
+    type: 'Ropa',
     price: 138,
-    image: "/images/easy-white-basics.jpg",
-    label: "ESSENTIAL",
+    image: '/images/easy-white-basics.jpg',
+    label: 'ESSENTIAL',
   },
   {
     id: 4,
-    name: "Two Tone Caps",
-    type: "Accesorios",
+    name: 'Two Tone Caps',
+    type: 'Accesorios',
     price: 54,
-    image: "/images/easy-caps.jpg",
-    label: "2 PACK",
+    image: '/images/easy-caps.jpg',
+    label: '2 PACK',
   },
   {
     id: 5,
-    name: "Cold Cuban Ice",
-    type: "Bling",
+    name: 'Cold Cuban Ice',
+    type: 'Bling',
     price: 249,
-    image: "/images/easy-bling.jpg",
-    label: "LIMITED",
+    image: '/images/easy-bling.jpg',
+    label: 'LIMITED',
   },
   {
     id: 6,
-    name: "Night Court High",
-    type: "Calzado",
+    name: 'Night Court High',
+    type: 'Calzado',
     price: 176,
-    image: "/images/easy-sneakers.jpg",
-    label: "HEAVY",
+    image: '/images/easy-sneakers.jpg',
+    label: 'HEAVY',
   },
 ];
 
 export default function HomePage() {
-  const [filter, setFilter] = useState("Todo");
+  const [filter, setFilter] = useState('Todo');
   const [cart, setCart] = useState<Record<number, number>>({});
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleProducts = useMemo(
-    () => (filter === "Todo" ? products : products.filter((product) => product.type === filter)),
+    () =>
+      filter === 'Todo'
+        ? products
+        : products.filter((product) => product.type === filter),
     [filter],
   );
-  const cartCount = Object.values(cart).reduce((total, quantity) => total + quantity, 0);
+  const cartCount = Object.values(cart).reduce(
+    (total, quantity) => total + quantity,
+    0,
+  );
   const cartProducts = products.filter((product) => cart[product.id]);
   const subtotal = cartProducts.reduce(
     (total, product) => total + product.price * (cart[product.id] ?? 0),
@@ -94,7 +107,11 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/85 px-5 backdrop-blur-xl md:px-10">
-        <a href="#top" className="text-2xl font-black tracking-[-0.08em]" aria-label="EASY inicio">
+        <a
+          href="#top"
+          className="text-2xl font-black tracking-[-0.08em]"
+          aria-label="EASY inicio"
+        >
           EASY
         </a>
         <nav
@@ -130,20 +147,26 @@ export default function HomePage() {
             <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
               <SheetHeader className="border-b border-border px-6 py-6 text-left">
                 <p className="font-brush text-xl text-accent">Tu selección</p>
-                <SheetTitle className="text-3xl font-black tracking-[-0.05em]">TU BOLSA</SheetTitle>
+                <SheetTitle className="text-3xl font-black tracking-[-0.05em]">
+                  TU BOLSA
+                </SheetTitle>
                 <SheetDescription>
                   {cartCount === 0
-                    ? "Todavía no elegiste tu flow."
+                    ? 'Todavía no elegiste tu flow.'
                     : `${cartCount} piezas seleccionadas`}
                 </SheetDescription>
               </SheetHeader>
 
               {cartProducts.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-                  <ShoppingBag className="mb-5 size-10 text-muted-foreground" strokeWidth={1.25} />
+                  <ShoppingBag
+                    className="mb-5 size-10 text-muted-foreground"
+                    strokeWidth={1.25}
+                  />
                   <p className="text-xl font-bold">LA BOLSA ESTÁ VACÍA</p>
                   <p className="mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
-                    Encuentra una pieza que hable por ti y añádela a tu selección.
+                    Encuentra una pieza que hable por ti y añádela a tu
+                    selección.
                   </p>
                 </div>
               ) : (
@@ -151,7 +174,10 @@ export default function HomePage() {
                   {cartProducts.map((product) => {
                     const quantity = cart[product.id] ?? 0;
                     return (
-                      <article key={product.id} className="flex gap-4 border-b border-border py-5">
+                      <article
+                        key={product.id}
+                        className="flex gap-4 border-b border-border py-5"
+                      >
                         <Image
                           src={product.image}
                           alt={product.name}
@@ -167,7 +193,9 @@ export default function HomePage() {
                             <h3 className="mt-1 truncate text-sm font-bold uppercase">
                               {product.name}
                             </h3>
-                            <p className="mt-1 text-xs text-muted-foreground">${product.price}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              ${product.price}
+                            </p>
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center border border-border">
@@ -180,7 +208,9 @@ export default function HomePage() {
                               >
                                 −
                               </Button>
-                              <span className="w-7 text-center text-xs font-bold">{quantity}</span>
+                              <span className="w-7 text-center text-xs font-bold">
+                                {quantity}
+                              </span>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -191,7 +221,9 @@ export default function HomePage() {
                                 +
                               </Button>
                             </div>
-                            <p className="text-sm font-bold">${product.price * quantity}</p>
+                            <p className="text-sm font-bold">
+                              ${product.price * quantity}
+                            </p>
                           </div>
                         </div>
                       </article>
@@ -206,7 +238,9 @@ export default function HomePage() {
                     <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
                       SUBTOTAL
                     </p>
-                    <p className="mt-1 text-3xl font-black tracking-tight">${subtotal}</p>
+                    <p className="mt-1 text-3xl font-black tracking-tight">
+                      ${subtotal}
+                    </p>
                   </div>
                   <p className="text-right text-[10px] leading-4 text-muted-foreground">
                     ENVÍO CALCULADO
@@ -214,7 +248,12 @@ export default function HomePage() {
                     EN EL CHECKOUT
                   </p>
                 </div>
-                <Button variant="hero" size="hero" className="w-full" disabled={!cartCount}>
+                <Button
+                  variant="hero"
+                  size="hero"
+                  className="w-full"
+                  disabled={!cartCount}
+                >
                   FINALIZAR COMPRA <ArrowUpRight />
                 </Button>
               </div>
@@ -232,7 +271,9 @@ export default function HomePage() {
         </div>
         {menuOpen && (
           <nav className="absolute left-0 top-16 flex w-full flex-col border-b border-border bg-background p-6 text-sm font-bold tracking-[0.14em] md:hidden">
-            <span className="pb-2 pt-4 text-xs text-muted-foreground">SUMA A TU ESTILO</span>
+            <span className="pb-2 pt-4 text-xs text-muted-foreground">
+              SUMA A TU ESTILO
+            </span>
             <a
               href="#catalogo"
               className="border-b border-accent py-4 text-accent"
@@ -263,14 +304,21 @@ export default function HomePage() {
           elige tu flow
         </span>
         <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
-          <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-muted-foreground md:text-xs">
-            UNDERGROUND / PREMIUM / 2026
+          <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
+            UNDERGROUND STREETWEAR
           </p>
           <h1 className="text-[28vw] font-black leading-[0.72] tracking-[-0.1em] sm:text-[22vw] lg:text-[15rem]">
             EASY
           </h1>
-          <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">THE REAL CREAM</p>
-          <Button asChild variant="hero" size="hero" className="mt-10 w-full max-w-sm">
+          <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
+            THE REAL CREAM
+          </p>
+          <Button
+            asChild
+            variant="hero"
+            size="hero"
+            className="mt-10 w-full max-w-sm"
+          >
             <a href="#catalogo">
               VER CATÁLOGO <ArrowDownRight />
             </a>
@@ -282,7 +330,8 @@ export default function HomePage() {
         <div className="ticker-track flex w-max whitespace-nowrap text-xs font-black tracking-[0.24em]">
           {[0, 1].map((copy) => (
             <span key={copy} aria-hidden={copy === 1} className="pr-12">
-              EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY WORLDWIDE —{" "}
+              EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY
+              WORLDWIDE —{' '}
             </span>
           ))}
         </div>
@@ -298,13 +347,15 @@ export default function HomePage() {
           look easy.
         </p>
         <div className="md:col-span-7 md:col-start-6">
-          <p className="mb-4 text-xs font-bold tracking-[0.22em] text-accent">NO ES SOLO ROPA</p>
+          <p className="mb-4 text-xs font-bold tracking-[0.22em] text-accent">
+            NO ES SOLO ROPA
+          </p>
           <h2 className="max-w-4xl text-4xl font-medium leading-[0.98] tracking-[-0.05em] md:text-6xl lg:text-7xl">
             HECHO PARA QUIEN NO PIDE PERMISO.
           </h2>
           <p className="mt-8 max-w-xl text-sm leading-7 text-muted-foreground">
-            Cortes precisos, materiales que hablan y piezas de edición limitada. De la calle al
-            foco, sin cambiar quién eres.
+            Cortes precisos, materiales que hablan y piezas de edición limitada.
+            De la calle al foco, sin cambiar quién eres.
           </p>
         </div>
       </section>
@@ -313,20 +364,28 @@ export default function HomePage() {
         <div className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">
           <div>
             <p className="mb-3 font-brush text-2xl text-accent">new drop</p>
-            <h2 className="text-5xl font-black tracking-[-0.06em] md:text-7xl">EL CATÁLOGO</h2>
+            <h2 className="text-5xl font-black tracking-[-0.06em] md:text-7xl">
+              EL CATÁLOGO
+            </h2>
           </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar productos">
-            {["Todo", "Ropa", "Accesorios", "Bling", "Calzado"].map((category) => (
-              <Button
-                key={category}
-                variant={filter === category ? "default" : "street"}
-                size="sm"
-                onClick={() => setFilter(category)}
-                className="uppercase tracking-[0.12em]"
-              >
-                {category}
-              </Button>
-            ))}
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label="Filtrar productos"
+          >
+            {['Todo', 'Ropa', 'Accesorios', 'Bling', 'Calzado'].map(
+              (category) => (
+                <Button
+                  key={category}
+                  variant={filter === category ? 'default' : 'street'}
+                  size="sm"
+                  onClick={() => setFilter(category)}
+                  className="uppercase tracking-[0.12em]"
+                >
+                  {category}
+                </Button>
+              ),
+            )}
           </div>
         </div>
 
@@ -360,30 +419,159 @@ export default function HomePage() {
               </div>
               <div className="mt-4 flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold uppercase tracking-tight">{product.name}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{product.type}</p>
+                  <h3 className="font-semibold uppercase tracking-tight">
+                    {product.name}
+                  </h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {product.type}
+                  </p>
                 </div>
-                <p className="shrink-0 text-sm font-semibold">${product.price}</p>
+                <p className="shrink-0 text-sm font-semibold">
+                  ${product.price}
+                </p>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <footer className="border-t border-border px-5 py-14 md:px-10 lg:px-16">
-        <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
-          <div>
-            <p className="text-7xl font-black tracking-[-0.09em] md:text-9xl">EASY</p>
-            <p className="mt-3 text-[10px] tracking-[0.3em] text-muted-foreground">
-              THE REAL CREAM © 2026
-            </p>
+      <footer className="border-t border-border">
+        {/* ── Links + Marca ── */}
+        <section className="border-t border-border px-5 py-14 md:px-10 lg:px-16">
+          <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 lg:flex-row lg:gap-20">
+            {/* Brand */}
+            <div className="shrink-0">
+              <p className="text-7xl font-black tracking-[-0.09em] md:text-8xl">
+                EASY
+              </p>
+              <p className="mt-3 text-[10px] tracking-[0.3em] text-muted-foreground">
+                THE REAL CREAM © 2026
+              </p>
+              <p className="mt-6 max-w-xs font-brush text-2xl text-accent">
+                el estilo no se impone,
+                <br />
+                se elige.
+              </p>
+            </div>
+
+            {/* Links grid */}
+            <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 lg:max-w-xl">
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                  Tienda
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  {["Nuevos Drops", "Colecciones", "Hombre", "Mujer", "Accesorios"].map(
+                    (link) => (
+                      <li key={link}>
+                        <a
+                          href="#"
+                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
+                        >
+                          {link}
+                        </a>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                  EASY
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  <li>
+                    <Link
+                      href="/sobre-nosotros"
+                      className="text-sm text-muted-foreground transition-colors hover:text-accent"
+                    >
+                      Sobre Nosotros
+                    </Link>
+                  </li>
+                  {["Nuestra Historia", "Lookbook", "Colaboraciones", "Blog"].map(
+                    (link) => (
+                      <li key={link}>
+                        <a
+                          href="#"
+                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
+                        >
+                          {link}
+                        </a>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                  Soporte
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  {["Contacto", "Envíos", "Devoluciones", "Guía de Tallas", "FAQ"].map(
+                    (link) => (
+                      <li key={link}>
+                        <a
+                          href="#"
+                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
+                        >
+                          {link}
+                        </a>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
-          <p className="max-w-sm text-right font-brush text-3xl text-accent">
-            el estilo no se impone,
-            <br />
-            se elige.
-          </p>
-        </div>
+        </section>
+
+        {/* ── Newsletter ── */}
+        <section className="border-t border-border px-5 py-10 md:px-10 lg:px-16">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
+            <div className="text-center md:text-left">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                Únete al movimiento
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Sé el primero en enterarte de nuevos drops y exclusivos.
+              </p>
+            </div>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex w-full max-w-sm"
+            >
+              <input
+                type="email"
+                placeholder="tu@email.com"
+                className="flex-1 border border-border bg-transparent px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+              <button
+                type="submit"
+                className="bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition-colors hover:bg-accent/80"
+              >
+                Suscribir
+              </button>
+            </form>
+          </div>
+        </section>
+
+        {/* ── Bottom bar ── */}
+        <section className="border-t border-border px-5 py-6 md:px-10 lg:px-16">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
+            <p>© 2026 EASY — Todos los derechos reservados.</p>
+            <div className="flex gap-6">
+              <a href="#" className="transition-colors hover:text-foreground">
+                Términos
+              </a>
+              <a href="#" className="transition-colors hover:text-foreground">
+                Privacidad
+              </a>
+              <a href="#" className="transition-colors hover:text-foreground">
+                Cookies
+              </a>
+            </div>
+          </div>
+        </section>
       </footer>
     </main>
   );
