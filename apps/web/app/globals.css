@@ -188,6 +188,15 @@
   animation: ticker 22s linear infinite;
 }
 
+@keyframes shimmer {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

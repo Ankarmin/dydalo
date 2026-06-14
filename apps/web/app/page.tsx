@@ -19,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { showCartToast } from '@/components/cart-toast';
 
 const products = [
   {
@@ -411,7 +412,10 @@ export default function HomePage() {
                   <Button
                     variant="ghost"
                     className="w-full rounded-none text-primary-foreground hover:bg-ink hover:text-foreground"
-                    onClick={() => updateQuantity(product.id, 1)}
+                    onClick={() => {
+                      updateQuantity(product.id, 1);
+                      showCartToast(product.name, product.price);
+                    }}
                   >
                     AÑADIR A LA BOLSA <ArrowUpRight />
                   </Button>
@@ -443,9 +447,6 @@ export default function HomePage() {
             <div className="shrink-0">
               <p className="text-7xl font-black tracking-[-0.09em] md:text-8xl">
                 EASY
-              </p>
-              <p className="mt-3 text-[10px] tracking-[0.3em] text-muted-foreground">
-                THE REAL CREAM © 2026
               </p>
               <p className="mt-6 max-w-xs font-brush text-2xl text-accent">
                 el estilo no se impone,
