@@ -18,7 +18,7 @@ export function showCartToast(productName: string, price: number) {
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <p className="font-brush text-sm text-accent">agregado a la bolsa</p>
+          <p className="overline">agregado a la bolsa</p>
           <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wider text-foreground">
             {productName}
           </p>
@@ -30,13 +30,14 @@ export function showCartToast(productName: string, price: number) {
         {/* Close */}
         <button
           onClick={() => toast.dismiss(t)}
-          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Cerrar notificación"
+          className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-3.5" />
         </button>
 
         {/* Bottom accent line animation */}
-        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-accent origin-left animate-[shimmer_2s_ease-out]" />
+        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-accent origin-left animate-shimmer" />
       </div>
     ),
     {

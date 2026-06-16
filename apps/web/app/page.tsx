@@ -76,6 +76,7 @@ export default function HomePage() {
   const [filter, setFilter] = useState('Todo');
   const [cart, setCart] = useState<Record<number, number>>({});
   const [menuOpen, setMenuOpen] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const visibleProducts = useMemo(
     () =>
       filter === 'Todo'
@@ -110,7 +111,7 @@ export default function HomePage() {
       <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/85 px-5 backdrop-blur-xl md:px-10">
         <a
           href="#top"
-          className="text-2xl font-black tracking-[-0.08em]"
+          className="text-2xl font-bold tracking-[-0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="EASY inicio"
         >
           EASY
@@ -125,7 +126,7 @@ export default function HomePage() {
           <span className="text-accent">/</span>
           <a
             href="#catalogo"
-            className="border-b border-accent pb-1 transition-colors hover:text-accent"
+            className="border-b border-accent pb-1 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             COMPRAR
           </a>
@@ -147,8 +148,8 @@ export default function HomePage() {
             </SheetTrigger>
             <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
               <SheetHeader className="border-b border-border px-6 py-6 text-left">
-                <p className="font-brush text-xl text-accent">Tu selección</p>
-                <SheetTitle className="text-3xl font-black tracking-[-0.05em]">
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">Tu selección</p>
+                <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">
                   TU BOLSA
                 </SheetTitle>
                 <SheetDescription>
@@ -180,10 +181,11 @@ export default function HomePage() {
                         className="flex gap-4 border-b border-border py-5"
                       >
                         <Image
-                          src={product.image}
+                          src={brokenImages.has(product.id) ? '/images/easy-hero.jpg' : product.image}
                           alt={product.name}
                           width={112}
                           height={112}
+                          onError={() => setBrokenImages((prev) => new Set(prev).add(product.id))}
                           className="size-24 object-cover"
                         />
                         <div className="flex min-w-0 flex-1 flex-col justify-between">
@@ -200,26 +202,26 @@ export default function HomePage() {
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center border border-border">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 rounded-none"
-                                aria-label={`Quitar una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, -1)}
-                              >
-                                −
-                              </Button>
-                              <span className="w-7 text-center text-xs font-bold">
-                                {quantity}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 rounded-none"
-                                aria-label={`Añadir una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, 1)}
-                              >
-                                +
+                               <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-10 rounded-none"
+                                    aria-label={`Quitar una unidad de ${product.name}`}
+                                    onClick={() => updateQuantity(product.id, -1)}
+                                  >
+                                    −
+                                  </Button>
+                                  <span className="w-7 text-center text-xs font-bold">
+                                    {quantity}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-10 rounded-none"
+                                    aria-label={`Añadir una unidad de ${product.name}`}
+                                    onClick={() => updateQuantity(product.id, 1)}
+                                  >
+                                    +
                               </Button>
                             </div>
                             <p className="text-sm font-bold">
@@ -239,7 +241,7 @@ export default function HomePage() {
                     <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
                       SUBTOTAL
                     </p>
-                    <p className="mt-1 text-3xl font-black tracking-tight">
+                    <p className="mt-1 text-3xl font-bold tracking-tight">
                       ${subtotal}
                     </p>
                   </div>
@@ -277,7 +279,7 @@ export default function HomePage() {
             </span>
             <a
               href="#catalogo"
-              className="border-b border-accent py-4 text-accent"
+              className="border-b border-accent py-4 text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => setMenuOpen(false)}
             >
               COMPRAR
@@ -302,7 +304,7 @@ export default function HomePage() {
           <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
             UNDERGROUND STREETWEAR
           </p>
-          <h1 className="text-[28vw] font-black leading-[0.72] tracking-[-0.1em] sm:text-[22vw] lg:text-[15rem]">
+          <h1 className="text-[28vw] font-bold leading-[0.72] tracking-[-0.1em] sm:text-[22vw] lg:text-[15rem]">
             EASY
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
@@ -322,7 +324,7 @@ export default function HomePage() {
       </section>
 
       <div className="overflow-hidden border-y border-border bg-accent py-3 text-accent-foreground">
-        <div className="ticker-track flex w-max whitespace-nowrap text-xs font-black tracking-[0.24em]">
+        <div className="ticker-track flex w-max whitespace-nowrap text-xs font-bold tracking-[0.24em]">
           {[0, 1, 2, 3].map((copy) => (
             <span key={copy} aria-hidden={copy !== 0} className="pr-12">
               EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY
@@ -334,15 +336,15 @@ export default function HomePage() {
 
       <section
         id="manifesto"
-        className="asphalt grid min-h-[55vh] items-center gap-10 border-b border-border px-5 py-24 md:grid-cols-12 md:px-10 lg:px-16"
+        className="asphalt grid min-h-[55vh] items-center gap-10 border-b border-border section-px py-24 md:grid-cols-12"
       >
-        <p className="font-brush text-5xl leading-none text-violet md:col-span-4 md:text-7xl">
+        <p className="text-6xl font-bold uppercase leading-[0.85] tracking-[-0.06em] text-foreground md:col-span-4 md:text-8xl">
           make it
           <br />
           look easy.
         </p>
         <div className="md:col-span-7 md:col-start-6">
-          <p className="mb-4 text-xs font-bold tracking-[0.22em] text-accent">
+          <p className="mb-4 overline">
             NO ES SOLO ROPA
           </p>
           <h2 className="max-w-4xl text-4xl font-medium leading-[0.98] tracking-[-0.05em] md:text-6xl lg:text-7xl">
@@ -355,11 +357,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="catalogo" className="px-5 py-20 md:px-10 lg:px-16">
+      <section id="catalogo" className="section-px py-20">
         <div className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">
           <div>
-            <p className="mb-3 font-brush text-2xl text-accent">new drop</p>
-            <h2 className="text-5xl font-black tracking-[-0.06em] md:text-7xl">
+            <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">new drop</p>
+            <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
               EL CATÁLOGO
             </h2>
           </div>
@@ -385,27 +387,36 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleProducts.map((product, index) => (
+          {visibleProducts.length === 0 ? (
+            <div className="col-span-full py-20 text-center">
+              <p className="text-sm text-muted-foreground">
+                No se encontraron productos en esta categoría.
+              </p>
+            </div>
+          ) : (
+            visibleProducts.map((product, index) => (
             <article key={product.id} className="group relative">
               <div className="product-glass relative aspect-square overflow-hidden border border-border transition-all duration-500 group-hover:-translate-y-2 group-hover:border-violet">
                 <span className="absolute left-4 top-4 z-10 bg-background/80 px-3 py-2 text-[9px] font-bold tracking-[0.2em] backdrop-blur-md">
                   {product.label}
                 </span>
-                <span className="absolute right-3 top-2 z-10 font-brush text-lg text-foreground/40">
+                <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
                   0{index + 1}
                 </span>
                 <Image
-                  src={product.image}
+                  src={brokenImages.has(product.id) ? '/images/easy-hero.jpg' : product.image}
                   alt={product.name}
                   width={1024}
                   height={1024}
                   priority={index === 0}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  onError={() => setBrokenImages((prev) => new Set(prev).add(product.id))}
                   className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                <div className="absolute inset-x-0 bottom-0 translate-y-full bg-primary p-3 transition-transform duration-300 group-hover:translate-y-0">
+                <div className="absolute inset-x-0 bottom-0 translate-y-full bg-primary p-3 transition-transform duration-300 group-hover:translate-y-0 group-focus-within:translate-y-0">
                   <Button
                     variant="ghost"
-                    className="w-full rounded-none text-primary-foreground hover:bg-ink hover:text-foreground"
+                    className="w-full rounded-none text-primary-foreground hover:bg-ink hover:text-foreground focus-visible:bg-ink focus-visible:text-foreground focus-visible:ring-0"
                     onClick={() => {
                       updateQuantity(product.id, 1);
                       showCartToast(product.name, product.price);
@@ -417,7 +428,7 @@ export default function HomePage() {
               </div>
               <div className="mt-4 flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold uppercase tracking-tight">
+                  <h3 className="font-bold uppercase tracking-tight">
                     {product.name}
                   </h3>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -429,20 +440,20 @@ export default function HomePage() {
                 </p>
               </div>
             </article>
-          ))}
+          )))}
         </div>
       </section>
 
       <footer className="border-t border-border">
         {/* ── Links + Marca ── */}
-        <section className="border-t border-border px-5 py-14 md:px-10 lg:px-16">
+        <section className="border-t border-border section-px py-14">
           <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 lg:flex-row lg:gap-20">
             {/* Brand */}
             <div className="shrink-0">
-              <p className="text-7xl font-black tracking-[-0.09em] md:text-8xl">
+              <p className="text-7xl font-bold tracking-[-0.09em] md:text-8xl">
                 EASY
               </p>
-              <p className="mt-6 max-w-xs font-brush text-2xl text-accent">
+              <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">
                 el estilo no se impone,
                 <br />
                 se elige.
@@ -452,65 +463,56 @@ export default function HomePage() {
             {/* Links grid */}
             <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 lg:max-w-xl">
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                <h4 className="heading-label">
                   Tienda
                 </h4>
                 <ul className="mt-4 space-y-2.5">
                   {["Nuevos Drops", "Colecciones", "Hombre", "Mujer", "Accesorios"].map(
                     (link) => (
                       <li key={link}>
-                        <a
-                          href="#"
-                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
-                        >
+                        <span className="text-sm text-muted-foreground">
                           {link}
-                        </a>
+                        </span>
                       </li>
                     )
                   )}
                 </ul>
               </div>
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                <h4 className="heading-label">
                   EASY
                 </h4>
                 <ul className="mt-4 space-y-2.5">
                   <li>
-                    <Link
-                      href="/sobre-nosotros"
-                      className="text-sm text-muted-foreground transition-colors hover:text-accent"
-                    >
+                      <Link
+                        href="/sobre-nosotros"
+                        className="text-sm text-muted-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
                       Sobre Nosotros
                     </Link>
                   </li>
                   {["Nuestra Historia", "Lookbook", "Colaboraciones", "Blog"].map(
                     (link) => (
                       <li key={link}>
-                        <a
-                          href="#"
-                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
-                        >
+                        <span className="text-sm text-muted-foreground">
                           {link}
-                        </a>
+                        </span>
                       </li>
                     )
                   )}
                 </ul>
               </div>
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+                <h4 className="heading-label">
                   Soporte
                 </h4>
                 <ul className="mt-4 space-y-2.5">
                   {["Contacto", "Envíos", "Devoluciones", "Guía de Tallas", "FAQ"].map(
                     (link) => (
                       <li key={link}>
-                        <a
-                          href="#"
-                          className="text-sm text-muted-foreground transition-colors hover:text-accent"
-                        >
+                        <span className="text-sm text-muted-foreground">
                           {link}
-                        </a>
+                        </span>
                       </li>
                     )
                   )}
@@ -521,10 +523,10 @@ export default function HomePage() {
         </section>
 
         {/* ── Newsletter ── */}
-        <section className="border-t border-border px-5 py-10 md:px-10 lg:px-16">
+        <section className="border-t border-border section-px py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground">
+              <p className="heading-label">
                 Únete al movimiento
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -532,17 +534,28 @@ export default function HomePage() {
               </p>
             </div>
             <form
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const input = e.currentTarget.querySelector('input') as HTMLInputElement;
+                if (input.value) {
+                  alert(`¡Gracias! Te mantendremos al tanto en ${input.value}`);
+                  input.value = '';
+                }
+              }}
               className="flex w-full max-w-sm"
             >
+              <label htmlFor="newsletter-email" className="sr-only">
+                Correo electrónico
+              </label>
               <input
+                id="newsletter-email"
                 type="email"
                 placeholder="tu@email.com"
-                className="flex-1 border border-border bg-transparent px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                className="flex-1 border border-border bg-transparent px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
               />
               <button
                 type="submit"
-                className="bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition-colors hover:bg-accent/80"
+                className="bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 Suscribir
               </button>
@@ -551,19 +564,13 @@ export default function HomePage() {
         </section>
 
         {/* ── Bottom bar ── */}
-        <section className="border-t border-border px-5 py-6 md:px-10 lg:px-16">
+        <section className="border-t border-border section-px py-6">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
             <p>© 2026 EASY — Todos los derechos reservados.</p>
             <div className="flex gap-6">
-              <a href="#" className="transition-colors hover:text-foreground">
-                Términos
-              </a>
-              <a href="#" className="transition-colors hover:text-foreground">
-                Privacidad
-              </a>
-              <a href="#" className="transition-colors hover:text-foreground">
-                Cookies
-              </a>
+              <span className="text-muted-foreground">Términos</span>
+              <span className="text-muted-foreground">Privacidad</span>
+              <span className="text-muted-foreground">Cookies</span>
             </div>
           </div>
         </section>
