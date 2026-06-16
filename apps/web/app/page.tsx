@@ -298,12 +298,6 @@ export default function HomePage() {
           className="absolute inset-0 -z-20 size-full object-cover opacity-55"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/20 via-background/25 to-background" />
-        <span className="absolute left-[7%] top-[27%] -rotate-12 font-brush text-3xl text-accent md:text-5xl">
-          sin reglas
-        </span>
-        <span className="absolute bottom-[18%] right-[6%] rotate-6 font-brush text-2xl text-foreground/60 md:text-4xl">
-          elige tu flow
-        </span>
         <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
           <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
             UNDERGROUND STREETWEAR
@@ -329,10 +323,10 @@ export default function HomePage() {
 
       <div className="overflow-hidden border-y border-border bg-accent py-3 text-accent-foreground">
         <div className="ticker-track flex w-max whitespace-nowrap text-xs font-black tracking-[0.24em]">
-          {[0, 1].map((copy) => (
-            <span key={copy} aria-hidden={copy === 1} className="pr-12">
+          {[0, 1, 2, 3].map((copy) => (
+            <span key={copy} aria-hidden={copy !== 0} className="pr-12">
               EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY
-              WORLDWIDE —{' '}
+              WORLDWIDE — THE REAL CREAM — UNDERGROUND STREETWEAR — SUMA A TU ESTILO — MAKE IT LOOK EASY —{' '}
             </span>
           ))}
         </div>
