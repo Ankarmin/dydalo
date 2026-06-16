@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Permanent_Marker } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -7,12 +8,7 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-});
-
-const permanentMarker = Permanent_Marker({
-  variable: "--font-permanent-marker",
-  subsets: ["latin"],
-  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,6 +20,7 @@ export const metadata: Metadata = {
     title: "EASY — The Real Cream",
     description: "Streetwear premium y exclusivo para un flow sin límites.",
     type: "website",
+    images: [{ url: "/images/easy-hero.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary",
@@ -38,10 +35,12 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${spaceGrotesk.variable} ${permanentMarker.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
-        {children}
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
         <Toaster />
       </body>
     </html>
