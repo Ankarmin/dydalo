@@ -48,6 +48,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --radius: 0rem;
   --background: oklch(0.06 0 0);
   --foreground: oklch(0.98 0 0);
@@ -97,10 +98,15 @@
     font-family: var(--font-sans);
     margin: 0;
     overflow-x: hidden;
+    overflow-wrap: break-word;
   }
 
   html {
     scroll-behavior: smooth;
+  }
+
+  :target {
+    scroll-margin-top: 5rem;
   }
   ::selection {
     background: var(--accent);
@@ -193,6 +199,151 @@
   text-transform: uppercase;
   letter-spacing: 0.2em;
   color: var(--color-foreground);
+}
+
+/* ── Layout ── */
+@utility container-page {
+  margin-inline: auto;
+  max-width: 72rem;
+}
+
+/* ── Header ── */
+@utility page-header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--color-border);
+  background-color: color-mix(in oklab, var(--background) 85%, transparent);
+  backdrop-filter: blur(24px);
+  padding-inline: 1.25rem;
+  padding-block: 1.25rem;
+  @media (width >= 48rem) {
+    padding-inline: 2.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 4rem;
+  }
+}
+
+@utility back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-muted-foreground);
+  transition: color 0.15s;
+  &:hover { color: var(--color-foreground); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+}
+
+/* ── Focus ── */
+@utility focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+}
+
+@utility focus-ring-input {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
+/* ── Cards ── */
+@utility card-lift {
+  border: 1px solid var(--color-border);
+  transition: all 0.2s;
+  &:hover {
+    transform: translateY(-0.25rem);
+    border-color: var(--violet);
+  }
+}
+
+/* ── Typography ── */
+@utility page-hero-heading {
+  margin-top: 1rem;
+  max-width: 48rem;
+  font-size: 3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  @media (width >= 48rem) {
+    font-size: 4.5rem;
+  }
+}
+
+@utility micro-label {
+  font-size: 0.5625rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+}
+
+@utility form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-muted-foreground);
+}
+
+/* ── Forms ── */
+@utility form-input {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+  &::placeholder { color: var(--color-muted-foreground); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
+@utility newsletter-btn {
+  background-color: var(--accent);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-foreground);
+  transition: background-color 0.15s;
+  &:hover { background-color: color-mix(in oklab, var(--accent) 80%, transparent); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring), 0 0 0 4px var(--color-ring-offset-background);
+  }
+}
+
+@utility footer-link {
+  font-size: 0.875rem;
+  color: var(--color-muted-foreground);
+  transition: color 0.15s;
+  &:hover { color: var(--color-accent); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+}
+
+@media print {
+  header, footer, .no-print { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
