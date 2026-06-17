@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Lookbook — EASY',
-  description: 'Flow sin límites. Seis historias visuales que capturan la esencia de EASY: sin filtros, sin poses.',
+  title: 'Lookbook — DYDALO',
+  description: 'Flow sin límites. Seis historias visuales que capturan la esencia de DYDALO: sin filtros, sin poses.',
 };
 import { Button } from '@/components/ui/button';
 import { SafeImage } from '@/components/safe-image';
@@ -12,7 +12,7 @@ import { SafeImage } from '@/components/safe-image';
 const spreads = [
   {
     id: 1,
-    src: '/images/easy-tracksuit.jpg',
+    src: '/images/dydalo-tracksuit.jpg',
     alt: 'Midnight Track Set en entorno urbano nocturno',
     number: '01',
     title: 'La noche es nuestra',
@@ -22,7 +22,7 @@ const spreads = [
   },
   {
     id: 2,
-    src: '/images/easy-satin-set.jpg',
+    src: '/images/dydalo-satin-set.jpg',
     alt: 'Liquid Black Uniform en rooftop',
     number: '02',
     title: 'Líquido y letal',
@@ -32,7 +32,7 @@ const spreads = [
   },
   {
     id: 3,
-    src: '/images/easy-white-basics.jpg',
+    src: '/images/dydalo-white-basics.jpg',
     alt: 'Pure Form Set en estudio minimalista',
     number: '03',
     title: 'Menos es el mensaje',
@@ -42,7 +42,7 @@ const spreads = [
   },
   {
     id: 4,
-    src: '/images/easy-caps.jpg',
+    src: '/images/dydalo-caps.jpg',
     alt: 'Two Tone Caps en la calle',
     number: '04',
     title: 'Corona sin reino',
@@ -52,7 +52,7 @@ const spreads = [
   },
   {
     id: 5,
-    src: '/images/easy-bling.jpg',
+    src: '/images/dydalo-bling.jpg',
     alt: 'Cold Cuban Ice detalle editorial',
     number: '05',
     title: 'Peso y presencia',
@@ -62,7 +62,7 @@ const spreads = [
   },
   {
     id: 6,
-    src: '/images/easy-sneakers.jpg',
+    src: '/images/dydalo-sneakers.jpg',
     alt: 'Night Court High en movimiento',
     number: '06',
     title: 'Suelo firme',
@@ -95,7 +95,7 @@ export default function LookbookPage() {
           </h1>
           <p className="mt-6 max-w-xl body-text">
             Una carta de amor a la calle. Seis historias visuales que capturan
-            la esencia de EASY: sin filtros, sin poses, sin miedo.
+            la esencia de DYDALO: sin filtros, sin poses, sin miedo.
           </p>
         </div>
       </section>
@@ -108,7 +108,7 @@ export default function LookbookPage() {
             Es cómo lo llevas.&rdquo;
           </p>
           <p className="mt-4 text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            — Manifiesto EASY
+            — Manifiesto DYDALO
           </p>
         </div>
       </section>

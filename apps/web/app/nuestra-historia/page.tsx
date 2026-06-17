@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Nuestra Historia — EASY',
-  description: 'De un sótano en Barcelona a envíos globales. La historia de EASY, la marca que nunca pidió permiso.',
+  title: 'Nuestra Historia — DYDALO',
+  description: 'De un sótano en Barcelona a envíos globales. La historia de DYDALO, la marca que nunca pidió permiso.',
 };
 import { Button } from '@/components/ui/button';
 
@@ -59,7 +59,7 @@ export default function NuestraHistoriaPage() {
             Nos hicimos.
           </h1>
           <p className="mt-6 max-w-xl body-text">
-            EASY no fue un plan de negocio. Fue una necesidad. La historia de
+            DYDALO no fue un plan de negocio. Fue una necesidad. La historia de
             una marca construida desde abajo, sin atajos, sin permiso.
           </p>
         </div>

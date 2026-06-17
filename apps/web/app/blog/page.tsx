@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Blog — EASY',
+  title: 'Blog — DYDALO',
   description: 'La cultura no se copia, se vive. Artículos sobre streetwear, cultura urbana y estilo.',
 };
 
@@ -16,7 +16,7 @@ const posts = [
       'Reglas no escritas para dominar el arte de mezclar lo urbano con lo personal sin caer en lo genérico.',
     date: '12 Jun 2026',
     tag: 'Streetwear',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     slug: 'el-renacer-del-bling',
@@ -25,7 +25,7 @@ const posts = [
       'De símbolo de estatus a declaración de intenciones. Cómo las cadenas volvieron a hablar.',
     date: '10 Jun 2026',
     tag: 'Cultura',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     slug: 'zapatillas-que-hicieron-historia',
@@ -34,7 +34,7 @@ const posts = [
       'Siluetas que marcaron generaciones desde la calle. Del basket al asfalto, un recorrido visual.',
     date: '08 Jun 2026',
     tag: 'Calzado',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     slug: 'el-poder-del-mono-color',
@@ -43,7 +43,7 @@ const posts = [
       'Menos es más cuando el fit habla solo. La tendencia monocromática que domina el 2026.',
     date: '05 Jun 2026',
     tag: 'Tendencias',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
 ];
 

@@ -4,7 +4,7 @@ export const products = [
     name: 'Midnight Track Set',
     type: 'Ropa',
     price: 189,
-    image: '/images/easy-tracksuit.jpg',
+    image: '/images/dydalo-tracksuit.jpg',
     label: 'DROP 01',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [
@@ -18,7 +18,7 @@ export const products = [
     name: 'Liquid Black Uniform',
     type: 'Ropa',
     price: 164,
-    image: '/images/easy-satin-set.jpg',
+    image: '/images/dydalo-satin-set.jpg',
     label: 'PREMIUM',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [
@@ -31,7 +31,7 @@ export const products = [
     name: 'Pure Form Set',
     type: 'Ropa',
     price: 138,
-    image: '/images/easy-white-basics.jpg',
+    image: '/images/dydalo-white-basics.jpg',
     label: 'ESSENTIAL',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [
@@ -45,7 +45,7 @@ export const products = [
     name: 'Two Tone Caps',
     type: 'Accesorios',
     price: 54,
-    image: '/images/easy-caps.jpg',
+    image: '/images/dydalo-caps.jpg',
     label: '2 PACK',
     sizes: ['Única'],
     colors: [
@@ -58,7 +58,7 @@ export const products = [
     name: 'Cold Cuban Ice',
     type: 'Bling',
     price: 249,
-    image: '/images/easy-bling.jpg',
+    image: '/images/dydalo-bling.jpg',
     label: 'LIMITED',
     sizes: ['Única'],
     colors: [
@@ -71,7 +71,7 @@ export const products = [
     name: 'Night Court High',
     type: 'Calzado',
     price: 176,
-    image: '/images/easy-sneakers.jpg',
+    image: '/images/dydalo-sneakers.jpg',
     label: 'HEAVY',
     sizes: ['38', '39', '40', '41', '42', '43'],
     colors: [

@@ -4,47 +4,47 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Colaboraciones — EASY',
-  description: 'Juntos rompemos el molde. Conoce las colaboraciones de EASY con artistas, marcas y festivales.',
+  title: 'Colaboraciones — DYDALO',
+  description: 'Juntos rompemos el molde. Conoce las colaboraciones de DYDALO con artistas, marcas y festivales.',
 };
 import { NewsletterForm } from '@/components/newsletter-form';
 
 const collaborations = [
   {
     id: 1,
-    name: 'EASY × Kross',
+    name: 'DYDALO × Kross',
     partner: 'Kross',
     description:
       'Colección cápsula con el grafitero barcelonés Kross. 6 piezas intervenidas a mano, cada una única. Arte usable que desafía los límites entre galería y armario.',
     status: 'PRÓXIMO',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     id: 2,
-    name: 'EASY × Bassment',
+    name: 'DYDALO × Bassment',
     partner: 'Bassment',
     description:
       'Colaboración con el colectivo de música electrónica Bassment. Una colección que captura la energía de sus sesiones clandestinas en vinilos y texturas nocturnas.',
     status: 'PRÓXIMO',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     id: 3,
-    name: 'EASY × TBD Festival',
+    name: 'DYDALO × TBD Festival',
     partner: 'TBD Festival',
     description:
       'Merch oficial del festival más crudo del sur. Disponible solo durante los tres días de evento. Piezas que no se repetirán.',
     status: 'PRÓXIMO',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
   {
     id: 4,
-    name: 'EASY × La Cantera',
+    name: 'DYDALO × La Cantera',
     partner: 'La Cantera',
     description:
       'Proyecto con el centro de talento joven La Cantera. Diseñado por y para la nueva generación del streetwear español.',
     status: 'PRÓXIMO',
-    image: '/images/easy-hero.jpg',
+    image: '/images/dydalo-hero.jpg',
   },
 ];
 

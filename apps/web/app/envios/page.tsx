@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Envíos — EASY',
+  title: 'Envíos — DYDALO',
   description: 'De la calle a tu casa. Express, estándar e internacional. Envíos gratis en pedidos superiores a $150.',
 };
 import { Button } from '@/components/ui/button';

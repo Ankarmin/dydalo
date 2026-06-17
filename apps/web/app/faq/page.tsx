@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'FAQ — EASY',
-  description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios y pagos en EASY.',
+  title: 'FAQ — DYDALO',
+  description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios y pagos en DYDALO.',
 };
 import { Button } from '@/components/ui/button';
 import { FaqAccordion } from './faq-accordion';

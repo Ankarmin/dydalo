@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft, Ruler } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Guía de Tallas — EASY',
+  title: 'Guía de Tallas — DYDALO',
   description: 'Que el número no te engañe. Medidas reales en cm para ropa y calzado. Encuentra tu talla exacta.',
 };
 import { Button } from '@/components/ui/button';

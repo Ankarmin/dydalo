@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Contacto — EASY',
+  title: 'Contacto — DYDALO',
   description: 'Háblanos directo. Sin formularios eternos, sin respuestas automáticas. Un equipo real al otro lado.',
 };
 import { ContactoForm } from './contacto-form';
@@ -27,8 +27,8 @@ export default function ContactoPage() {
       <div className="lg:grid lg:min-h-screen lg:grid-cols-2">
         <div className="relative hidden lg:block">
           <Image
-            src="/images/easy-hero.jpg"
-            alt="Contacto EASY"
+            src="/images/dydalo-hero.jpg"
+            alt="Contacto DYDALO"
             fill
             priority
             className="object-cover"

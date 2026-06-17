@@ -89,9 +89,9 @@ export default function HomePage() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="text-2xl font-bold tracking-[-0.08em] focus-ring"
-          aria-label="EASY inicio"
+          aria-label="DYDALO inicio"
         >
-          EASY
+          DYDALO
         </button>
         <nav
           className="hidden items-center gap-4 text-[11px] font-bold tracking-[0.18em] md:flex"
@@ -167,7 +167,7 @@ export default function HomePage() {
                         <Image
                           src={
                             brokenImages.has(product.id)
-                              ? '/images/easy-hero.jpg'
+                              ? '/images/dydalo-hero.jpg'
                               : product.image
                           }
                           alt={product.name}
@@ -280,7 +280,7 @@ export default function HomePage() {
                     <Image
                       src={
                         brokenImages.has(selectedProduct.id)
-                          ? '/images/easy-hero.jpg'
+                          ? '/images/dydalo-hero.jpg'
                           : selectedProduct.image
                       }
                       alt={selectedProduct.name}
@@ -424,7 +424,7 @@ export default function HomePage() {
 
       <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center">
         <Image
-          src="/images/easy-hero.jpg"
+          src="/images/dydalo-hero.jpg"
           alt="Collage urbano nocturno sobre una pared de asfalto"
           fill
           priority
@@ -436,7 +436,7 @@ export default function HomePage() {
             UNDERGROUND STREETWEAR
           </p>
           <h1 className="text-[clamp(5rem,20vw,15rem)] font-bold leading-[0.72] tracking-[-0.1em] sm:text-[clamp(8rem,22vw,15rem)] lg:text-[15rem]">
-            EASY
+            DYDALO
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
             THE REAL CREAM
@@ -461,9 +461,9 @@ export default function HomePage() {
         <div className="ticker-track flex w-max whitespace-nowrap text-xs font-bold tracking-[0.24em]">
           {[0, 1, 2, 3].map((copy) => (
             <span key={copy} aria-hidden={copy !== 0} className="pr-12">
-              EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY
+              EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — DYDALO
               WORLDWIDE — THE REAL CREAM — UNDERGROUND STREETWEAR — SUMA A TU
-              ESTILO — MAKE IT LOOK EASY —{' '}
+              ESTILO — MAKE IT LOOK DYDALO —{' '}
             </span>
           ))}
         </div>
@@ -476,7 +476,7 @@ export default function HomePage() {
         <p className="text-6xl font-bold uppercase leading-[0.85] tracking-[-0.06em] text-foreground md:col-span-4 md:text-8xl">
           make it
           <br />
-          look easy.
+          look dydalo.
         </p>
         <div className="md:col-span-7 md:col-start-6">
           <p className="mb-4 overline">NO ES SOLO ROPA</p>
@@ -546,7 +546,7 @@ export default function HomePage() {
                   <Image
                     src={
                       brokenImages.has(product.id)
-                        ? '/images/easy-hero.jpg'
+                        ? '/images/dydalo-hero.jpg'
                         : product.image
                     }
                     alt={product.name}
@@ -586,7 +586,7 @@ export default function HomePage() {
             {/* Brand */}
             <div className="shrink-0">
               <p className="text-7xl font-bold tracking-[-0.09em] md:text-8xl">
-                EASY
+                DYDALO
               </p>
               <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">
                 el estilo no se impone,
@@ -616,7 +616,7 @@ export default function HomePage() {
                 </ul>
               </div>
               <div>
-                <h4 className="heading-label">EASY</h4>
+                <h4 className="heading-label">DYDALO</h4>
                 <ul className="mt-4 space-y-2.5">
                   <li>
                     <Link
@@ -712,7 +712,7 @@ export default function HomePage() {
         {/* ── Bottom bar ── */}
         <section className="border-t border-border section-px py-6">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
-            <p>© 2026 EASY — Todos los derechos reservados.</p>
+            <p>© 2026 DYDALO — Todos los derechos reservados.</p>
             <div className="flex gap-6">
               <span className="text-muted-foreground">Términos</span>
               <span className="text-muted-foreground">Privacidad</span>

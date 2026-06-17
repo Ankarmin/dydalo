@@ -12,15 +12,16 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "EASY — Streetwear premium underground",
+  metadataBase: new URL("https://dydalo.com"),
+  title: "DYDALO — Streetwear premium underground",
   description:
-    "Streetwear premium y exclusivo. El estilo no se impone, se elige. Descubre el catálogo EASY.",
-  authors: [{ name: "EASY" }],
+    "Streetwear premium y exclusivo. El estilo no se impone, se elige. Descubre el catálogo DYDALO.",
+  authors: [{ name: "DYDALO" }],
   openGraph: {
-    title: "EASY — The Real Cream",
+    title: "DYDALO — The Real Cream",
     description: "Streetwear premium y exclusivo para un flow sin límites.",
     type: "website",
-    images: [{ url: "/images/easy-hero.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/images/dydalo-hero.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary",

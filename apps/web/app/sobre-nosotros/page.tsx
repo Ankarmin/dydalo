@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros — EASY',
-  description: 'EASY es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.',
+  title: 'Sobre Nosotros — DYDALO',
+  description: 'DYDALO es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.',
 };
 import { Button } from '@/components/ui/button';
 
@@ -31,7 +31,7 @@ export default function SobreNosotrosPage() {
             Sobre Nosotros
           </p>
           <h1 className="page-hero-heading lg:text-8xl">
-            ESTO ES EASY
+            ESTO ES DYDALO
           </h1>
         </div>
       </section>
@@ -46,7 +46,7 @@ export default function SobreNosotrosPage() {
                 Hecho en la calle.
               </h2>
               <p className="mt-3 body-text">
-                EASY es calle. Es creatividad pura y la necesidad de expresarse
+                DYDALO es calle. Es creatividad pura y la necesidad de expresarse
                 sin pedir permiso. Más que una marca, somos el movimiento de los
                 que buscan destacar con autenticidad.
               </p>

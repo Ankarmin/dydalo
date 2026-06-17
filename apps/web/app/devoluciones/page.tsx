@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Devoluciones — EASY',
+  title: 'Devoluciones — DYDALO',
   description: 'Sin letra pequeña. 30 días para cambios y devoluciones gratis. Sin condiciones escondidas.',
 };
 import { Button } from '@/components/ui/button';

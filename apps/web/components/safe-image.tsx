@@ -11,7 +11,7 @@ export function SafeImage({
   sizes,
   className,
   priority = false,
-  fallback = '/images/easy-hero.jpg',
+  fallback = '/images/dydalo-hero.jpg',
 }: {
   src: string;
   alt: string;

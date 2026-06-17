@@ -1,4 +1,4 @@
-# Ecommerce EasyShop
+# Ecommerce Dydalo
 
 E-commerce platform built with Next.js and NestJS in a monorepo architecture.
 
@@ -13,7 +13,7 @@ E-commerce platform built with Next.js and NestJS in a monorepo architecture.
 ## Project Structure
 
 ```
-ecommerce-easyshop/
+ecommerce-dydalo/
 ├── apps/
 │   ├── web/          # Next.js frontend application
 │   └── api/          # NestJS backend API

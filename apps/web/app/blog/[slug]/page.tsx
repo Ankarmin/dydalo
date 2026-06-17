@@ -17,7 +17,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const title = postTitles[slug];
   return {
-    title: title ? `${title} — EASY Blog` : 'Artículo — EASY',
+    title: title ? `${title} — DYDALO Blog` : 'Artículo — DYDALO',
   };
 }
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ const postContent: Record<string, { title: string; date: string; tag: string; bo
       'Hoy, una pieza de joyería urbana no grita: susurra. Materiales de calidad, diseños minimalistas con intención y sobre todo, autenticidad.',
       'En el underground, el bling nunca se fue. Solo estaba esperando que el mainstream dejara de sobre-explotarlo para volver a las raíces: piezas que cuentan una historia personal.',
       'Desde los dijes personalizados hasta las cadenas cubanas con eslabones pesados, el nuevo bling es sutil pero inconfundible. Es el detalle que separa un fit genérico de uno con personalidad.',
-      'En EASY lo entendemos así: cada pieza de nuestra colección Cold Cuban Ice está pensada para ser el centro de atención sin necesidad de pedirlo.',
+      'En DYDALO lo entendemos así: cada pieza de nuestra colección Cold Cuban Ice está pensada para ser el centro de atención sin necesidad de pedirlo.',
     ],
   },
   'zapatillas-que-hicieron-historia': {
