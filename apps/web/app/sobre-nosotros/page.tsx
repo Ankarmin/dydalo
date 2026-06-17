@@ -1,15 +1,22 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Sobre Nosotros — EASY',
+  description: 'EASY es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.',
+};
+import { Button } from '@/components/ui/button';
 
 export default function SobreNosotrosPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* ── Header ── */}
-      <header className="border-b border-border section-px py-6">
+      <header className="page-header">
         <div className="mx-auto flex max-w-6xl items-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="back-link"
           >
             <ArrowLeft className="size-4" />
             Volver
@@ -18,20 +25,20 @@ export default function SobreNosotrosPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="asphalt section-px pb-4 pt-14">
-        <div className="mx-auto max-w-6xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-accent">
+      <section className="asphalt section-px pb-8 pt-20">
+        <div className="container-page">
+          <p className="overline">
             Sobre Nosotros
           </p>
-          <h1 className="mt-4 text-5xl font-bold uppercase tracking-[-0.04em] md:text-7xl lg:text-8xl">
+          <h1 className="page-hero-heading lg:text-8xl">
             ESTO ES EASY
           </h1>
         </div>
       </section>
 
       {/* ── Contenido ── */}
-      <section className="section-px pb-12 pt-6">
-        <div className="mx-auto max-w-6xl">
+      <section className="section-px pb-12 pt-12">
+        <div className="container-page">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
             <div className="">
               <div className="h-0.5 w-10 bg-accent" />
@@ -78,12 +85,9 @@ export default function SobreNosotrosPage() {
 
           {/* ── CTA ── */}
           <div className="mt-8">
-            <Link
-              href="/"
-              className="inline-block bg-accent px-8 py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-accent-foreground transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              Explorar Colecciones
-            </Link>
+            <Button variant="hero" size="hero" asChild>
+              <Link href="/">Explorar Colecciones</Link>
+            </Button>
           </div>
         </div>
       </section>

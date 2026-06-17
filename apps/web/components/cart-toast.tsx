@@ -31,7 +31,7 @@ export function showCartToast(productName: string, price: number) {
         <button
           onClick={() => toast.dismiss(t)}
           aria-label="Cerrar notificación"
-          className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >
           <X className="size-3.5" />
         </button>

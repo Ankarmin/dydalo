@@ -20,63 +20,18 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { showCartToast } from '@/components/cart-toast';
-
-const products = [
-  {
-    id: 1,
-    name: 'Midnight Track Set',
-    type: 'Ropa',
-    price: 189,
-    image: '/images/easy-tracksuit.jpg',
-    label: 'DROP 01',
-  },
-  {
-    id: 2,
-    name: 'Liquid Black Uniform',
-    type: 'Ropa',
-    price: 164,
-    image: '/images/easy-satin-set.jpg',
-    label: 'PREMIUM',
-  },
-  {
-    id: 3,
-    name: 'Pure Form Set',
-    type: 'Ropa',
-    price: 138,
-    image: '/images/easy-white-basics.jpg',
-    label: 'ESSENTIAL',
-  },
-  {
-    id: 4,
-    name: 'Two Tone Caps',
-    type: 'Accesorios',
-    price: 54,
-    image: '/images/easy-caps.jpg',
-    label: '2 PACK',
-  },
-  {
-    id: 5,
-    name: 'Cold Cuban Ice',
-    type: 'Bling',
-    price: 249,
-    image: '/images/easy-bling.jpg',
-    label: 'LIMITED',
-  },
-  {
-    id: 6,
-    name: 'Night Court High',
-    type: 'Calzado',
-    price: 176,
-    image: '/images/easy-sneakers.jpg',
-    label: 'HEAVY',
-  },
-];
+import { products } from '@/data/products';
 
 export default function HomePage() {
   const [filter, setFilter] = useState('Todo');
   const [cart, setCart] = useState<Record<number, number>>({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null,
+  );
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const visibleProducts = useMemo(
     () =>
       filter === 'Todo'
@@ -106,16 +61,37 @@ export default function HomePage() {
     });
   };
 
+  const selectedProduct =
+    products.find((p) => p.id === selectedProductId) ?? null;
+
+  const handleSelectProduct = (productId: number) => {
+    const product = products.find((p) => p.id === productId);
+    setSelectedProductId(productId);
+    setSelectedSize(product?.sizes?.[0] ?? null);
+    setSelectedColor(product?.colors?.[0]?.name ?? null);
+  };
+
+  const handleAddFromDetail = () => {
+    if (!selectedProduct) return;
+    updateQuantity(selectedProduct.id, 1);
+    showCartToast(
+      `${selectedProduct.name} — ${selectedColor} / ${selectedSize}`,
+      selectedProduct.price,
+    );
+    setSelectedProductId(null);
+  };
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/85 px-5 backdrop-blur-xl md:px-10">
-        <a
-          href="#top"
-          className="text-2xl font-bold tracking-[-0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="text-2xl font-bold tracking-[-0.08em] focus-ring"
           aria-label="EASY inicio"
         >
           EASY
-        </a>
+        </button>
         <nav
           className="hidden items-center gap-4 text-[11px] font-bold tracking-[0.18em] md:flex"
           aria-label="Navegación principal"
@@ -124,12 +100,17 @@ export default function HomePage() {
             SUMA A TU ESTILO
           </span>
           <span className="text-accent">/</span>
-          <a
-            href="#catalogo"
-            className="border-b border-accent pb-1 transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          <button
+            type="button"
+            onClick={() =>
+              document
+                .getElementById('catalogo')
+                ?.scrollIntoView({ behavior: 'smooth' })
+            }
+            className="border-b border-accent pb-1 transition-colors hover:text-accent focus-ring"
           >
             COMPRAR
-          </a>
+          </button>
         </nav>
         <div className="flex items-center gap-2">
           <Sheet>
@@ -148,7 +129,9 @@ export default function HomePage() {
             </SheetTrigger>
             <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
               <SheetHeader className="border-b border-border px-6 py-6 text-left">
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">Tu selección</p>
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">
+                  Tu selección
+                </p>
                 <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">
                   TU BOLSA
                 </SheetTitle>
@@ -181,11 +164,20 @@ export default function HomePage() {
                         className="flex gap-4 border-b border-border py-5"
                       >
                         <Image
-                          src={brokenImages.has(product.id) ? '/images/easy-hero.jpg' : product.image}
+                          src={
+                            brokenImages.has(product.id)
+                              ? '/images/easy-hero.jpg'
+                              : product.image
+                          }
                           alt={product.name}
                           width={112}
                           height={112}
-                          onError={() => setBrokenImages((prev) => new Set(prev).add(product.id))}
+                          sizes="112px"
+                          onError={() =>
+                            setBrokenImages((prev) =>
+                              new Set(prev).add(product.id),
+                            )
+                          }
                           className="size-24 object-cover"
                         />
                         <div className="flex min-w-0 flex-1 flex-col justify-between">
@@ -202,26 +194,26 @@ export default function HomePage() {
                           </div>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center border border-border">
-                               <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-10 rounded-none"
-                                    aria-label={`Quitar una unidad de ${product.name}`}
-                                    onClick={() => updateQuantity(product.id, -1)}
-                                  >
-                                    −
-                                  </Button>
-                                  <span className="w-7 text-center text-xs font-bold">
-                                    {quantity}
-                                  </span>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-10 rounded-none"
-                                    aria-label={`Añadir una unidad de ${product.name}`}
-                                    onClick={() => updateQuantity(product.id, 1)}
-                                  >
-                                    +
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-10 rounded-none"
+                                aria-label={`Quitar una unidad de ${product.name}`}
+                                onClick={() => updateQuantity(product.id, -1)}
+                              >
+                                −
+                              </Button>
+                              <span className="w-7 text-center text-xs font-bold">
+                                {quantity}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-10 rounded-none"
+                                aria-label={`Añadir una unidad de ${product.name}`}
+                                onClick={() => updateQuantity(product.id, 1)}
+                              >
+                                +
                               </Button>
                             </div>
                             <p className="text-sm font-bold">
@@ -262,6 +254,134 @@ export default function HomePage() {
               </div>
             </SheetContent>
           </Sheet>
+
+          {/* ── Producto detalle ── */}
+          <Sheet
+            open={selectedProductId !== null}
+            onOpenChange={(open) => {
+              if (!open) setSelectedProductId(null);
+            }}
+          >
+            <SheetContent
+              side="right"
+              className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
+            >
+              {selectedProduct && (
+                <>
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>{selectedProduct.name}</SheetTitle>
+                    <SheetDescription>
+                      Selecciona talla y color para {selectedProduct.name}
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <Image
+                      src={
+                        brokenImages.has(selectedProduct.id)
+                          ? '/images/easy-hero.jpg'
+                          : selectedProduct.image
+                      }
+                      alt={selectedProduct.name}
+                      width={1024}
+                      height={768}
+                      sizes="(max-width: 640px) 100vw, 448px"
+                      className="size-full object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
+                  </div>
+
+                  <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-6">
+                    <div className="border-b border-border pb-6 pt-6">
+                      <p className="micro-label">
+                        {selectedProduct.label}
+                      </p>
+                      <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight">
+                        {selectedProduct.name}
+                      </h2>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {selectedProduct.type}
+                      </p>
+                      <p className="mt-3 text-xl font-bold">
+                        ${selectedProduct.price}
+                      </p>
+                    </div>
+
+                    {selectedProduct.sizes &&
+                      selectedProduct.sizes.length > 1 && (
+                        <div className="border-b border-border py-6">
+                          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                            Talla
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedProduct.sizes.map((size) => (
+                              <button
+                                key={size}
+                                type="button"
+                                onClick={() => setSelectedSize(size)}
+                                className={`flex h-10 min-w-[3rem] items-center justify-center border px-3 text-xs font-bold uppercase transition-colors ${
+                                  selectedSize === size
+                                    ? 'border-accent bg-accent text-accent-foreground'
+                                    : 'border-border hover:border-muted-foreground'
+                                }`}
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    <div className="border-b border-border py-6">
+                      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        Color
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedProduct.colors.map((color) => (
+                          <button
+                            key={color.name}
+                            type="button"
+                            onClick={() => setSelectedColor(color.name)}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className={`size-7 rounded-full border-2 transition-colors ${
+                                selectedColor === color.name
+                                  ? 'border-accent'
+                                  : 'border-border'
+                              }`}
+                              style={{ backgroundColor: color.hex }}
+                            />
+                            <span
+                              className={`text-xs uppercase ${
+                                selectedColor === color.name
+                                  ? 'text-foreground font-bold'
+                                  : 'text-muted-foreground'
+                              }`}
+                            >
+                              {color.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-8">
+                      <Button
+                        variant="hero"
+                        size="hero"
+                        className="w-full"
+                        onClick={handleAddFromDetail}
+                      >
+                        AÑADIR A LA BOLSA <ArrowUpRight />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </SheetContent>
+          </Sheet>
+
           <Button
             variant="ghost"
             size="icon"
@@ -277,21 +397,23 @@ export default function HomePage() {
             <span className="pb-2 pt-4 text-xs text-muted-foreground">
               SUMA A TU ESTILO
             </span>
-            <a
-              href="#catalogo"
-              className="border-b border-accent py-4 text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              onClick={() => setMenuOpen(false)}
+            <button
+              type="button"
+              className="border-b border-accent py-4 text-accent focus-ring"
+              onClick={() => {
+                setMenuOpen(false);
+                document
+                  .getElementById('catalogo')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               COMPRAR
-            </a>
+            </button>
           </nav>
         )}
       </header>
 
-      <section
-        id="top"
-        className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center"
-      >
+      <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center">
         <Image
           src="/images/easy-hero.jpg"
           alt="Collage urbano nocturno sobre una pared de asfalto"
@@ -304,7 +426,7 @@ export default function HomePage() {
           <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
             UNDERGROUND STREETWEAR
           </p>
-          <h1 className="text-[28vw] font-bold leading-[0.72] tracking-[-0.1em] sm:text-[22vw] lg:text-[15rem]">
+          <h1 className="text-[clamp(5rem,20vw,15rem)] font-bold leading-[0.72] tracking-[-0.1em] sm:text-[clamp(8rem,22vw,15rem)] lg:text-[15rem]">
             EASY
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
@@ -316,9 +438,12 @@ export default function HomePage() {
             size="hero"
             className="mt-10 w-full max-w-sm"
           >
-            <a href="#catalogo">
+            <button
+              type="button"
+              onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               VER CATÁLOGO <ArrowDownRight />
-            </a>
+            </button>
           </Button>
         </div>
       </section>
@@ -328,7 +453,8 @@ export default function HomePage() {
           {[0, 1, 2, 3].map((copy) => (
             <span key={copy} aria-hidden={copy !== 0} className="pr-12">
               EL ESTILO NO SE IMPONE — SE ELIGE — FLOW SIN LÍMITES — EASY
-              WORLDWIDE — THE REAL CREAM — UNDERGROUND STREETWEAR — SUMA A TU ESTILO — MAKE IT LOOK EASY —{' '}
+              WORLDWIDE — THE REAL CREAM — UNDERGROUND STREETWEAR — SUMA A TU
+              ESTILO — MAKE IT LOOK EASY —{' '}
             </span>
           ))}
         </div>
@@ -344,9 +470,7 @@ export default function HomePage() {
           look easy.
         </p>
         <div className="md:col-span-7 md:col-start-6">
-          <p className="mb-4 overline">
-            NO ES SOLO ROPA
-          </p>
+          <p className="mb-4 overline">NO ES SOLO ROPA</p>
           <h2 className="max-w-4xl text-4xl font-medium leading-[0.98] tracking-[-0.05em] md:text-6xl lg:text-7xl">
             HECHO PARA QUIEN NO PIDE PERMISO.
           </h2>
@@ -360,7 +484,9 @@ export default function HomePage() {
       <section id="catalogo" className="section-px py-20">
         <div className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">
           <div>
-            <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">new drop</p>
+            <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">
+              new drop
+            </p>
             <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
               EL CATÁLOGO
             </h2>
@@ -395,52 +521,52 @@ export default function HomePage() {
             </div>
           ) : (
             visibleProducts.map((product, index) => (
-            <article key={product.id} className="group relative">
-              <div className="product-glass relative aspect-square overflow-hidden border border-border transition-all duration-500 group-hover:-translate-y-2 group-hover:border-violet">
-                <span className="absolute left-4 top-4 z-10 bg-background/80 px-3 py-2 text-[9px] font-bold tracking-[0.2em] backdrop-blur-md">
-                  {product.label}
-                </span>
-                <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
-                  0{index + 1}
-                </span>
-                <Image
-                  src={brokenImages.has(product.id) ? '/images/easy-hero.jpg' : product.image}
-                  alt={product.name}
-                  width={1024}
-                  height={1024}
-                  priority={index === 0}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  onError={() => setBrokenImages((prev) => new Set(prev).add(product.id))}
-                  className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-x-0 bottom-0 translate-y-full bg-primary p-3 transition-transform duration-300 group-hover:translate-y-0 group-focus-within:translate-y-0">
-                  <Button
-                    variant="ghost"
-                    className="w-full rounded-none text-primary-foreground hover:bg-ink hover:text-foreground focus-visible:bg-ink focus-visible:text-foreground focus-visible:ring-0"
-                    onClick={() => {
-                      updateQuantity(product.id, 1);
-                      showCartToast(product.name, product.price);
-                    }}
-                  >
-                    AÑADIR A LA BOLSA <ArrowUpRight />
-                  </Button>
-                </div>
-              </div>
-              <div className="mt-4 flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-bold uppercase tracking-tight">
-                    {product.name}
-                  </h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {product.type}
+              <article key={product.id} className="group relative">
+                <button
+                  type="button"
+                  className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-violet focus-ring"
+                  onClick={() => handleSelectProduct(product.id)}
+                  aria-label={`Ver detalles de ${product.name}`}
+                >
+                  <span className="absolute left-4 top-4 z-10 bg-background/80 px-3 py-2 text-[9px] font-bold tracking-[0.2em] backdrop-blur-md">
+                    {product.label}
+                  </span>
+                  <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
+                    0{index + 1}
+                  </span>
+                  <Image
+                    src={
+                      brokenImages.has(product.id)
+                        ? '/images/easy-hero.jpg'
+                        : product.image
+                    }
+                    alt={product.name}
+                    width={1024}
+                    height={1024}
+                    priority={index === 0}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    onError={() =>
+                      setBrokenImages((prev) => new Set(prev).add(product.id))
+                    }
+                    className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                </button>
+                <div className="mt-4 flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold uppercase tracking-tight">
+                      {product.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {product.type}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold">
+                    ${product.price}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm font-semibold">
-                  ${product.price}
-                </p>
-              </div>
-            </article>
-          )))}
+              </article>
+            ))
+          )}
         </div>
       </section>
 
@@ -463,59 +589,70 @@ export default function HomePage() {
             {/* Links grid */}
             <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 lg:max-w-xl">
               <div>
-                <h4 className="heading-label">
-                  Tienda
-                </h4>
+                <h4 className="heading-label">Tienda</h4>
                 <ul className="mt-4 space-y-2.5">
-                  {["Nuevos Drops", "Colecciones", "Hombre", "Mujer", "Accesorios"].map(
-                    (link) => (
-                      <li key={link}>
-                        <span className="text-sm text-muted-foreground">
-                          {link}
-                        </span>
-                      </li>
-                    )
-                  )}
+                  {[
+                    'Nuevos Drops',
+                    'Colecciones',
+                    'Hombre',
+                    'Mujer',
+                    'Accesorios',
+                  ].map((link) => (
+                    <li key={link}>
+                      <span className="text-sm text-muted-foreground">
+                        {link}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div>
-                <h4 className="heading-label">
-                  EASY
-                </h4>
+                <h4 className="heading-label">EASY</h4>
                 <ul className="mt-4 space-y-2.5">
                   <li>
-                      <Link
-                        href="/sobre-nosotros"
-                        className="text-sm text-muted-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
+                    <Link
+                      href="/sobre-nosotros"
+                      className="footer-link"
+                    >
                       Sobre Nosotros
                     </Link>
                   </li>
-                  {["Nuestra Historia", "Lookbook", "Colaboraciones", "Blog"].map(
-                    (link) => (
-                      <li key={link}>
-                        <span className="text-sm text-muted-foreground">
-                          {link}
-                        </span>
-                      </li>
-                    )
-                  )}
+                  {[
+                    'Nuestra Historia',
+                    'Lookbook',
+                    'Colaboraciones',
+                    'Blog',
+                  ].map((link) => (
+                    <li key={link}>
+                      <Link
+                        href={`/${link.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="footer-link"
+                      >
+                        {link}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div>
-                <h4 className="heading-label">
-                  Soporte
-                </h4>
+                <h4 className="heading-label">Soporte</h4>
                 <ul className="mt-4 space-y-2.5">
-                  {["Contacto", "Envíos", "Devoluciones", "Guía de Tallas", "FAQ"].map(
-                    (link) => (
-                      <li key={link}>
-                        <span className="text-sm text-muted-foreground">
-                          {link}
-                        </span>
-                      </li>
-                    )
-                  )}
+                  {[
+                    { label: 'Contacto', href: '/contacto' },
+                    { label: 'Envíos', href: '/envios' },
+                    { label: 'Devoluciones', href: '/devoluciones' },
+                    { label: 'Guía de Tallas', href: '/guia-de-tallas' },
+                    { label: 'FAQ', href: '/faq' },
+                  ].map(({ label, href }) => (
+                    <li key={label}>
+                      <Link
+                        href={href}
+                        className="footer-link"
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -526,9 +663,7 @@ export default function HomePage() {
         <section className="border-t border-border section-px py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
             <div className="text-center md:text-left">
-              <p className="heading-label">
-                Únete al movimiento
-              </p>
+              <p className="heading-label">Únete al movimiento</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Sé el primero en enterarte de nuevos drops y exclusivos.
               </p>
@@ -536,7 +671,9 @@ export default function HomePage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const input = e.currentTarget.querySelector('input') as HTMLInputElement;
+                const input = e.currentTarget.querySelector(
+                  'input',
+                ) as HTMLInputElement;
                 if (input.value) {
                   alert(`¡Gracias! Te mantendremos al tanto en ${input.value}`);
                   input.value = '';
@@ -551,11 +688,11 @@ export default function HomePage() {
                 id="newsletter-email"
                 type="email"
                 placeholder="tu@email.com"
-                className="flex-1 border border-border bg-transparent px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                className="form-input flex-1"
               />
               <button
                 type="submit"
-                className="bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-accent-foreground transition-colors hover:bg-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="newsletter-btn"
               >
                 Suscribir
               </button>
