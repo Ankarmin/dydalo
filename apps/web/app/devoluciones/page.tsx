@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Devoluciones — DYDALO',
@@ -41,26 +41,15 @@ const conditions = [
 
 export default function DevolucionesPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Devoluciones</p>
           <h1 className="page-hero-heading">
             Sin letra pequeña.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Cambiar o devolver debería ser tan fácil como comprar. Sin
             condiciones escondidas, sin letra pequeña.
           </p>
@@ -88,7 +77,7 @@ export default function DevolucionesPage() {
                   <p className="mt-1 text-sm font-bold text-accent">
                     {step.detail}
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 body-sm">
                     {step.description}
                   </p>
                 </div>
@@ -111,7 +100,7 @@ export default function DevolucionesPage() {
                 <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">
                   ✓
                 </span>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="body-sm">
                   {condition}
                 </p>
               </div>

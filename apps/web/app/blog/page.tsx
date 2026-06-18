@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Blog — DYDALO',
@@ -49,20 +48,9 @@ const posts = [
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Blog</p>
           <h1 className="page-hero-heading">
@@ -109,7 +97,7 @@ export default function BlogPage() {
                     {post.title}
                   </Link>
 
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 line-clamp-2 body-sm">
                     {post.excerpt}
                   </p>
 

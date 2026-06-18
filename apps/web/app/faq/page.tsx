@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'FAQ — DYDALO',
@@ -11,26 +10,15 @@ import { FaqAccordion } from './faq-accordion';
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">FAQ</p>
           <h1 className="page-hero-heading">
             Sin vueltas.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Preguntas frecuentes con respuestas directas. Si no encuentras lo
             que buscas, escríbenos.
           </p>

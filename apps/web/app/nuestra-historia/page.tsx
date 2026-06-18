@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Nuestra Historia — DYDALO',
@@ -37,20 +36,9 @@ const timeline = [
 
 export default function NuestraHistoriaPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Nuestra Historia</p>
           <h1 className="page-hero-heading lg:text-8xl">
@@ -58,7 +46,7 @@ export default function NuestraHistoriaPage() {
             <br />
             Nos hicimos.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             DYDALO no fue un plan de negocio. Fue una necesidad. La historia de
             una marca construida desde abajo, sin atajos, sin permiso.
           </p>
@@ -71,8 +59,8 @@ export default function NuestraHistoriaPage() {
             <div className="absolute bottom-0 left-[7px] top-0 w-px bg-border" />
 
             <div className="flex flex-col gap-12">
-              {timeline.map((item, index) => (
-                <div key={item.year} className="relative flex gap-8 pl-10">
+              {timeline.map((item) => (
+                <div key={item.year} className="relative flex gap-4 pl-8 sm:gap-8 sm:pl-10">
                   <span className="absolute left-0 top-0 flex size-[15px] shrink-0 -translate-x-1/2 items-center justify-center rounded-full bg-accent ring-4 ring-background" />
 
                   <div className="min-w-0 flex-1">

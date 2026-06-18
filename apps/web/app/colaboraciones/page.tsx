@@ -1,7 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Colaboraciones — DYDALO',
@@ -54,20 +52,9 @@ const statusStyles: Record<string, string> = {
 
 export default function ColaboracionesPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Colaboraciones</p>
           <h1 className="page-hero-heading">
@@ -75,7 +62,7 @@ export default function ColaboracionesPage() {
             <br />
             el molde.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Creemos en el poder de unir fuerzas. Cada colaboración es una
             conversación entre mundos que no deberían encontrarse, pero que al
             hacerlo crean algo irrepetible.
@@ -116,7 +103,7 @@ export default function ColaboracionesPage() {
                   <h2 className="mt-2 text-xl font-bold uppercase tracking-tight">
                     {collab.name}
                   </h2>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 body-sm">
                     {collab.description}
                   </p>
 

@@ -1,7 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contacto — DYDALO',
@@ -11,18 +9,7 @@ import { ContactoForm } from './contacto-form';
 
 export default function ContactoPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
       <div className="lg:grid lg:min-h-screen lg:grid-cols-2">
         <div className="relative hidden lg:block">
@@ -48,7 +35,7 @@ export default function ContactoPage() {
           </div>
         </div>
 
-        <div className="flex items-center section-px pt-20 pb-12 lg:pt-0">
+        <div className="flex items-center section-px pt-32 pb-12 lg:pt-0">
           <div className="mx-auto w-full max-w-md">
             <div className="lg:hidden">
               <p className="overline">Contacto</p>

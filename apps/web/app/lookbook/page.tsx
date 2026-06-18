@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Lookbook — DYDALO',
@@ -74,26 +74,15 @@ const spreads = [
 
 export default function LookbookPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Lookbook</p>
           <h1 className="page-hero-heading lg:text-8xl">
             Flow sin límites.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Una carta de amor a la calle. Seis historias visuales que capturan
             la esencia de DYDALO: sin filtros, sin poses, sin miedo.
           </p>
@@ -141,7 +130,7 @@ export default function LookbookPage() {
                 </div>
 
                 <div className="lg:w-[45%]">
-                  <span className="text-8xl font-bold leading-none tracking-[-0.08em] text-foreground/10 md:text-9xl">
+                  <span className="text-6xl font-bold leading-none tracking-[-0.08em] text-foreground/10 sm:text-7xl md:text-8xl lg:text-9xl">
                     {spread.number}
                   </span>
 

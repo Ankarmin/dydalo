@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Sobre Nosotros — DYDALO',
@@ -10,22 +9,10 @@ import { Button } from '@/components/ui/button';
 
 export default function SobreNosotrosPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      {/* ── Header ── */}
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-                        className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
       {/* ── Hero ── */}
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">
             Sobre Nosotros

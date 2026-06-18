@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Envíos — DYDALO',
@@ -57,26 +57,15 @@ const rates = [
 
 export default function EnviosPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Envíos</p>
           <h1 className="page-hero-heading">
             De la calle a tu casa.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Cada pedido es un viaje. Desde que haces clic hasta que abres la
             caja, esto es lo que pasa.
           </p>
@@ -101,7 +90,7 @@ export default function EnviosPage() {
                     <h3 className="text-lg font-bold uppercase tracking-tight">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-1 body-sm">
                       {item.description}
                     </p>
                   </div>
@@ -136,7 +125,7 @@ export default function EnviosPage() {
                     / {rate.time}
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-2 body-sm">
                   {rate.detail}
                 </p>
               </div>

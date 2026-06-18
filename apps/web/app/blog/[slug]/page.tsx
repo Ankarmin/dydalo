@@ -94,21 +94,17 @@ export default async function BlogPostPage({
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
+    <main className="page-root">
+
+      <article className="section-px pb-12 pt-28 md:pb-20">
+        <div className="mx-auto max-w-3xl">
           <Link
             href="/blog"
-            className="back-link"
+            className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
           >
-            <ArrowLeft className="size-4" />
-            Volver al blog
+            <ArrowLeft className="size-3.5" />
+            Blog
           </Link>
-        </div>
-      </header>
-
-      <article className="section-px pb-12 pt-20 md:pb-20 md:pt-24">
-        <div className="mx-auto max-w-3xl">
           <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="size-3" />

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, Ruler } from 'lucide-react';
+import { Ruler } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Guía de Tallas — DYDALO',
@@ -11,26 +11,15 @@ import { GuiaTabs } from './guia-tabs';
 
 export default function GuiaDeTallasPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="page-header">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link
-            href="/"
-            className="back-link"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Link>
-        </div>
-      </header>
+    <main className="page-root">
 
-      <section className="asphalt section-px pb-8 pt-20">
+      <section className="page-hero">
         <div className="container-page">
           <p className="overline">Guía de Tallas</p>
           <h1 className="page-hero-heading">
             Que el número no te engañe.
           </h1>
-          <p className="mt-6 max-w-xl body-text">
+          <p className="hero-description">
             Medidas reales, sin trucos. Encuentra tu talla exacta en segundos.
           </p>
         </div>
@@ -52,7 +41,7 @@ export default function GuiaDeTallasPage() {
                   <h3 className="text-sm font-bold uppercase tracking-tight">
                     ¿Entre dos tallas?
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 body-sm">
                     Elige la más grande. El streetwear se lleva con espacio.
                     Mejor oversize que ajustado.
                   </p>
@@ -69,7 +58,7 @@ export default function GuiaDeTallasPage() {
                   <h3 className="text-sm font-bold uppercase tracking-tight">
                     ¿No te convence?
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 body-sm">
                     Escríbenos. Te ayudamos a elegir sin compromiso.
                   </p>
                   <Button variant="street" size="sm" asChild className="mt-3">
