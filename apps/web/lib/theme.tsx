@@ -18,7 +18,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "dydalo-theme";
+export const STORAGE_KEY = "dydalo-theme";
 const ATTR = "data-theme";
 
 function getSystemTheme(): Theme {

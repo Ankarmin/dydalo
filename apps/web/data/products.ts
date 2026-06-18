@@ -1,12 +1,18 @@
+export type ProductType = "Ropa" | "Calzado" | "Accesorios" | "Bling";
+
+export type ProductCategory = (typeof catalogCategories)[number]["slug"];
+
+export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "36" | "Única";
+
 export type Product = {
   id: number;
   name: string;
-  type: string;
-  category: string;
+  type: ProductType;
+  category: ProductCategory;
   price: number;
   image: string;
   label: string;
-  sizes: string[];
+  sizes: ProductSize[];
   colors: { name: string; hex: string }[];
 };
 

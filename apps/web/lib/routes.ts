@@ -1,0 +1,18 @@
+export const ROUTES = {
+  home: "/",
+  catalogo: "/catalogo",
+  catalogoCategory: (slug: string) => `/catalogo/${slug}`,
+  sobreNosotros: "/sobre-nosotros",
+  nuestraHistoria: "/nuestra-historia",
+  lookbook: "/lookbook",
+  colaboraciones: "/colaboraciones",
+  blog: "/blog",
+  blogPost: (slug: string) => `/blog/${slug}`,
+  contacto: "/contacto",
+  envios: "/envios",
+  devoluciones: "/devoluciones",
+  guiaDeTallas: "/guia-de-tallas",
+  faq: "/faq",
+  loUltimo: "/#lo-ultimo",
+  catalogoAnchor: "/#catalogo",
+} as const;

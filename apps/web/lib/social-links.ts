@@ -15,3 +15,5 @@ export const socialLinks = [
     href: "https://www.facebook.com/dydalo/",
   },
 ] as const;
+
+export type SocialKey = (typeof socialLinks)[number]["key"];

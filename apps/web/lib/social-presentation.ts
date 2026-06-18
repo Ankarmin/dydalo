@@ -4,8 +4,7 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 import type { IconType } from "react-icons";
-
-type SocialKey = "facebook" | "instagram" | "tiktok";
+import type { SocialKey } from "./social-links";
 
 export const socialPresentation: Record<
   SocialKey,
