@@ -12,7 +12,7 @@ export const socialLinks = [
   {
     key: "facebook",
     label: "Facebook",
-    href: "https://www.facebook.com/dydalo/",
+    href: "https://www.facebook.com/dydalo.oficial/",
   },
 ] as const;
 
