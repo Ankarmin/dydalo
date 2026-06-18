@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   description:
     "Streetwear premium y exclusivo. El estilo no se impone, se elige. Descubre el catálogo DYDALO.",
   authors: [{ name: "DYDALO" }],
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
   openGraph: {
     title: "DYDALO — The Real Cream",
     description: "Streetwear premium y exclusivo para un flow sin límites.",
@@ -26,6 +34,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#0F0F0F",
   },
 };
 
