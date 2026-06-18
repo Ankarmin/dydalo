@@ -3,14 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  ArrowDownRight,
   ArrowLeft,
   ArrowUpRight,
-  Menu,
-  ShoppingBag,
-  X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -18,50 +14,28 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import { showCartToast } from '@/components/cart-toast';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { products } from '@/data/products';
+import { useCart } from '@/contexts/cart-context';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function HomePage() {
-  const [filter, setFilter] = useState('Todo');
-  const [cart, setCart] = useState<Record<number, number>>({});
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { updateQuantity } = useCart();
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
     null,
   );
+  const [newsletterEmail, setNewsletterEmail] = useState<string | null>(null);
+  const newsletterRef = useRef<HTMLInputElement>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const visibleProducts = useMemo(
-    () =>
-      filter === 'Todo'
-        ? products
-        : products.filter((product) => product.type === filter),
-    [filter],
-  );
-  const cartCount = Object.values(cart).reduce(
-    (total, quantity) => total + quantity,
-    0,
-  );
-  const cartProducts = products.filter((product) => cart[product.id]);
-  const subtotal = cartProducts.reduce(
-    (total, product) => total + product.price * (cart[product.id] ?? 0),
-    0,
-  );
-
-  const updateQuantity = (productId: number, change: number) => {
-    setCart((current) => {
-      const nextQuantity = (current[productId] ?? 0) + change;
-      if (nextQuantity <= 0) {
-        const next = { ...current };
-        delete next[productId];
-        return next;
-      }
-      return { ...current, [productId]: nextQuantity };
-    });
-  };
 
   const selectedProduct =
     products.find((p) => p.id === selectedProductId) ?? null;
@@ -84,199 +58,25 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/85 px-5 backdrop-blur-xl md:px-10">
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="text-2xl font-bold tracking-[-0.08em] logo-oblique focus-ring"
-          aria-label="DYDALO inicio"
+    <main className="page-root">
+      <Sheet
+        open={selectedProductId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProductId(null);
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
         >
-          DYDALO
-        </button>
-        <nav
-          className="hidden items-center gap-4 text-[11px] font-bold tracking-[0.18em] md:flex"
-          aria-label="Navegación principal"
-        >
-          <span className="text-muted-foreground" aria-hidden="true">
-            SUMA A TU ESTILO
-          </span>
-          <span className="text-accent">/</span>
-          <button
-            type="button"
-            onClick={() =>
-              document
-                .getElementById('catalogo')
-                ?.scrollIntoView({ behavior: 'smooth' })
-            }
-            className="border-b border-accent pb-1 transition-colors hover:text-accent focus-ring"
-          >
-            COMPRAR
-          </button>
-        </nav>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Abrir bolsa con ${cartCount} productos`}
-                className="relative"
-              >
-                <ShoppingBag />
-                <span className="absolute -right-1 -top-1 grid size-4 place-items-center bg-accent text-[9px] font-bold text-accent-foreground">
-                  {cartCount}
-                </span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
-              <SheetHeader className="border-b border-border px-6 py-6 text-left">
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">
-                  Tu selección
-                </p>
-                <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">
-                  TU BOLSA
-                </SheetTitle>
+          {selectedProduct && (
+            <>
+              <SheetHeader className="sr-only">
+                <SheetTitle>{selectedProduct.name}</SheetTitle>
                 <SheetDescription>
-                  {cartCount === 0
-                    ? 'Todavía no elegiste tu flow.'
-                    : `${cartCount} piezas seleccionadas`}
+                  Selecciona talla y color para {selectedProduct.name}
                 </SheetDescription>
               </SheetHeader>
-
-              {cartProducts.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-                  <ShoppingBag
-                    className="mb-5 size-10 text-muted-foreground"
-                    strokeWidth={1.25}
-                  />
-                  <p className="text-xl font-bold">LA BOLSA ESTÁ VACÍA</p>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
-                    Encuentra una pieza que hable por ti y añádela a tu
-                    selección.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-y-auto px-6">
-                  {cartProducts.map((product) => {
-                    const quantity = cart[product.id] ?? 0;
-                    return (
-                      <article
-                        key={product.id}
-                        className="flex gap-4 border-b border-border py-5"
-                      >
-                        <Image
-                          src={
-                            brokenImages.has(product.id)
-                              ? '/images/dydalo-hero.jpg'
-                              : product.image
-                          }
-                          alt={product.name}
-                          width={112}
-                          height={112}
-                          sizes="112px"
-                          onError={() =>
-                            setBrokenImages((prev) =>
-                              new Set(prev).add(product.id),
-                            )
-                          }
-                          className="size-24 object-cover"
-                        />
-                        <div className="flex min-w-0 flex-1 flex-col justify-between">
-                          <div>
-                            <p className="text-[9px] font-bold tracking-[0.18em] text-accent">
-                              {product.label}
-                            </p>
-                            <h3 className="mt-1 truncate text-sm font-bold uppercase">
-                              {product.name}
-                            </h3>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              ${product.price}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center border border-border">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-10 rounded-none"
-                                aria-label={`Quitar una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, -1)}
-                              >
-                                −
-                              </Button>
-                              <span className="w-7 text-center text-xs font-bold">
-                                {quantity}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-10 rounded-none"
-                                aria-label={`Añadir una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, 1)}
-                              >
-                                +
-                              </Button>
-                            </div>
-                            <p className="text-sm font-bold">
-                              ${product.price * quantity}
-                            </p>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="border-t border-border bg-secondary/40 p-6">
-                <div className="mb-5 flex items-end justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground">
-                      SUBTOTAL
-                    </p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight">
-                      ${subtotal}
-                    </p>
-                  </div>
-                  <p className="text-right text-[10px] leading-4 text-muted-foreground">
-                    ENVÍO CALCULADO
-                    <br />
-                    EN EL CHECKOUT
-                  </p>
-                </div>
-                <Button
-                  variant="hero"
-                  size="hero"
-                  className="w-full"
-                  disabled={!cartCount}
-                >
-                  FINALIZAR COMPRA <ArrowUpRight />
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* ── Producto detalle ── */}
-          <Sheet
-            open={selectedProductId !== null}
-            onOpenChange={(open) => {
-              if (!open) setSelectedProductId(null);
-            }}
-          >
-            <SheetContent
-              side="right"
-              className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
-            >
-              {selectedProduct && (
-                <>
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>{selectedProduct.name}</SheetTitle>
-                    <SheetDescription>
-                      Selecciona talla y color para {selectedProduct.name}
-                    </SheetDescription>
-                  </SheetHeader>
 
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
                     <Image
@@ -393,37 +193,6 @@ export default function HomePage() {
             </SheetContent>
           </Sheet>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            aria-label="Abrir menú"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {menuOpen ? <X /> : <Menu />}
-          </Button>
-        </div>
-        {menuOpen && (
-          <nav className="absolute left-0 top-16 flex w-full flex-col border-b border-border bg-background p-6 text-sm font-bold tracking-[0.14em] md:hidden">
-            <span className="pb-2 pt-4 text-xs text-muted-foreground">
-              SUMA A TU ESTILO
-            </span>
-            <button
-              type="button"
-              className="border-b border-accent py-4 text-accent focus-ring"
-              onClick={() => {
-                setMenuOpen(false);
-                document
-                  .getElementById('catalogo')
-                  ?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              COMPRAR
-            </button>
-          </nav>
-        )}
-      </header>
-
       <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center">
         <Image
           src="/images/dydalo-hero.jpg"
@@ -434,10 +203,10 @@ export default function HomePage() {
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/20 via-background/25 to-background" />
         <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
-          <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
+          <p className="mb-4 text-[11px] font-bold tracking-[0.25em] text-foreground/75 sm:text-xs sm:tracking-[0.42em]">
             UNDERGROUND STREETWEAR
           </p>
-          <h1 className="text-[clamp(5rem,20vw,15rem)] font-bold leading-[0.72] tracking-[-0.1em] logo-oblique sm:text-[clamp(8rem,22vw,15rem)] lg:text-[15rem]">
+          <h1 className="text-[clamp(3rem,18vw,15rem)] leading-[0.72] tracking-[-0.1em] logo-oblique sm:text-[clamp(5rem,20vw,15rem)] lg:text-[15rem]">
             DYDALO
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
@@ -449,12 +218,9 @@ export default function HomePage() {
             size="hero"
             className="mt-10 w-full max-w-sm"
           >
-            <button
-              type="button"
-              onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              VER CATÁLOGO <ArrowDownRight />
-            </button>
+            <Link href="/catalogo">
+              VER CATÁLOGO <ArrowUpRight />
+            </Link>
           </Button>
         </div>
       </section>
@@ -475,7 +241,7 @@ export default function HomePage() {
         id="manifesto"
         className="asphalt grid min-h-[55vh] items-center gap-10 border-b border-border section-px py-24 md:grid-cols-12"
       >
-        <p className="text-6xl font-bold uppercase leading-[0.85] tracking-[-0.06em] text-foreground md:col-span-4 md:text-8xl">
+        <p className="text-4xl font-bold uppercase leading-[0.85] tracking-[-0.06em] text-foreground sm:text-5xl md:col-span-4 md:text-7xl md:text-8xl">
           make it
           <br />
           look dydalo.
@@ -492,46 +258,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="catalogo" className="section-px py-20">
-        <div className="mb-12 flex flex-col justify-between gap-8 md:flex-row md:items-end">
-          <div>
-            <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">
-              new drop
-            </p>
-            <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
-              EL CATÁLOGO
-            </h2>
-          </div>
-          <div
-            className="flex flex-wrap gap-2"
-            role="group"
-            aria-label="Filtrar productos"
-          >
-            {['Todo', 'Ropa', 'Accesorios', 'Bling', 'Calzado'].map(
-              (category) => (
-                <Button
-                  key={category}
-                  variant={filter === category ? 'default' : 'street'}
-                  size="sm"
-                  onClick={() => setFilter(category)}
-                  className="uppercase tracking-[0.12em]"
-                >
-                  {category}
-                </Button>
-              ),
-            )}
-          </div>
+      <section className="section-px py-20">
+        <div id="lo-ultimo" className="mb-12 scroll-mt-20">
+          <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">
+            new drop
+          </p>
+          <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
+            LO ÚLTIMO
+          </h2>
         </div>
 
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleProducts.length === 0 ? (
-            <div className="col-span-full py-20 text-center">
-              <p className="text-sm text-muted-foreground">
-                No se encontraron productos en esta categoría.
-              </p>
-            </div>
-          ) : (
-            visibleProducts.map((product, index) => (
+          {products.slice(0, 6).map((product, index) => (
               <article key={product.id} className="group relative">
                 <button
                   type="button"
@@ -539,7 +277,7 @@ export default function HomePage() {
                   onClick={() => handleSelectProduct(product.id)}
                   aria-label={`Ver detalles de ${product.name}`}
                 >
-                  <span className="absolute left-4 top-4 z-10 bg-background/80 px-3 py-2 text-[9px] font-bold tracking-[0.2em] backdrop-blur-md">
+                  <span className="absolute left-2 top-2 z-10 bg-background/80 px-2 py-1.5 text-[10px] font-bold tracking-[0.16em] backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:py-2 sm:text-[9px] sm:tracking-[0.2em]">
                     {product.label}
                   </span>
                   <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
@@ -576,8 +314,15 @@ export default function HomePage() {
                   </p>
                 </div>
               </article>
-            ))
-          )}
+            ))}
+        </div>
+
+        <div className="mt-16 flex justify-center">
+          <Button asChild variant="hero" size="hero">
+            <Link href="/catalogo">
+              VER CATÁLOGO COMPLETO <ArrowUpRight />
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -587,7 +332,7 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 lg:flex-row lg:gap-20">
             {/* Brand */}
             <div className="shrink-0">
-              <p className="text-7xl font-bold tracking-[-0.09em] logo-oblique md:text-8xl">
+              <p className="text-7xl logo-oblique md:text-8xl">
                 DYDALO
               </p>
               <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">
@@ -682,22 +427,22 @@ export default function HomePage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const input = e.currentTarget.querySelector(
-                  'input',
-                ) as HTMLInputElement;
-                if (input.value) {
-                  alert(`¡Gracias! Te mantendremos al tanto en ${input.value}`);
-                  input.value = '';
+                const value = newsletterRef.current?.value;
+                if (value) {
+                  setNewsletterEmail(value);
+                  if (newsletterRef.current) newsletterRef.current.value = '';
                 }
               }}
-              className="flex w-full max-w-sm"
+              className="flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:gap-0"
             >
               <label htmlFor="newsletter-email" className="sr-only">
                 Correo electrónico
               </label>
               <input
                 id="newsletter-email"
+                ref={newsletterRef}
                 type="email"
+                required
                 placeholder="tu@email.com"
                 className="form-input flex-1"
               />
@@ -723,6 +468,33 @@ export default function HomePage() {
           </div>
         </section>
       </footer>
+
+      <Dialog
+        open={newsletterEmail !== null}
+        onOpenChange={() => setNewsletterEmail(null)}
+      >
+        <DialogContent className="border-border bg-background sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold uppercase tracking-tight">
+              GRACIAS
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Te mantendremos al tanto de nuevos drops y exclusivos en{" "}
+              <span className="font-bold text-foreground">
+                {newsletterEmail}
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <Button
+            variant="hero"
+            className="mt-2 w-full"
+            onClick={() => setNewsletterEmail(null)}
+          >
+            ENTENDIDO
+          </Button>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

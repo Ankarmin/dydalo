@@ -3,6 +3,8 @@ import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
+import { CartProvider } from "@/contexts/cart-context";
+import { SiteHeader } from "@/components/site-header";
 import { SocialWidget } from "@/components/SocialWidget";
 import "./globals.css";
 
@@ -77,13 +79,16 @@ export default function RootLayout({
         >
           Saltar al contenido
         </a>
-        <div id="main-content">
-          <Suspense fallback={null}>
-            <ThemeProvider>{children}</ThemeProvider>
-          </Suspense>
-        </div>
-        <Toaster />
-        <SocialWidget />
+        <ThemeProvider>
+          <CartProvider>
+            <SiteHeader />
+            <div id="main-content">
+              <Suspense fallback={null}>{children}</Suspense>
+            </div>
+            <Toaster />
+            <SocialWidget />
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
