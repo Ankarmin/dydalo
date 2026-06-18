@@ -535,7 +535,7 @@ export default function HomePage() {
               <article key={product.id} className="group relative">
                 <button
                   type="button"
-                  className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-violet focus-ring"
+                  className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
                   onClick={() => handleSelectProduct(product.id)}
                   aria-label={`Ver detalles de ${product.name}`}
                 >
