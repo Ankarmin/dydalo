@@ -2,9 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Nuestra Historia — DYDALO',
+  title: 'Nuestra Historia',
   description: 'De un sótano en Barcelona a envíos globales. La historia de DYDALO, la marca que nunca pidió permiso.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 const timeline = [
@@ -89,7 +90,7 @@ export default function NuestraHistoriaPage() {
             No lo pedimos ahora.&rdquo;
           </p>
           <Button asChild variant="hero" size="hero" className="mt-10">
-            <Link href="/">Explorar Catálogo</Link>
+            <Link href={ROUTES.home}>Explorar Catálogo</Link>
           </Button>
         </div>
       </section>

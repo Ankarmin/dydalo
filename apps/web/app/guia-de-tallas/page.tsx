@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import { Ruler } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Guía de Tallas — DYDALO',
+  title: 'Guía de Tallas',
   description: 'Que el número no te engañe. Medidas reales en cm para ropa y calzado. Encuentra tu talla exacta.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 import { GuiaTabs } from './guia-tabs';
 
@@ -62,7 +63,7 @@ export default function GuiaDeTallasPage() {
                     Escríbenos. Te ayudamos a elegir sin compromiso.
                   </p>
                   <Button variant="street" size="sm" asChild className="mt-3">
-                    <Link href="/contacto">Contacto</Link>
+                    <Link href={ROUTES.contacto}>Contacto</Link>
                   </Button>
                 </div>
               </div>

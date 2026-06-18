@@ -2,7 +2,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contacto — DYDALO',
+  title: 'Contacto',
   description: 'Háblanos directo. Sin formularios eternos, sin respuestas automáticas. Un equipo real al otro lado.',
 };
 import { ContactoForm } from './contacto-form';

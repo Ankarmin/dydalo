@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/routes";
+import { LOGO_DARK, LOGO_LIGHT } from "@/lib/constants";
 import { catalogCategories, products } from "@/data/products";
 
 function getProductCount(slug: string): number {
@@ -59,7 +62,7 @@ export function HeaderNav({
           aria-label="Navegacion principal"
         >
           <Link
-            href="/#lo-ultimo"
+            href={ROUTES.loUltimo}
             className="transition-colors hover:text-accent focus-ring"
           >
             LO ULTIMO
@@ -72,7 +75,7 @@ export function HeaderNav({
             onMouseLeave={handleMouseLeave}
           >
             <Link
-              href="/catalogo"
+              href={ROUTES.catalogo}
               role="button"
               aria-expanded={open}
               aria-haspopup="menu"
@@ -92,7 +95,7 @@ export function HeaderNav({
                   return (
                     <Link
                       key={cat.slug}
-                      href={`/catalogo/${cat.slug}`}
+                      href={ROUTES.catalogoCategory(cat.slug)}
                       role="menuitem"
                       onClick={() => setOpen(false)}
                       className={cn(
@@ -114,11 +117,12 @@ export function HeaderNav({
       </div>
 
       <Link
-        href="/"
-        className="absolute left-1/2 -translate-x-1/2 text-2xl logo-oblique focus-ring"
+        href={ROUTES.home}
+        className="absolute left-1/2 -translate-x-1/2 focus-ring"
         aria-label="DYDALO inicio"
       >
-        DYDALO
+        <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
+        <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
       </Link>
 
       <div className="flex items-center gap-2">{right}</div>

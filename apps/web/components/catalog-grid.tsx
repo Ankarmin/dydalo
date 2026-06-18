@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/routes";
+import { formatPrice } from "@/lib/format";
 import type { Product } from "@/data/products";
 
 type SortKey =
@@ -122,7 +124,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
         {sortedProducts.map((product, index) => (
           <article key={product.id} className="group relative">
             <Link
-              href={`/catalogo/${product.category}`}
+              href={ROUTES.catalogoCategory(product.category)}
               className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
               aria-label={`Ver ${product.name}`}
             >
@@ -152,7 +154,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
                 </p>
               </div>
               <p className="shrink-0 text-sm font-semibold">
-                ${product.price}
+                {formatPrice(product.price)}
               </p>
             </div>
           </article>

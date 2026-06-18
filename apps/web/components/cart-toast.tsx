@@ -2,6 +2,8 @@
 
 import { toast } from 'sonner';
 import { ShoppingBag, X } from 'lucide-react';
+import { TOAST_DURATION_MS } from '@/lib/constants';
+import { formatPrice } from '@/lib/format';
 
 export function showCartToast(productName: string, price: number) {
   toast.custom(
@@ -23,7 +25,7 @@ export function showCartToast(productName: string, price: number) {
             {productName}
           </p>
           <p className="mt-1 text-[10px] font-bold tracking-[0.2em] text-muted-foreground">
-            ${price}
+            {formatPrice(price)}
           </p>
         </div>
 
@@ -41,7 +43,7 @@ export function showCartToast(productName: string, price: number) {
       </div>
     ),
     {
-      duration: 3000,
+      duration: TOAST_DURATION_MS,
       position: 'bottom-right',
     }
   );

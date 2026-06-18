@@ -2,9 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FAQ — DYDALO',
+  title: 'FAQ',
   description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios y pagos en DYDALO.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 import { FaqAccordion } from './faq-accordion';
 
@@ -40,7 +41,7 @@ export default function FaqPage() {
             Escríbenos y te respondemos en menos de 24h.
           </p>
           <Button variant="hero" size="hero" className="mt-8" asChild>
-            <Link href="/contacto">Contacto</Link>
+            <Link href={ROUTES.contacto}>Contacto</Link>
           </Button>
         </div>
       </section>

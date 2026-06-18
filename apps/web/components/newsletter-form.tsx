@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export function NewsletterForm({
   id = "newsletter-email",
@@ -14,6 +14,7 @@ export function NewsletterForm({
   buttonText?: string;
 }) {
   const [submitted, setSubmitted] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   if (submitted) {
     return (
@@ -37,10 +38,10 @@ export function NewsletterForm({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const input = e.currentTarget.querySelector("input") as HTMLInputElement;
-          if (input.value) {
+          const email = inputRef.current?.value ?? "";
+          if (email) {
             setSubmitted(true);
-            input.value = "";
+            if (inputRef.current) inputRef.current.value = "";
           }
         }}
         className="flex w-full max-w-sm"
@@ -52,6 +53,7 @@ export function NewsletterForm({
           id={id}
           type="email"
           placeholder="tu@email.com"
+          ref={inputRef}
           className="form-input flex-1"
         />
         <button type="submit" className="newsletter-btn">

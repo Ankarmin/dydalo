@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, ChevronDown, Menu, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -21,7 +22,9 @@ import { useCart } from "@/contexts/cart-context";
 import { catalogCategories, products } from "@/data/products";
 import { socialLinks } from "@/lib/social-links";
 import { socialPresentation } from "@/lib/social-presentation";
+import { LOGO_DARK, LOGO_LIGHT } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/routes";
 
 function getProductCount(slug: string): number {
   return products.filter((p) => p.category === slug).length;
@@ -48,14 +51,15 @@ export function SiteHeader() {
           </SheetTrigger>
           <SheetContent side="left" className="flex w-full flex-col border-border bg-background p-0 sm:max-w-sm">
             <SheetHeader className="border-b border-border px-6 py-6 text-left">
-              <SheetTitle className="text-2xl logo-oblique">
-                DYDALO
+              <SheetTitle>
+                <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
+                <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
               </SheetTitle>
             </SheetHeader>
             <nav className="flex-1 overflow-y-auto px-4 py-4" aria-label="Menu movil">
               <SheetClose asChild>
                 <Link
-                  href="/#lo-ultimo"
+                  href={ROUTES.loUltimo}
                   className="flex items-center py-4 text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-accent"
                 >
                   LO ULTIMO
@@ -82,7 +86,7 @@ export function SiteHeader() {
                       return (
                         <SheetClose key={cat.slug} asChild>
                           <Link
-                            href={`/catalogo/${cat.slug}`}
+                            href={ROUTES.catalogoCategory(cat.slug)}
                             className={cn(
                               "flex items-center justify-between rounded-sm px-3 py-2.5 text-xs uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 hover:text-accent",
                               count === 0 && "pointer-events-none opacity-40",
@@ -208,7 +212,7 @@ export function SiteHeader() {
                               {product.name}
                             </h3>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              ${product.price}
+                              {formatPrice(product.price)}
                             </p>
                           </div>
                           <div className="flex items-center justify-between">
@@ -236,7 +240,7 @@ export function SiteHeader() {
                               </Button>
                             </div>
                             <p className="text-sm font-bold">
-                              ${product.price * quantity}
+                              {formatPrice(product.price * quantity)}
                             </p>
                           </div>
                         </div>
@@ -253,7 +257,7 @@ export function SiteHeader() {
                       SUBTOTAL
                     </p>
                     <p className="mt-1 text-3xl font-bold tracking-tight">
-                      ${subtotal}
+                      {formatPrice(subtotal)}
                     </p>
                   </div>
                   <p className="text-right text-[10px] leading-4 text-muted-foreground">

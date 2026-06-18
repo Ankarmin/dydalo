@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ROUTES } from "@/lib/routes";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogGrid } from "@/components/catalog-grid";
@@ -17,7 +18,7 @@ export async function generateMetadata({
   const category = catalogCategories.find((c) => c.slug === slug);
   if (!category) return {};
   return {
-    title: `${category.name} — DYDALO`,
+    title: category.name,
     description: `Explora nuestra colección de ${category.name.toLowerCase()} DYDALO. Prendas diseñadas para un flow sin límites.`,
   };
 }
@@ -61,7 +62,7 @@ export default async function CategoriaPage({
               Pronto llegara nuevo stock.
             </p>
             <Link
-              href="/catalogo"
+              href={ROUTES.catalogo}
               className="mt-6 inline-flex items-center gap-2 border-b border-accent pb-1 text-xs font-bold uppercase tracking-[0.2em] text-accent transition-colors hover:text-accent/80"
             >
               Ver catalogo completo

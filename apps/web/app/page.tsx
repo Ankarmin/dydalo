@@ -15,9 +15,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { formatPrice } from '@/lib/format';
 import { showCartToast } from '@/components/cart-toast';
 import { products } from '@/data/products';
 import { useCart } from '@/contexts/cart-context';
+import { FEATURED_PRODUCTS_COUNT, LOGO_DARK, LOGO_LIGHT } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ROUTES } from '@/lib/routes';
 
 export default function HomePage() {
   const { updateQuantity } = useCart();
@@ -114,7 +117,7 @@ export default function HomePage() {
                         {selectedProduct.type}
                       </p>
                       <p className="mt-3 text-xl font-bold">
-                        ${selectedProduct.price}
+                        {formatPrice(selectedProduct.price)}
                       </p>
                     </div>
 
@@ -202,12 +205,13 @@ export default function HomePage() {
           className="absolute inset-0 -z-20 size-full object-cover opacity-55"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/20 via-background/25 to-background" />
-        <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
+        <div className="relative z-10 flex w-full max-w-7xl flex-col items-center">
           <p className="mb-4 text-[11px] font-bold tracking-[0.25em] text-foreground/75 sm:text-xs sm:tracking-[0.42em]">
             UNDERGROUND STREETWEAR
           </p>
-          <h1 className="text-[clamp(3rem,18vw,15rem)] leading-[0.72] tracking-[-0.1em] logo-oblique sm:text-[clamp(5rem,20vw,15rem)] lg:text-[15rem]">
-            DYDALO
+          <h1 className="w-full flex justify-center">
+            <Image src={LOGO_DARK} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-dark" />
+            <Image src={LOGO_LIGHT} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-light" />
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
             THE REAL CREAM
@@ -218,7 +222,7 @@ export default function HomePage() {
             size="hero"
             className="mt-10 w-full max-w-sm"
           >
-            <Link href="/catalogo">
+            <Link href={ROUTES.catalogo}>
               VER CATÁLOGO <ArrowUpRight />
             </Link>
           </Button>
@@ -269,7 +273,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {products.slice(0, 6).map((product, index) => (
+          {products.slice(0, FEATURED_PRODUCTS_COUNT).map((product, index) => (
               <article key={product.id} className="group relative">
                 <button
                   type="button"
@@ -310,7 +314,7 @@ export default function HomePage() {
                     </p>
                   </div>
                   <p className="shrink-0 text-sm font-semibold">
-                    ${product.price}
+                    {formatPrice(product.price)}
                   </p>
                 </div>
               </article>
@@ -319,7 +323,7 @@ export default function HomePage() {
 
         <div className="mt-16 flex justify-center">
           <Button asChild variant="hero" size="hero">
-            <Link href="/catalogo">
+            <Link href={ROUTES.catalogo}>
               VER CATÁLOGO COMPLETO <ArrowUpRight />
             </Link>
           </Button>
@@ -332,9 +336,8 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 lg:flex-row lg:gap-20">
             {/* Brand */}
             <div className="shrink-0">
-              <p className="text-7xl logo-oblique md:text-8xl">
-                DYDALO
-              </p>
+              <Image src={LOGO_DARK} alt="DYDALO" width={275} height={64} className="h-14 w-auto md:h-16 logo-dark" />
+              <Image src={LOGO_LIGHT} alt="DYDALO" width={275} height={64} className="h-14 w-auto md:h-16 logo-light" />
               <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">
                 el estilo no se impone,
                 <br />
@@ -367,7 +370,7 @@ export default function HomePage() {
                 <ul className="mt-4 space-y-2.5">
                   <li>
                     <Link
-                      href="/sobre-nosotros"
+                      href={ROUTES.sobreNosotros}
                       className="footer-link"
                     >
                       Sobre Nosotros
@@ -394,11 +397,11 @@ export default function HomePage() {
                 <h4 className="heading-label">Soporte</h4>
                 <ul className="mt-4 space-y-2.5">
                   {[
-                    { label: 'Contacto', href: '/contacto' },
-                    { label: 'Envíos', href: '/envios' },
-                    { label: 'Devoluciones', href: '/devoluciones' },
-                    { label: 'Guía de Tallas', href: '/guia-de-tallas' },
-                    { label: 'FAQ', href: '/faq' },
+                    { label: 'Contacto', href: ROUTES.contacto },
+                    { label: 'Envíos', href: ROUTES.envios },
+                    { label: 'Devoluciones', href: ROUTES.devoluciones },
+                    { label: 'Guía de Tallas', href: ROUTES.guiaDeTallas },
+                    { label: 'FAQ', href: ROUTES.faq },
                   ].map(({ label, href }) => (
                     <li key={label}>
                       <Link

@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Devoluciones — DYDALO',
+  title: 'Devoluciones',
   description: 'Sin letra pequeña. 30 días para cambios y devoluciones gratis. Sin condiciones escondidas.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 const steps = [
@@ -119,7 +120,7 @@ export default function DevolucionesPage() {
             Escríbenos y te guiamos en el proceso.
           </p>
           <Button asChild variant="hero" size="hero" className="mt-10">
-            <Link href="/contacto">
+            <Link href={ROUTES.contacto}>
               Iniciar devolución <ArrowUpRight />
             </Link>
           </Button>

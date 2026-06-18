@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Lookbook — DYDALO',
+  title: 'Lookbook',
   description: 'Flow sin límites. Seis historias visuales que capturan la esencia de DYDALO: sin filtros, sin poses.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 import { SafeImage } from '@/components/safe-image';
 
@@ -166,7 +167,7 @@ export default function LookbookPage() {
             propia versión. El catálogo está abierto.
           </p>
           <Button asChild variant="hero" size="hero" className="mt-10">
-            <Link href="/#catalogo">
+            <Link href={ROUTES.catalogoAnchor}>
               Explorar catálogo <ArrowUpRight />
             </Link>
           </Button>

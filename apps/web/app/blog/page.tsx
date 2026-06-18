@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ROUTES } from '@/lib/routes';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog — DYDALO',
+  title: 'Blog',
   description: 'La cultura no se copia, se vive. Artículos sobre streetwear, cultura urbana y estilo.',
 };
 
@@ -91,7 +92,7 @@ export default function BlogPage() {
                   </div>
 
                   <Link
-                    href={`/blog/${post.slug}`}
+                    href={ROUTES.blogPost(post.slug)}
                     className="mt-2 text-xl font-bold uppercase tracking-tight transition-colors hover:text-accent focus-ring sm:text-2xl"
                   >
                     {post.title}
@@ -102,7 +103,7 @@ export default function BlogPage() {
                   </p>
 
                   <Link
-                    href={`/blog/${post.slug}`}
+                    href={ROUTES.blogPost(post.slug)}
                     className="mt-3 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.15em] text-accent transition-colors hover:text-accent/80 focus-ring"
                   >
                     Leer artículo

@@ -17,9 +17,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const title = postTitles[slug];
   return {
-    title: title ? `${title} — DYDALO Blog` : 'Artículo — DYDALO',
+    title: title ? `${title}` : 'Artículo',
   };
 }
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 const postContent: Record<string, { title: string; date: string; tag: string; body: string[] }> = {
@@ -87,7 +88,7 @@ export default async function BlogPostPage({
       <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-5 text-center">
         <p className="text-sm text-muted-foreground">Artículo no encontrado.</p>
         <Button variant="street" asChild>
-          <Link href="/blog">Volver al blog</Link>
+          <Link href={ROUTES.blog}>Volver al blog</Link>
         </Button>
       </main>
     );
@@ -99,7 +100,7 @@ export default async function BlogPostPage({
       <article className="section-px pb-12 pt-28 md:pb-20">
         <div className="mx-auto max-w-3xl">
           <Link
-            href="/blog"
+            href={ROUTES.blog}
             className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="size-3.5" />
@@ -134,7 +135,7 @@ export default async function BlogPostPage({
 
           <div className="mt-8">
             <Button variant="hero" size="hero" asChild>
-              <Link href="/">Explorar Catálogo</Link>
+              <Link href={ROUTES.home}>Explorar Catálogo</Link>
             </Button>
           </div>
         </div>

@@ -2,9 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros — DYDALO',
+  title: 'Sobre Nosotros',
   description: 'DYDALO es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 export default function SobreNosotrosPage() {
@@ -73,7 +74,7 @@ export default function SobreNosotrosPage() {
           {/* ── CTA ── */}
           <div className="mt-8">
             <Button variant="hero" size="hero" asChild>
-              <Link href="/">Explorar Colecciones</Link>
+              <Link href={ROUTES.home}>Explorar Colecciones</Link>
             </Button>
           </div>
         </div>

@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Envíos — DYDALO',
+  title: 'Envíos',
   description: 'De la calle a tu casa. Express, estándar e internacional. Envíos gratis en pedidos superiores a $150.',
 };
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 const steps = [
@@ -147,7 +148,7 @@ export default function EnviosPage() {
             ¿Listo para tu próximo envío?
           </p>
           <Button asChild variant="hero" size="hero" className="mt-10">
-            <Link href="/#catalogo">
+            <Link href={ROUTES.catalogoAnchor}>
               Ir al catálogo <ArrowUpRight />
             </Link>
           </Button>

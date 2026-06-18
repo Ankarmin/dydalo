@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { Send } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 
 const reasons = ['Pedido', 'Devolución', 'Prensa', 'Colaboración', 'Otro'];
@@ -10,11 +11,11 @@ const reasons = ['Pedido', 'Devolución', 'Prensa', 'Colaboración', 'Otro'];
 export function ContactoForm() {
   const [selectedReason, setSelectedReason] = useState('Pedido');
   const [submitted, setSubmitted] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const email = emailRef.current?.value ?? '';
     if (!email) return;
     setSubmitted(true);
   };
@@ -30,13 +31,13 @@ export function ContactoForm() {
         </h2>
         <p className="mt-3 max-w-sm text-sm text-muted-foreground">
           Te respondemos en menos de 24 horas. Mientras tanto, revisa nuestra{' '}
-          <Link href="/faq" className="text-accent hover:underline">
+          <Link href={ROUTES.faq} className="text-accent hover:underline">
             FAQ
           </Link>
           .
         </p>
         <Button variant="street" asChild className="mt-6">
-          <Link href="/">Volver al inicio</Link>
+          <Link href={ROUTES.home}>Volver al inicio</Link>
         </Button>
       </div>
     );
@@ -90,6 +91,7 @@ export function ContactoForm() {
           </label>
           <input
             id="contact-email"
+            ref={emailRef}
             name="email"
             type="email"
             placeholder="tu@email.com"

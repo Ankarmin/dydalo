@@ -2,7 +2,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Colaboraciones — DYDALO',
+  title: 'Colaboraciones',
   description: 'Juntos rompemos el molde. Conoce las colaboraciones de DYDALO con artistas, marcas y festivales.',
 };
 import { NewsletterForm } from '@/components/newsletter-form';

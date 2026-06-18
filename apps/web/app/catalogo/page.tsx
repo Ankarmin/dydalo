@@ -3,7 +3,7 @@ import { CatalogGrid } from "@/components/catalog-grid";
 import { products } from "@/data/products";
 
 export const metadata: Metadata = {
-  title: "Catálogo — DYDALO",
+  title: "Catálogo",
   description:
     "Explora el catálogo completo de DYDALO. Polos, sets, casacas, hoodies, pantalones, jeans, camisas, tanks, básicos y accesorios.",
 };
