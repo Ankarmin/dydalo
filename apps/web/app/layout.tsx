@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { CartProvider } from "@/contexts/cart-context";
 import { SiteHeader } from "@/components/site-header";
 import { SocialWidget } from "@/components/SocialWidget";
+import { SITE_NAME, SITE_DEFAULT_TITLE, SITE_DESCRIPTION, BRAND_SUBTITLE, FALLBACK_IMAGE, THEME_STORAGE_KEY } from "@/lib/constants";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -17,23 +18,17 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://dydalo.com"),
-  title: "DYDALO — Streetwear premium underground",
-  description:
-    "Streetwear premium y exclusivo. El estilo no se impone, se elige. Descubre el catálogo DYDALO.",
-  authors: [{ name: "DYDALO" }],
-  icons: {
-    icon: [
-      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
-      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-    ],
-    apple: "/apple-touch-icon.png",
+  title: {
+    template: `%s — ${SITE_NAME}`,
+    default: SITE_DEFAULT_TITLE,
   },
-  manifest: "/site.webmanifest",
+  description: `${SITE_DESCRIPTION} Descubre el catálogo ${SITE_NAME}.`,
+  authors: [{ name: SITE_NAME }],
   openGraph: {
-    title: "DYDALO — The Real Cream",
-    description: "Streetwear premium y exclusivo para un flow sin límites.",
+    title: `${SITE_NAME} — ${BRAND_SUBTITLE}`,
+    description: SITE_DESCRIPTION,
     type: "website",
-    images: [{ url: "/images/dydalo-hero.jpg", width: 1200, height: 630 }],
+    images: [{ url: FALLBACK_IMAGE, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary",
@@ -56,12 +51,22 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-dark-16x16.png" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-light-16x16.png" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-dark-32x32.png" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-light-32x32.png" media="(prefers-color-scheme: light)" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon-dark.png" media="(prefers-color-scheme: dark)" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon-light.png" media="(prefers-color-scheme: light)" />
+        <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" href="/favicon-light.ico" media="(prefers-color-scheme: light)" />
+        <link rel="manifest" href="/site-dark.webmanifest" media="(prefers-color-scheme: dark)" />
+        <link rel="manifest" href="/site-light.webmanifest" media="(prefers-color-scheme: light)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function(){
                 try{
-                  var t=localStorage.getItem('dydalo-theme');
+                  var t=localStorage.getItem('${THEME_STORAGE_KEY}');
                   if(!t){
                     t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
                   }
