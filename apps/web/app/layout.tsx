@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/lib/theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -37,7 +38,25 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${spaceGrotesk.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                try{
+                  var t=localStorage.getItem('dydalo-theme');
+                  if(!t){
+                    t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+                  }
+                  document.documentElement.setAttribute('data-theme',t);
+                }catch(e){}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <a
           href="#main-content"
@@ -47,7 +66,7 @@ export default function RootLayout({
         </a>
         <div id="main-content">
           <Suspense fallback={null}>
-            {children}
+            <ThemeProvider>{children}</ThemeProvider>
           </Suspense>
         </div>
         <Toaster />

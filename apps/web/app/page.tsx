@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { showCartToast } from '@/components/cart-toast';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { products } from '@/data/products';
 
 export default function HomePage() {
@@ -114,6 +115,7 @@ export default function HomePage() {
           </button>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Sheet>
             <SheetTrigger asChild>
               <Button
