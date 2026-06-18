@@ -3,6 +3,7 @@ import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
+import { SocialWidget } from "@/components/SocialWidget";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -82,6 +83,7 @@ export default function RootLayout({
           </Suspense>
         </div>
         <Toaster />
+        <SocialWidget />
       </body>
     </html>
   );
