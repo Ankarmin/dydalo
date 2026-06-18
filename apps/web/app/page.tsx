@@ -89,7 +89,7 @@ export default function HomePage() {
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="text-2xl font-bold tracking-[-0.08em] focus-ring"
+          className="text-2xl font-bold tracking-[-0.08em] logo-oblique focus-ring"
           aria-label="DYDALO inicio"
         >
           DYDALO
@@ -437,7 +437,7 @@ export default function HomePage() {
           <p className="mb-4 text-[10px] font-bold tracking-[0.42em] text-foreground/75 md:text-xs">
             UNDERGROUND STREETWEAR
           </p>
-          <h1 className="text-[clamp(5rem,20vw,15rem)] font-bold leading-[0.72] tracking-[-0.1em] sm:text-[clamp(8rem,22vw,15rem)] lg:text-[15rem]">
+          <h1 className="text-[clamp(5rem,20vw,15rem)] font-bold leading-[0.72] tracking-[-0.1em] logo-oblique sm:text-[clamp(8rem,22vw,15rem)] lg:text-[15rem]">
             DYDALO
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
@@ -587,7 +587,7 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-6xl flex-col justify-between gap-12 lg:flex-row lg:gap-20">
             {/* Brand */}
             <div className="shrink-0">
-              <p className="text-7xl font-bold tracking-[-0.09em] md:text-8xl">
+              <p className="text-7xl font-bold tracking-[-0.09em] logo-oblique md:text-8xl">
                 DYDALO
               </p>
               <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">

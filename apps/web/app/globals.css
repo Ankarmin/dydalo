@@ -381,6 +381,10 @@
   }
 }
 
+@utility logo-oblique {
+  font-style: oblique 14deg;
+}
+
 @media print {
   header, footer, .no-print { display: none !important; }
 }
