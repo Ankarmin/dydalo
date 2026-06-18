@@ -1,16 +1,33 @@
-'use client';
+"use client";
+
+import { useState } from "react";
 
 export function NewsletterForm({
-  id = 'newsletter-email',
-  title = 'Próximas colaboraciones',
-  description = 'Sé el primero en enterarte de nuevas colaboraciones y drops exclusivos.',
-  buttonText = 'Suscribir',
+  id = "newsletter-email",
+  title = "Proximas colaboraciones",
+  description = "Se el primero en enterarte de nuevas colaboraciones y drops exclusivos.",
+  buttonText = "Suscribir",
 }: {
   id?: string;
   title?: string;
   description?: string;
   buttonText?: string;
 }) {
+  const [submitted, setSubmitted] = useState(false);
+
+  if (submitted) {
+    return (
+      <div className="text-center">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent">
+          Gracias
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Te avisaremos cuando haya novedades.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
       <div className="text-center md:text-left">
@@ -20,16 +37,16 @@ export function NewsletterForm({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const input = e.currentTarget.querySelector('input') as HTMLInputElement;
+          const input = e.currentTarget.querySelector("input") as HTMLInputElement;
           if (input.value) {
-            alert(`¡Gracias! Te avisaremos en ${input.value} cuando haya novedades.`);
-            input.value = '';
+            setSubmitted(true);
+            input.value = "";
           }
         }}
         className="flex w-full max-w-sm"
       >
         <label htmlFor={id} className="sr-only">
-          Correo electrónico
+          Correo electronico
         </label>
         <input
           id={id}
@@ -37,10 +54,7 @@ export function NewsletterForm({
           placeholder="tu@email.com"
           className="form-input flex-1"
         />
-        <button
-          type="submit"
-          className="newsletter-btn"
-        >
+        <button type="submit" className="newsletter-btn">
           {buttonText}
         </button>
       </form>

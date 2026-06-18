@@ -137,7 +137,7 @@ export function FaqAccordion() {
                       isOpen ? 'max-h-96 pb-5' : 'max-h-0'
                     }`}
                   >
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <p className="body-sm">
                       {faq.answer}
                     </p>
                   </div>
