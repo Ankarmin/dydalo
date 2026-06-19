@@ -2,14 +2,16 @@
 
 import { toast } from "sonner";
 import { User, LogOut, ShoppingBag, X } from "lucide-react";
-import { TOAST_DURATION_MS } from "@/lib/constants";
+import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from "@/lib/constants";
 
-const FAVORITE = "bg-favorite border-favorite";
-const MUTED = "bg-muted-foreground border-muted-foreground";
+const FAVORITE = { bg: "bg-favorite", border: "border-favorite" } as const;
+const MUTED = { bg: "bg-muted-foreground", border: "border-muted-foreground" } as const;
+
+type Accent = { bg: string; border: string };
 
 function notify(
   icon: React.ReactNode,
-  accentClass: string,
+  accent: Accent,
   title: string,
   description?: string,
 ) {
@@ -20,11 +22,11 @@ function notify(
         onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
         className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentClass.split(" ")[0]}`} />
+        <div className={`absolute left-0 top-0 bottom-0 w-1 ${accent.bg}`} />
 
-        <div className={`relative flex size-10 shrink-0 items-center justify-center border ${accentClass} ${accentClass.split(" ")[0]}/10`}>
+        <div className={`relative flex size-10 shrink-0 items-center justify-center border ${accent.bg} ${accent.border} ${accent.bg}/10`}>
           {icon}
-          <span className={`absolute -right-1 -top-1 size-3 animate-pulse ${accentClass.split(" ")[0]}`} />
+          <span className={`absolute -right-1 -top-1 size-3 animate-pulse ${accent.bg}`} />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -38,13 +40,13 @@ function notify(
 
         <button
           onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
-          aria-label="Cerrar notificación"
+          aria-label={TOAST_CLOSE_LABEL}
           className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >
           <X className="size-3.5" />
         </button>
 
-        <div className={`absolute bottom-0 left-0 h-0.5 w-full ${accentClass.split(" ")[0]} origin-left animate-shimmer`} />
+        <div className={`absolute bottom-0 left-0 h-0.5 w-full ${accent.bg} origin-left animate-shimmer`} />
       </div>
     ),
     {

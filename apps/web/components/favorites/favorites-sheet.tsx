@@ -7,6 +7,7 @@ import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/format";
+import { FALLBACK_IMAGE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -80,7 +81,7 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
                     <Image
                       src={
                         brokenImages.has(product.id)
-                          ? "/images/dydalo-hero.jpg"
+                          ? FALLBACK_IMAGE
                           : product.image
                       }
                       alt={product.name}

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 import { formatPrice } from "@/lib/format";
 import { showCartToast } from "@/components/cart-toast";
 import { useCart } from "@/contexts/cart-context";
+import { FALLBACK_IMAGE } from "@/lib/constants";
 import { products, type Product } from "@/data/products";
 
 interface ProductDetailSheetProps {
@@ -71,18 +72,20 @@ export function ProductDetailSheet({
     handleOpenChange(false);
   };
 
+  const handleInteractOutside = useCallback((e: Event) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-toast-notification]")) {
+      e.preventDefault();
+    }
+  }, []);
+
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent
         side="right"
         className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
-        onInteractOutside={(e) => {
-          const target = e.target as HTMLElement;
-          if (target.closest("[data-toast-notification]")) {
-            e.preventDefault();
-          }
-        }}
+        onInteractOutside={handleInteractOutside}
       >
         {product && (
           <>
@@ -95,7 +98,7 @@ export function ProductDetailSheet({
 
             <div className="relative aspect-[4/3] w-full overflow-hidden">
               <Image
-                src={brokenImages ? "/images/dydalo-hero.jpg" : product.image}
+                src={brokenImages ? FALLBACK_IMAGE : product.image}
                 alt={product.name}
                 width={1024}
                 height={768}
@@ -139,7 +142,9 @@ export function ProductDetailSheet({
                         key={size}
                         type="button"
                         onClick={() => setSelectedSize(size)}
-                        className={`flex h-10 min-w-[3rem] items-center justify-center border px-3 text-xs font-bold uppercase transition-colors ${
+                        aria-pressed={selectedSize === size}
+                        aria-label={`Talla ${size}`}
+                        className={`flex h-10 min-w-12 items-center justify-center border px-3 text-xs font-bold uppercase transition-colors ${
                           selectedSize === size
                             ? "border-accent bg-accent text-accent-foreground"
                             : "border-border hover:border-muted-foreground"
@@ -162,9 +167,12 @@ export function ProductDetailSheet({
                       key={color.name}
                       type="button"
                       onClick={() => setSelectedColor(color.name)}
+                      aria-pressed={selectedColor === color.name}
+                      aria-label={`Color ${color.name}`}
                       className="flex items-center gap-2"
                     >
                       <span
+                        aria-hidden="true"
                         className={`size-7 rounded-full border-2 transition-colors ${
                           selectedColor === color.name
                             ? "border-accent"

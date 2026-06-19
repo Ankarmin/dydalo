@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 import { ShoppingBag, X } from 'lucide-react';
-import { TOAST_DURATION_MS } from '@/lib/constants';
+import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from '@/lib/constants';
 import { formatPrice } from '@/lib/format';
 
 export function showCartToast(productName: string, price: number) {
@@ -36,7 +36,7 @@ export function showCartToast(productName: string, price: number) {
         {/* Close */}
         <button
           onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
-          aria-label="Cerrar notificación"
+          aria-label={TOAST_CLOSE_LABEL}
           className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >
           <X className="size-3.5" />

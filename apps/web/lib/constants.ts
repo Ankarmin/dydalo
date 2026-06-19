@@ -22,3 +22,5 @@ export const THEME_STORAGE_KEY = "dydalo-theme";
 export const FEATURED_PRODUCTS_COUNT = 6;
 
 export const TOAST_DURATION_MS = 3000;
+
+export const TOAST_CLOSE_LABEL = "Cerrar notificación";
