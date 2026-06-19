@@ -101,12 +101,12 @@ export default async function BlogPostPage({
         <div className="mx-auto max-w-3xl">
           <Link
             href={ROUTES.blog}
-            className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-accent"
+            className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-micro text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="size-3.5" />
             Blog
           </Link>
-          <div className="flex items-center gap-4 micro-text uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="flex items-center gap-4 micro-text uppercase tracking-micro text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="size-3" />
               {post.date}
@@ -117,7 +117,7 @@ export default async function BlogPostPage({
             </span>
           </div>
 
-          <h1 className="mt-6 text-4xl font-bold uppercase leading-[0.95] tracking-[-0.03em] md:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold uppercase leading-[0.95] tracking-heading md:text-5xl lg:text-6xl">
             {post.title}
           </h1>
 

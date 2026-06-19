@@ -15,7 +15,7 @@ export default function CatalogoPage() {
         <h1 className="text-2xl font-bold uppercase tracking-tight">
           CATÁLOGO DYDALO
         </h1>
-        <p className="mt-1 text-xs font-bold tracking-[0.2em] text-muted-foreground">
+        <p className="mt-1 text-xs font-bold tracking-micro text-muted-foreground">
           {products.length} {products.length === 1 ? "producto" : "productos"}{" "}
           · {10} categorías
         </p>

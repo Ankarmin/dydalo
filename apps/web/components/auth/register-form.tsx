@@ -43,7 +43,7 @@ export function RegisterForm() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-[-0.03em]">
+        <h1 className="text-2xl font-bold tracking-heading">
           CREAR CUENTA
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -165,7 +165,7 @@ export function RegisterForm() {
 
       <div className="relative">
         <Separator />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 micro-text font-bold uppercase tracking-micro text-muted-foreground">
           O
         </span>
       </div>

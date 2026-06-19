@@ -97,7 +97,7 @@ export default function LookbookPage() {
             <br />
             Es cómo lo llevas.&rdquo;
           </p>
-          <p className="mt-4 text-xs font-bold uppercase tracking-[0.22em] text-accent">
+          <p className="mt-4 text-xs font-bold uppercase tracking-subhead text-accent">
             — Manifiesto DYDALO
           </p>
         </div>
@@ -136,10 +136,10 @@ export default function LookbookPage() {
                   </span>
 
                   <div className="-mt-4 md:-mt-6">
-                    <p className="text-xs font-bold tracking-[0.22em] text-accent">
+                    <p className="text-xs font-bold tracking-subhead text-accent">
                       {spread.category}
                     </p>
-                    <h2 className="mt-3 text-3xl font-bold uppercase leading-[0.92] tracking-[-0.03em] md:text-5xl">
+                    <h2 className="mt-3 text-3xl font-bold uppercase leading-[0.92] tracking-heading md:text-5xl">
                       {spread.title}
                     </h2>
                     <p className="mt-5 max-w-md body-text">

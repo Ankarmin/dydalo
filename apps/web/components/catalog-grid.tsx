@@ -72,7 +72,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
             aria-haspopup="listbox"
             aria-expanded={open}
             aria-label={`Ordenar: ${activeLabel}`}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-2 text-xs font-bold uppercase tracking-nav text-muted-foreground transition-colors hover:text-foreground"
           >
             {activeLabel}
             <ChevronDown

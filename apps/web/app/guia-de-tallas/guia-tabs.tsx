@@ -40,7 +40,7 @@ export function GuiaTabs() {
             onClick={() => setActiveTab(tab)}
             role="tab"
             aria-selected={activeTab === tab}
-            className="uppercase tracking-[0.12em]"
+            className="uppercase tracking-dropdown"
           >
             {tab}
           </Button>
@@ -51,13 +51,13 @@ export function GuiaTabs() {
         <table className="w-full border border-border text-left">
           <thead>
             <tr className="border-b border-border bg-secondary/30">
-              <th className="px-5 py-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <th className="px-5 py-3 micro-text font-bold uppercase tracking-micro text-muted-foreground">
                 Talla
               </th>
               {medidas.map((medida) => (
                 <th
                   key={medida}
-                  className="px-5 py-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                  className="px-5 py-3 micro-text font-bold uppercase tracking-micro text-muted-foreground"
                 >
                   {medida}
                 </th>

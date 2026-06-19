@@ -19,7 +19,7 @@ export function NewsletterForm({
   if (submitted) {
     return (
       <div className="text-center">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-accent">
+        <p className="text-sm font-bold uppercase tracking-micro text-accent">
           Gracias
         </p>
         <p className="mt-1 text-sm text-muted-foreground">

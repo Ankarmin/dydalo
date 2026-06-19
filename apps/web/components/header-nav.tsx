@@ -118,7 +118,7 @@ export function HeaderNav({
                       role="menuitem"
                       onClick={() => setCatalogoOpen(false)}
                       className={cn(
-                        "flex items-center justify-between rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors hover:bg-accent hover:text-accent-foreground",
+                        "flex items-center justify-between rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-nav transition-colors hover:bg-accent hover:text-accent-foreground",
                         count === 0 && "pointer-events-none opacity-40",
                       )}
                     >
@@ -168,7 +168,7 @@ export function HeaderNav({
                     href={item.href}
                     role="menuitem"
                     onClick={() => setMarcaOpen(false)}
-                    className="flex items-center rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors hover:bg-accent hover:text-accent-foreground"
+                    className="flex items-center rounded-sm px-3 py-2 text-xs font-bold uppercase tracking-nav transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {item.label}
                   </Link>

@@ -86,7 +86,7 @@ export function FaqAccordion() {
             }}
             role="tab"
             aria-selected={activeCategory === category}
-            className="uppercase tracking-[0.12em]"
+            className="uppercase tracking-dropdown"
           >
             {category}
           </Button>

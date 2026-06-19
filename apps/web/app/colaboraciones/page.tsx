@@ -97,7 +97,7 @@ export default function ColaboracionesPage() {
                 </div>
 
                 <div className="mt-5 flex flex-1 flex-col">
-                  <p className="micro-text font-bold uppercase tracking-[0.22em] text-accent">
+                  <p className="micro-text font-bold uppercase tracking-subhead text-accent">
                     {collab.partner}
                   </p>
                   <h2 className="mt-2 text-xl font-bold uppercase tracking-tight">

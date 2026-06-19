@@ -24,7 +24,7 @@ export function FavoritesPageClient() {
           className="mb-5 size-16 text-muted-foreground"
           strokeWidth={1}
         />
-        <h1 className="text-2xl font-bold tracking-[-0.03em]">FAVORITOS</h1>
+        <h1 className="text-2xl font-bold tracking-heading">FAVORITOS</h1>
         <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">
           No tienes productos guardados. Explora el catálogo y guarda los que te gusten tocando el corazón.
         </p>
@@ -39,7 +39,7 @@ export function FavoritesPageClient() {
     <main className="mx-auto max-w-6xl section-px page-top page-bottom">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-[-0.03em]">FAVORITOS</h1>
+          <h1 className="text-2xl font-bold tracking-heading">FAVORITOS</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {favoritesCount} producto{favoritesCount > 1 ? "s" : ""} guardado{favoritesCount > 1 ? "s" : ""}
           </p>

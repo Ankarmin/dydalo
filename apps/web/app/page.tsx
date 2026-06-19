@@ -94,7 +94,7 @@ export default function HomePage() {
 
       <section className="section-px section-lg">
         <div id="lo-ultimo" className="mb-12 scroll-mt-20">
-          <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">
+          <p className="mb-3 text-base font-bold uppercase tracking-subhead text-accent">
             new drop
           </p>
           <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
@@ -177,7 +177,7 @@ export default function HomePage() {
             <div className="shrink-0">
               <Image src={LOGO_DARK} alt="DYDALO" width={275} height={64} className="h-14 w-auto md:h-16 logo-dark" />
               <Image src={LOGO_LIGHT} alt="DYDALO" width={275} height={64} className="h-14 w-auto md:h-16 logo-light" />
-              <p className="mt-6 max-w-xs text-base font-bold tracking-[0.22em] text-accent">
+              <p className="mt-6 max-w-xs text-base font-bold tracking-subhead text-accent">
                 el estilo no se impone,
                 <br />
                 se elige.
@@ -300,7 +300,7 @@ export default function HomePage() {
 
         {/* ── Bottom bar ── */}
         <section className="border-t border-border section-px py-6">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 micro-text uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 micro-text uppercase tracking-micro text-muted-foreground sm:flex-row">
             <p>© 2026 DYDALO — Todos los derechos reservados.</p>
             <div className="flex gap-6">
               <span className="text-muted-foreground">Términos</span>

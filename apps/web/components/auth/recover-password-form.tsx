@@ -43,7 +43,7 @@ export function RecoverPasswordForm() {
       <div className="space-y-6 text-center">
         <Mail className="mx-auto size-12 text-accent" strokeWidth={1.5} />
         <div>
-          <h1 className="text-2xl font-bold tracking-[-0.03em]">
+          <h1 className="text-2xl font-bold tracking-heading">
             REVISA TU EMAIL
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ export function RecoverPasswordForm() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-[-0.03em]">
+        <h1 className="text-2xl font-bold tracking-heading">
           RECUPERAR CONTRASEÑA
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">

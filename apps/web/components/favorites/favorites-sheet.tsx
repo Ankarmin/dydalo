@@ -35,7 +35,7 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
         <SheetHeader className="border-b border-border px-6 py-6 text-left">
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">
+          <p className="text-sm font-bold uppercase tracking-subhead text-accent">
             Tu wishlist
           </p>
           <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">

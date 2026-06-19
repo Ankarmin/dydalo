@@ -65,7 +65,7 @@ export default function NuestraHistoriaPage() {
                   <span className="absolute left-0 top-0 flex size-[15px] shrink-0 -translate-x-1/2 items-center justify-center rounded-full bg-accent ring-4 ring-background" />
 
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs font-bold tracking-[0.22em] text-accent">
+                    <span className="text-xs font-bold tracking-subhead text-accent">
                       {item.year}
                     </span>
                     <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight md:text-3xl">

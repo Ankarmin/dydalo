@@ -24,7 +24,7 @@ export function showCartToast(productName: string, price: number) {
           <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wider text-foreground">
             {productName}
           </p>
-          <p className="mt-1 micro-text font-bold tracking-[0.2em] text-muted-foreground">
+          <p className="mt-1 micro-text font-bold tracking-micro text-muted-foreground">
             {formatPrice(price)}
           </p>
         </div>

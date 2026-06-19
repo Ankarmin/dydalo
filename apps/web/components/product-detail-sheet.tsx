@@ -124,7 +124,7 @@ export function ProductDetailSheet({
 
               {product.sizes && product.sizes.length > 1 && (
                 <div className="border-b border-border py-6">
-                  <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  <p className="mb-3 micro-text font-bold uppercase tracking-micro text-muted-foreground">
                     Talla
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -147,7 +147,7 @@ export function ProductDetailSheet({
               )}
 
               <div className="border-b border-border py-6">
-                <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <p className="mb-3 micro-text font-bold uppercase tracking-micro text-muted-foreground">
                   Color
                 </p>
                 <div className="flex flex-wrap gap-3">

@@ -43,7 +43,7 @@ export default async function CategoriaPage({
         <h1 className="text-2xl font-bold uppercase tracking-tight">
           {category.name}
         </h1>
-        <p className="mt-1 text-xs font-bold tracking-[0.2em] text-muted-foreground">
+        <p className="mt-1 text-xs font-bold tracking-micro text-muted-foreground">
           {categoryProducts.length}{" "}
           {categoryProducts.length === 1 ? "producto" : "productos"}
         </p>
@@ -55,7 +55,7 @@ export default async function CategoriaPage({
             <p className="text-6xl font-black text-muted-foreground/10">
               —
             </p>
-            <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="mt-6 text-sm font-bold uppercase tracking-micro text-muted-foreground">
               No hay productos en {category.name}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -63,7 +63,7 @@ export default async function CategoriaPage({
             </p>
             <Link
               href={ROUTES.catalogo}
-              className="mt-6 inline-flex items-center gap-2 border-b border-accent pb-1 text-xs font-bold uppercase tracking-[0.2em] text-accent transition-colors hover:text-accent/80"
+              className="mt-6 inline-flex items-center gap-2 border-b border-accent pb-1 text-xs font-bold uppercase tracking-micro text-accent transition-colors hover:text-accent/80"
             >
               Ver catálogo completo
             </Link>

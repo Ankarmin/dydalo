@@ -46,6 +46,11 @@
   --color-ink: var(--ink);
   --color-favorite: var(--favorite);
   --color-favorite-foreground: var(--favorite-foreground);
+  --tracking-micro: 0.2em;
+  --tracking-heading: -0.03em;
+  --tracking-subhead: 0.22em;
+  --tracking-dropdown: 0.12em;
+  --tracking-nav: 0.14em;
 }
 
 :root {

@@ -29,7 +29,7 @@ export default function CuentaLayout({
           className="w-full shrink-0 md:w-56"
           aria-label="Navegación de cuenta"
         >
-          <h2 className="mb-6 text-xl font-bold tracking-[-0.03em]">
+          <h2 className="mb-6 text-xl font-bold tracking-heading">
             MI CUENTA
           </h2>
           <div className="flex flex-row gap-2 md:flex-col">
@@ -38,7 +38,7 @@ export default function CuentaLayout({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 sm:gap-3 rounded-md px-2 sm:px-3 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 hover:text-accent",
+                  "flex items-center gap-2 sm:gap-3 rounded-md px-2 sm:px-3 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-dropdown transition-colors hover:bg-accent/10 hover:text-accent",
                 )}
               >
                 <item.icon className="size-4" />

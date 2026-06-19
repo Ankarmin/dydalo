@@ -72,7 +72,7 @@ export function SiteHeader() {
               <SheetClose asChild>
                 <Link
                   href={ROUTES.loUltimo}
-                  className="flex items-center py-4 text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-accent"
+                  className="flex items-center py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
                 >
                   LO ÚLTIMO
                 </Link>
@@ -81,7 +81,7 @@ export function SiteHeader() {
                 <button
                   type="button"
                   onClick={() => setCatalogExpanded(!catalogExpanded)}
-                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-accent"
+                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
                 >
                   CATÁLOGO DYDALO
                   <ChevronDown
@@ -100,7 +100,7 @@ export function SiteHeader() {
                           <Link
                             href={ROUTES.catalogoCategory(cat.slug)}
                             className={cn(
-                              "flex items-center justify-between rounded-sm px-3 py-2.5 text-xs uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 hover:text-accent",
+                              "flex items-center justify-between rounded-sm px-3 py-2.5 text-xs uppercase tracking-dropdown transition-colors hover:bg-accent/10 hover:text-accent",
                               count === 0 && "pointer-events-none opacity-40",
                             )}
                           >
@@ -118,7 +118,7 @@ export function SiteHeader() {
               <SheetClose asChild>
                 <Link
                   href={ROUTES.lookbook}
-                  className="flex items-center border-t border-border py-4 text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-accent"
+                  className="flex items-center border-t border-border py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
                 >
                   LOOKBOOK
                 </Link>
@@ -127,7 +127,7 @@ export function SiteHeader() {
                 <button
                   type="button"
                   onClick={() => setMarcaExpanded(!marcaExpanded)}
-                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-[0.14em] text-foreground transition-colors hover:text-accent"
+                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
                 >
                   LA MARCA
                   <ChevronDown
@@ -143,7 +143,7 @@ export function SiteHeader() {
                       <SheetClose key={item.href} asChild>
                         <Link
                           href={item.href}
-                          className="flex items-center rounded-sm px-3 py-2.5 text-xs uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 hover:text-accent"
+                          className="flex items-center rounded-sm px-3 py-2.5 text-xs uppercase tracking-dropdown transition-colors hover:bg-accent/10 hover:text-accent"
                         >
                           {item.label}
                         </Link>
@@ -158,7 +158,7 @@ export function SiteHeader() {
                 <SheetClose asChild>
                   <button
                     onClick={() => setSearchOpen(true)}
-                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-dropdown text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                   >
                     <Search className="size-4" />
                     BUSCAR
@@ -167,7 +167,7 @@ export function SiteHeader() {
                 <SheetClose asChild>
                   <Link
                     href={ROUTES.favoritos}
-                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-dropdown text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                   >
                     <Heart className="size-4" />
                     FAVORITOS
@@ -176,14 +176,14 @@ export function SiteHeader() {
                 <SheetClose asChild>
                   <Link
                     href={ROUTES.login}
-                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-dropdown text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                   >
                     <User className="size-4" />
                     MI CUENTA
                   </Link>
                 </SheetClose>
               </div>
-              <p className="mb-3 text-center micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <p className="mb-3 text-center micro-text font-bold uppercase tracking-micro text-muted-foreground">
                 Redes
               </p>
               <div className="flex justify-center gap-3">
@@ -251,7 +251,7 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
               <SheetHeader className="border-b border-border px-6 py-6 text-left">
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-accent">
+                <p className="text-sm font-bold uppercase tracking-subhead text-accent">
                   Tu selección
                 </p>
                 <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">

@@ -12,7 +12,7 @@ export default function PedidosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-[-0.03em]">MIS PEDIDOS</h1>
+        <h1 className="text-2xl font-bold tracking-heading">MIS PEDIDOS</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Historial de tus compras en DYDALO.
         </p>
