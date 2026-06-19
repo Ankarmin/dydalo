@@ -9,7 +9,8 @@ export function showCartToast(productName: string, price: number) {
   toast.custom(
     (t) => (
       <div
-        onClick={() => toast.dismiss(t)}
+        data-toast-notification
+        onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
         className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
         {/* Accent stripe */}

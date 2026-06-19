@@ -77,6 +77,12 @@ export function ProductDetailSheet({
       <SheetContent
         side="right"
         className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest("[data-toast-notification]")) {
+            e.preventDefault();
+          }
+        }}
       >
         {product && (
           <>
