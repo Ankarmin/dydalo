@@ -14,7 +14,7 @@ import {
   type Product,
 } from "@/data/products";
 
-const MAX_PER_CATEGORY = 8;
+const MAX_PER_CATEGORY = 4;
 
 function padIndex(n: number): string {
   return n.toString().padStart(2, "0");
