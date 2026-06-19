@@ -39,7 +39,7 @@ export default async function CategoriaPage({
 
   return (
     <main className="page-root">
-      <section className="section-px pt-28 pb-8">
+      <section className="section-px page-top pb-8">
         <h1 className="text-2xl font-bold uppercase tracking-tight">
           {category.name}
         </h1>
@@ -59,13 +59,13 @@ export default async function CategoriaPage({
               No hay productos en {category.name}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Pronto llegara nuevo stock.
+              Pronto llegará nuevo stock.
             </p>
             <Link
               href={ROUTES.catalogo}
               className="mt-6 inline-flex items-center gap-2 border-b border-accent pb-1 text-xs font-bold uppercase tracking-[0.2em] text-accent transition-colors hover:text-accent/80"
             >
-              Ver catalogo completo
+              Ver catálogo completo
             </Link>
           </div>
         ) : (
