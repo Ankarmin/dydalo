@@ -2,24 +2,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  ArrowUpRight,
-} from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { formatPrice } from '@/lib/format';
-import { showCartToast } from '@/components/cart-toast';
 import { products } from '@/data/products';
-import { useCart } from '@/contexts/cart-context';
 import { FavoriteButton } from '@/components/favorites/favorite-button';
+import { ProductDetailSheet } from '@/components/product-detail-sheet';
 import { FEATURED_PRODUCTS_COUNT, LOGO_DARK, LOGO_LIGHT } from '@/lib/constants';
 import {
   Dialog,
@@ -31,172 +20,12 @@ import {
 import { ROUTES } from '@/lib/routes';
 
 export default function HomePage() {
-  const { updateQuantity } = useCart();
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null,
-  );
   const [newsletterEmail, setNewsletterEmail] = useState<string | null>(null);
   const newsletterRef = useRef<HTMLInputElement>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-
-  const selectedProduct =
-    products.find((p) => p.id === selectedProductId) ?? null;
-
-  const handleSelectProduct = (productId: number) => {
-    const product = products.find((p) => p.id === productId);
-    setSelectedProductId(productId);
-    setSelectedSize(product?.sizes?.[0] ?? null);
-    setSelectedColor(product?.colors?.[0]?.name ?? null);
-  };
-
-  const handleAddFromDetail = () => {
-    if (!selectedProduct) return;
-    updateQuantity(selectedProduct.id, 1);
-    showCartToast(
-      `${selectedProduct.name} — ${selectedColor} / ${selectedSize}`,
-      selectedProduct.price,
-    );
-    setSelectedProductId(null);
-  };
 
   return (
     <main className="page-root">
-      <Sheet
-        open={selectedProductId !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedProductId(null);
-        }}
-      >
-        <SheetContent
-          side="right"
-          className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md"
-        >
-          {selectedProduct && (
-            <>
-              <SheetHeader className="sr-only">
-                <SheetTitle>{selectedProduct.name}</SheetTitle>
-                <SheetDescription>
-                  Selecciona talla y color para {selectedProduct.name}
-                </SheetDescription>
-              </SheetHeader>
-
-                  <div className="relative aspect-[4/3] w-full overflow-hidden">
-                    <Image
-                      src={
-                        brokenImages.has(selectedProduct.id)
-                          ? '/images/dydalo-hero.jpg'
-                          : selectedProduct.image
-                      }
-                      alt={selectedProduct.name}
-                      width={1024}
-                      height={768}
-                      sizes="(max-width: 640px) 100vw, 448px"
-                      className="size-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setSelectedProductId(null)}
-                      className="absolute left-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-sm transition-colors hover:bg-background/90 focus-ring"
-                      aria-label="Cerrar detalle del producto"
-                    >
-                      <ArrowLeft className="size-4" />
-                    </button>
-                    <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
-                  </div>
-
-                  <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-6">
-                    <div className="border-b border-border pb-6 pt-6">
-                      <p className="micro-label">
-                        {selectedProduct.label}
-                      </p>
-                      <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight">
-                        {selectedProduct.name}
-                      </h2>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {selectedProduct.type}
-                      </p>
-                      <p className="mt-3 text-xl font-bold">
-                        {formatPrice(selectedProduct.price)}
-                      </p>
-                    </div>
-
-                    {selectedProduct.sizes &&
-                      selectedProduct.sizes.length > 1 && (
-                        <div className="border-b border-border py-6">
-                          <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                            Talla
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedProduct.sizes.map((size) => (
-                              <button
-                                key={size}
-                                type="button"
-                                onClick={() => setSelectedSize(size)}
-                                className={`flex h-10 min-w-[3rem] items-center justify-center border px-3 text-xs font-bold uppercase transition-colors ${
-                                  selectedSize === size
-                                    ? 'border-accent bg-accent text-accent-foreground'
-                                    : 'border-border hover:border-muted-foreground'
-                                }`}
-                              >
-                                {size}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                    <div className="border-b border-border py-6">
-                      <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        Color
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        {selectedProduct.colors.map((color) => (
-                          <button
-                            key={color.name}
-                            type="button"
-                            onClick={() => setSelectedColor(color.name)}
-                            className="flex items-center gap-2"
-                          >
-                            <span
-                              className={`size-7 rounded-full border-2 transition-colors ${
-                                selectedColor === color.name
-                                  ? 'border-accent'
-                                  : 'border-border'
-                              }`}
-                              style={{ backgroundColor: color.hex }}
-                            />
-                            <span
-                              className={`text-xs uppercase ${
-                                selectedColor === color.name
-                                  ? 'text-foreground font-bold'
-                                  : 'text-muted-foreground'
-                              }`}
-                            >
-                              {color.name}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-8">
-                      <Button
-                        variant="hero"
-                        size="hero"
-                        className="w-full"
-                        onClick={handleAddFromDetail}
-                      >
-                        AÑADIR A LA BOLSA <ArrowUpRight />
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </SheetContent>
-          </Sheet>
-
       <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center">
         <Image
           src="/images/dydalo-hero.jpg"
@@ -276,40 +105,44 @@ export default function HomePage() {
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
           {products.slice(0, FEATURED_PRODUCTS_COUNT).map((product, index) => (
               <article key={product.id} className="group relative">
-                <button
-                  type="button"
-                  className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
-                  onClick={() => handleSelectProduct(product.id)}
-                  aria-label={`Ver detalles de ${product.name}`}
-                >
-                  <span className="absolute left-2 top-2 z-10 product-label sm:left-4 sm:top-4">
-                    {product.label}
-                  </span>
-                  <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
-                    0{index + 1}
-                  </span>
-                  <FavoriteButton
-                    productId={product.id}
-                    productName={product.name}
-                    variant="card"
-                  />
-                  <Image
-                    src={
-                      brokenImages.has(product.id)
-                        ? '/images/dydalo-hero.jpg'
-                        : product.image
-                    }
-                    alt={product.name}
-                    width={1024}
-                    height={1024}
-                    priority={index === 0}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    onError={() =>
-                      setBrokenImages((prev) => new Set(prev).add(product.id))
-                    }
-                    className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                </button>
+                <ProductDetailSheet
+                  productId={product.id}
+                  trigger={
+                    <button
+                      type="button"
+                      className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
+                      aria-label={`Ver detalles de ${product.name}`}
+                    >
+                      <span className="absolute left-2 top-2 z-10 product-label sm:left-4 sm:top-4">
+                        {product.label}
+                      </span>
+                      <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
+                        0{index + 1}
+                      </span>
+                      <FavoriteButton
+                        productId={product.id}
+                        productName={product.name}
+                        variant="card"
+                      />
+                      <Image
+                        src={
+                          brokenImages.has(product.id)
+                            ? '/images/dydalo-hero.jpg'
+                            : product.image
+                        }
+                        alt={product.name}
+                        width={1024}
+                        height={1024}
+                        priority={index === 0}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        onError={() =>
+                          setBrokenImages((prev) => new Set(prev).add(product.id))
+                        }
+                        className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                    </button>
+                  }
+                />
                 <div className="mt-4 flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-bold uppercase tracking-tight">

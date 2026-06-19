@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/lib/routes";
 import { formatPrice } from "@/lib/format";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { ProductDetailSheet } from "@/components/product-detail-sheet";
 import type { Product } from "@/data/products";
 
 type SortKey =
@@ -124,32 +123,37 @@ export function CatalogGrid({ products }: { products: Product[] }) {
       <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {sortedProducts.map((product, index) => (
           <article key={product.id} className="group relative">
-            <Link
-              href={ROUTES.catalogoCategory(product.category)}
-              className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
-              aria-label={`Ver ${product.name}`}
-            >
-              <span className="absolute left-4 top-4 z-10 product-label">
-                {product.label}
-              </span>
-              <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
-                {padIndex(index + 1)}
-              </span>
-              <FavoriteButton
-                productId={product.id}
-                productName={product.name}
-                variant="card"
-              />
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={1024}
-                height={1024}
-                priority={index < 2}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-            </Link>
+            <ProductDetailSheet
+              productId={product.id}
+              trigger={
+                <button
+                  type="button"
+                  className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
+                  aria-label={`Ver detalles de ${product.name}`}
+                >
+                  <span className="absolute left-4 top-4 z-10 product-label">
+                    {product.label}
+                  </span>
+                  <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
+                    {padIndex(index + 1)}
+                  </span>
+                  <FavoriteButton
+                    productId={product.id}
+                    productName={product.name}
+                    variant="card"
+                  />
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    width={1024}
+                    height={1024}
+                    priority={index < 2}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                </button>
+              }
+            />
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-bold uppercase tracking-tight">
