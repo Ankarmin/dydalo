@@ -44,6 +44,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-ink: var(--ink);
+  --color-favorite: var(--favorite);
+  --color-favorite-foreground: var(--favorite-foreground);
 }
 
 :root {
@@ -69,6 +71,8 @@
   --input: oklch(0.2 0.012 295);
   --ring: oklch(0.58 0.235 27);
   --ink: oklch(0.11 0 0);
+  --favorite: oklch(0.58 0.235 27);
+  --favorite-foreground: oklch(0.99 0 0);
   --shadow-punch: 8px 8px 0 oklch(0.58 0.235 27);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -87,6 +91,8 @@
 
 [data-theme="light"] {
   color-scheme: light;
+  --favorite: oklch(0.55 0.22 27);
+  --favorite-foreground: oklch(0.99 0 0);
   --background: oklch(0.985 0.002 247);
   --foreground: oklch(0.09 0 0);
   --card: oklch(1 0 0);
@@ -392,6 +398,58 @@
   font-size: 1rem;
   line-height: 1.625;
   color: var(--color-muted-foreground);
+}
+
+/* ── Tipografía de producto ── */
+@utility product-label {
+  font-size: 0.5625rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  background: oklch(from var(--background) l c h / 0.8);
+  backdrop-filter: blur(12px);
+}
+
+@utility micro-text {
+  font-size: 0.625rem;
+  line-height: 1rem;
+}
+
+/* ── Secciones ── */
+@utility section-lg {
+  padding-block: 5rem;
+}
+
+@utility section-md {
+  padding-block: 4rem;
+}
+
+@utility section-sm {
+  padding-block: 3rem;
+}
+
+@utility page-top {
+  padding-top: 7rem;
+}
+
+@utility page-bottom {
+  padding-bottom: 4rem;
+}
+
+/* ── Componentes glass ── */
+@utility chip-label {
+  background: oklch(from var(--background) l c h / 0.8);
+  backdrop-filter: blur(12px);
+}
+
+@utility popover-panel {
+  background: oklch(from var(--background) l c h / 0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 @media print {
