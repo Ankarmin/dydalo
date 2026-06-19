@@ -32,7 +32,7 @@ export default function GuiaDeTallasPage() {
         </div>
       </section>
 
-      <section className="border-t border-border section-px py-12">
+      <section className="border-t border-border section-px section-sm">
         <div className="mx-auto max-w-3xl">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="border border-border p-6">

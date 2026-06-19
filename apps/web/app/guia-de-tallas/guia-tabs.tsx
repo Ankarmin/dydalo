@@ -51,13 +51,13 @@ export function GuiaTabs() {
         <table className="w-full border border-border text-left">
           <thead>
             <tr className="border-b border-border bg-secondary/30">
-              <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <th className="px-5 py-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
                 Talla
               </th>
               {medidas.map((medida) => (
                 <th
                   key={medida}
-                  className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                  className="px-5 py-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground"
                 >
                   {medida}
                 </th>
@@ -89,7 +89,7 @@ export function GuiaTabs() {
           </tbody>
         </table>
 
-        <p className="mt-3 text-right text-[10px] text-muted-foreground">
+        <p className="mt-3 text-right micro-text text-muted-foreground">
           {activeTab === 'Ropa'
             ? '* Medidas en centímetros'
             : '* Medidas en centímetros. US/UK son equivalencias.'}

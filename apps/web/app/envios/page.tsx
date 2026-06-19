@@ -74,7 +74,7 @@ export default function EnviosPage() {
       </section>
 
       {/* ── Timeline ── */}
-      <section className="section-px py-16">
+      <section className="section-px section-md">
         <div className="container-page">
           <div className="relative">
             {/* Línea conectora */}
@@ -103,7 +103,7 @@ export default function EnviosPage() {
       </section>
 
       {/* ── Tarifas ── */}
-      <section className="border-t border-border section-px py-16">
+      <section className="border-t border-border section-px section-md">
         <div className="container-page">
           <p className="overline">Tarifas</p>
           <h2 className="mt-2 text-3xl font-bold uppercase tracking-tight md:text-4xl">
@@ -142,7 +142,7 @@ export default function EnviosPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="border-t border-border section-px py-20">
+      <section className="border-t border-border section-px section-lg">
         <div className="container-page text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-4xl">
             ¿Listo para tu próximo envío?

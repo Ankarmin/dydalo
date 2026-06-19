@@ -54,7 +54,7 @@ export default function NuestraHistoriaPage() {
         </div>
       </section>
 
-      <section className="section-px py-20">
+      <section className="section-px section-lg">
         <div className="container-page">
           <div className="relative">
             <div className="absolute bottom-0 left-[7px] top-0 w-px bg-border" />
@@ -82,7 +82,7 @@ export default function NuestraHistoriaPage() {
         </div>
       </section>
 
-      <section className="border-t border-border section-px py-20">
+      <section className="border-t border-border section-px section-lg">
         <div className="container-page text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-4xl">
             &ldquo;No pedimos permiso entonces.

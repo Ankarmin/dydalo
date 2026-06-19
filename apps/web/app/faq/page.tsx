@@ -26,7 +26,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      <section className="section-px py-12">
+      <section className="section-px section-sm">
         <div className="mx-auto max-w-3xl">
           <FaqAccordion />
         </div>

@@ -58,7 +58,7 @@ export default function DevolucionesPage() {
       </section>
 
       {/* ── 3 pasos ── */}
-      <section className="section-px py-16">
+      <section className="section-px section-md">
         <div className="container-page">
           <div className="grid gap-8 md:grid-cols-3">
             {steps.map((step) => (
@@ -89,7 +89,7 @@ export default function DevolucionesPage() {
       </section>
 
       {/* ── Condiciones ── */}
-      <section className="border-t border-border section-px py-16">
+      <section className="border-t border-border section-px section-md">
         <div className="container-page">
           <p className="overline">Condiciones claras</p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
@@ -98,7 +98,7 @@ export default function DevolucionesPage() {
                 key={condition}
                 className="flex items-start gap-3 border border-border p-4"
               >
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent micro-text font-bold text-accent-foreground">
                   ✓
                 </span>
                 <p className="body-sm">
@@ -111,7 +111,7 @@ export default function DevolucionesPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="border-t border-border section-px py-20">
+      <section className="border-t border-border section-px section-lg">
         <div className="container-page text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-4xl">
             ¿Listo?

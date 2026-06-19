@@ -90,7 +90,7 @@ export default function LookbookPage() {
         </div>
       </section>
 
-      <section className="border-y border-border section-px py-16">
+      <section className="border-y border-border section-px section-md">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-2xl font-bold italic leading-relaxed tracking-tight text-muted-foreground md:text-3xl">
             &ldquo;El estilo no es lo que llevas puesto.

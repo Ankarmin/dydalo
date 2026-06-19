@@ -60,7 +60,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section className="section-px py-16">
+      <section className="section-px section-md">
         <div className="container-page">
           <div className="flex flex-col gap-0">
             {posts.map((post, index) => (
@@ -86,7 +86,7 @@ export default function BlogPage() {
                     <span className="micro-label">
                       {post.tag}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="micro-text text-muted-foreground">
                       {post.date}
                     </span>
                   </div>
@@ -107,7 +107,7 @@ export default function BlogPage() {
                     className="mt-3 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.15em] text-accent transition-colors hover:text-accent/80 focus-ring"
                   >
                     Leer artículo
-                    <span className="text-[10px]">→</span>
+                    <span className="micro-text">→</span>
                   </Link>
                 </div>
               </article>

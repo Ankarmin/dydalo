@@ -15,7 +15,7 @@ export default function BlogError({
   }, [error]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-5 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background section-px text-center">
       <p className="text-sm text-muted-foreground">
         Algo salió mal al cargar esta página.
       </p>

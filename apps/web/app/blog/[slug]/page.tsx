@@ -97,7 +97,7 @@ export default async function BlogPostPage({
   return (
     <main className="page-root">
 
-      <article className="section-px pb-12 pt-28 md:pb-20">
+      <article className="section-px page-top pb-12 md:pb-20">
         <div className="mx-auto max-w-3xl">
           <Link
             href={ROUTES.blog}
@@ -106,7 +106,7 @@ export default async function BlogPostPage({
             <ArrowLeft className="size-3.5" />
             Blog
           </Link>
-          <div className="flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="flex items-center gap-4 micro-text uppercase tracking-[0.2em] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="size-3" />
               {post.date}

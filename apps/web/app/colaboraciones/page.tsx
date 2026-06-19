@@ -70,7 +70,7 @@ export default function ColaboracionesPage() {
         </div>
       </section>
 
-      <section className="section-px py-16">
+      <section className="section-px section-md">
         <div className="container-page">
           <div className="grid gap-6 md:grid-cols-2">
             {collaborations.map((collab) => (
@@ -88,7 +88,7 @@ export default function ColaboracionesPage() {
                     className="size-full object-cover"
                   />
                   <span
-                    className={`absolute right-3 top-3 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.15em] ${
+                    className={`absolute right-3 top-3 px-3 py-1.5 micro-text font-bold uppercase tracking-[0.15em] ${
                       statusStyles[collab.status]
                     }`}
                   >
@@ -97,7 +97,7 @@ export default function ColaboracionesPage() {
                 </div>
 
                 <div className="mt-5 flex flex-1 flex-col">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-accent">
+                  <p className="micro-text font-bold uppercase tracking-[0.22em] text-accent">
                     {collab.partner}
                   </p>
                   <h2 className="mt-2 text-xl font-bold uppercase tracking-tight">
@@ -117,7 +117,7 @@ export default function ColaboracionesPage() {
         </div>
       </section>
 
-      <section className="border-t border-border section-px py-16">
+      <section className="border-t border-border section-px section-md">
         <div className="container-page">
           <NewsletterForm id="collab-email" />
         </div>
