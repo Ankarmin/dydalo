@@ -81,7 +81,7 @@ export function CommandSearch({ open: externalOpen, onOpenChange: externalOnOpen
         variant="ghost"
         size="icon"
         aria-label="Buscar productos (⌘K)"
-        className="hidden lg:inline-flex"
+        className="hidden xl:inline-flex"
         onClick={() => setOpen(true)}
       >
         <Search />

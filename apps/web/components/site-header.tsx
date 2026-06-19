@@ -56,7 +56,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="xl:hidden"
               aria-label="Abrir menú"
             >
               <Menu />
@@ -221,7 +221,7 @@ export function SiteHeader() {
                 variant="ghost"
                 size="icon"
                 aria-label={`Ver favoritos con ${favoritesCount} productos`}
-                className="relative hidden lg:inline-flex"
+                className="relative hidden xl:inline-flex"
               >
                 <Heart />
                 {mounted && favoritesCount > 0 && (
@@ -232,7 +232,7 @@ export function SiteHeader() {
               </Button>
             }
           />
-          <div className="hidden lg:inline-flex">
+          <div className="hidden xl:inline-flex">
             <UserButton />
           </div>
           <ThemeToggle />

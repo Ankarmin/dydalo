@@ -77,7 +77,7 @@ export function HeaderNav({
       <div className="flex items-center gap-3">
         {left}
         <nav
-          className="hidden items-center gap-3 text-xs font-bold tracking-[0.16em] lg:flex"
+          className="hidden items-center gap-3 text-xs font-bold tracking-[0.16em] xl:flex"
           aria-label="Navegación principal"
         >
           <Link
