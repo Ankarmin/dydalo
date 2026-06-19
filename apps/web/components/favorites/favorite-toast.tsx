@@ -7,7 +7,10 @@ import { TOAST_DURATION_MS } from "@/lib/constants";
 export function showFavoriteToast(productName: string, added: boolean) {
   toast.custom(
     (t) => (
-      <div className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500">
+      <div
+        onClick={() => toast.dismiss(t)}
+        className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
+      >
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-favorite" />
 
         <div className="relative flex size-10 shrink-0 items-center justify-center border border-favorite bg-favorite/10">
@@ -27,7 +30,7 @@ export function showFavoriteToast(productName: string, added: boolean) {
         </div>
 
         <button
-          onClick={() => toast.dismiss(t)}
+          onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
           aria-label="Cerrar notificación"
           className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >

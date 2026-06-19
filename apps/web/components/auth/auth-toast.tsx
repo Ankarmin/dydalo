@@ -15,7 +15,10 @@ function notify(
 ) {
   toast.custom(
     (t) => (
-      <div className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500">
+      <div
+        onClick={() => toast.dismiss(t)}
+        className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
+      >
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentClass.split(" ")[0]}`} />
 
         <div className={`relative flex size-10 shrink-0 items-center justify-center border ${accentClass} ${accentClass.split(" ")[0]}/10`}>
@@ -33,7 +36,7 @@ function notify(
         </div>
 
         <button
-          onClick={() => toast.dismiss(t)}
+          onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
           aria-label="Cerrar notificación"
           className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >

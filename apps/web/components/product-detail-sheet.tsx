@@ -72,7 +72,7 @@ export function ProductDetailSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange} modal={false}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
       <SheetContent
         side="right"

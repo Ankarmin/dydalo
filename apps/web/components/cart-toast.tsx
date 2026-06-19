@@ -8,7 +8,10 @@ import { formatPrice } from '@/lib/format';
 export function showCartToast(productName: string, price: number) {
   toast.custom(
     (t) => (
-      <div className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500">
+      <div
+        onClick={() => toast.dismiss(t)}
+        className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
+      >
         {/* Accent stripe */}
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent" />
 
@@ -31,7 +34,7 @@ export function showCartToast(productName: string, price: number) {
 
         {/* Close */}
         <button
-          onClick={() => toast.dismiss(t)}
+          onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
           aria-label="Cerrar notificación"
           className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground focus-ring"
         >
