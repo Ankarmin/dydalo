@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
 import { CartProvider } from "@/contexts/cart-context";
+import { FavoritesProvider } from "@/contexts/favorites-context";
 import { SiteHeader } from "@/components/site-header";
 import { SocialWidget } from "@/components/SocialWidget";
 import { SITE_NAME, SITE_DEFAULT_TITLE, SITE_DESCRIPTION, BRAND_SUBTITLE, FALLBACK_IMAGE, THEME_STORAGE_KEY } from "@/lib/constants";
@@ -61,21 +63,15 @@ export default function RootLayout({
         <link rel="icon" href="/favicon-light.ico" media="(prefers-color-scheme: light)" />
         <link rel="manifest" href="/site-dark.webmanifest" media="(prefers-color-scheme: dark)" />
         <link rel="manifest" href="/site-light.webmanifest" media="(prefers-color-scheme: light)" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){
-                try{
-                  var t=localStorage.getItem('${THEME_STORAGE_KEY}');
-                  if(!t){
-                    t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
-                  }
-                  document.documentElement.setAttribute('data-theme',t);
-                }catch(e){}
-              })();
-            `,
-          }}
-        />
+        <Script id="theme-script" strategy="beforeInteractive">
+          {`(function(){
+            try{
+              var t=localStorage.getItem('${THEME_STORAGE_KEY}');
+              if(!t){t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';}
+              document.documentElement.setAttribute('data-theme',t);
+            }catch(e){}
+          })();`}
+        </Script>
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <a
@@ -86,12 +82,14 @@ export default function RootLayout({
         </a>
         <ThemeProvider>
           <CartProvider>
-            <SiteHeader />
-            <div id="main-content">
-              <Suspense fallback={null}>{children}</Suspense>
-            </div>
-            <Toaster />
-            <SocialWidget />
+            <FavoritesProvider>
+              <SiteHeader />
+              <div id="main-content">
+                <Suspense fallback={null}>{children}</Suspense>
+              </div>
+              <Toaster />
+              <SocialWidget />
+            </FavoritesProvider>
           </CartProvider>
         </ThemeProvider>
       </body>

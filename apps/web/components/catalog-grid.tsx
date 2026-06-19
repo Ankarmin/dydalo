@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 import { formatPrice } from "@/lib/format";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 import type { Product } from "@/data/products";
 
 type SortKey =
@@ -20,10 +21,10 @@ type SortKey =
   | "fecha-desc";
 
 const sortOptions: { key: SortKey; label: string }[] = [
-  { key: "relevantes", label: "Mas relevantes" },
-  { key: "vendidos", label: "Mas vendidos" },
-  { key: "az", label: "Alfabeticamente, A-Z" },
-  { key: "za", label: "Alfabeticamente, Z-A" },
+  { key: "relevantes", label: "Más relevantes" },
+  { key: "vendidos", label: "Más vendidos" },
+  { key: "az", label: "Alfabéticamente, A-Z" },
+  { key: "za", label: "Alfabéticamente, Z-A" },
   { key: "precio-asc", label: "Precio, menor a mayor" },
   { key: "precio-desc", label: "Precio, mayor a menor" },
   { key: "fecha-asc", label: "Fecha: antiguo(a) a reciente" },
@@ -92,7 +93,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
               <div
                 role="listbox"
                 aria-label="Opciones de orden"
-                className="absolute right-0 top-full z-50 mt-2 w-56 rounded-md border border-border bg-background/95 p-1.5 shadow-lg backdrop-blur-xl"
+                className="absolute right-0 top-full z-50 mt-2 w-56 popover-panel p-1.5 shadow-lg"
               >
                 {sortOptions.map((option) => (
                   <button
@@ -128,12 +129,17 @@ export function CatalogGrid({ products }: { products: Product[] }) {
               className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
               aria-label={`Ver ${product.name}`}
             >
-              <span className="absolute left-4 top-4 z-10 bg-background/80 px-3 py-2 text-[9px] font-bold tracking-[0.2em] backdrop-blur-md">
+              <span className="absolute left-4 top-4 z-10 product-label">
                 {product.label}
               </span>
               <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
                 {padIndex(index + 1)}
               </span>
+              <FavoriteButton
+                productId={product.id}
+                productName={product.name}
+                variant="card"
+              />
               <Image
                 src={product.image}
                 alt={product.name}

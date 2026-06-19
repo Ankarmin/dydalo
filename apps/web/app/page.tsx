@@ -19,6 +19,7 @@ import { formatPrice } from '@/lib/format';
 import { showCartToast } from '@/components/cart-toast';
 import { products } from '@/data/products';
 import { useCart } from '@/contexts/cart-context';
+import { FavoriteButton } from '@/components/favorites/favorite-button';
 import { FEATURED_PRODUCTS_COUNT, LOGO_DARK, LOGO_LIGHT } from '@/lib/constants';
 import {
   Dialog,
@@ -124,7 +125,7 @@ export default function HomePage() {
                     {selectedProduct.sizes &&
                       selectedProduct.sizes.length > 1 && (
                         <div className="border-b border-border py-6">
-                          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                          <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             Talla
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -147,7 +148,7 @@ export default function HomePage() {
                       )}
 
                     <div className="border-b border-border py-6">
-                      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                      <p className="mb-3 micro-text font-bold uppercase tracking-[0.2em] text-muted-foreground">
                         Color
                       </p>
                       <div className="flex flex-wrap gap-3">
@@ -206,7 +207,7 @@ export default function HomePage() {
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/20 via-background/25 to-background" />
         <div className="relative z-10 flex w-full max-w-7xl flex-col items-center">
-          <p className="mb-4 text-[11px] font-bold tracking-[0.25em] text-foreground/75 sm:text-xs sm:tracking-[0.42em]">
+          <p className="mb-4 text-xs font-bold tracking-[0.25em] text-foreground/75 sm:tracking-[0.42em]">
             UNDERGROUND STREETWEAR
           </p>
           <h1 className="w-full flex justify-center">
@@ -262,7 +263,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="section-px py-20">
+      <section className="section-px section-lg">
         <div id="lo-ultimo" className="mb-12 scroll-mt-20">
           <p className="mb-3 text-base font-bold uppercase tracking-[0.22em] text-accent">
             new drop
@@ -281,12 +282,17 @@ export default function HomePage() {
                   onClick={() => handleSelectProduct(product.id)}
                   aria-label={`Ver detalles de ${product.name}`}
                 >
-                  <span className="absolute left-2 top-2 z-10 bg-background/80 px-2 py-1.5 text-[10px] font-bold tracking-[0.16em] backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:py-2 sm:text-[9px] sm:tracking-[0.2em]">
+                  <span className="absolute left-2 top-2 z-10 product-label sm:left-4 sm:top-4">
                     {product.label}
                   </span>
                   <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
                     0{index + 1}
                   </span>
+                  <FavoriteButton
+                    productId={product.id}
+                    productName={product.name}
+                    variant="card"
+                  />
                   <Image
                     src={
                       brokenImages.has(product.id)
@@ -351,16 +357,16 @@ export default function HomePage() {
                 <h4 className="heading-label">Tienda</h4>
                 <ul className="mt-4 space-y-2.5">
                   {[
-                    'Nuevos Drops',
-                    'Colecciones',
-                    'Hombre',
-                    'Mujer',
-                    'Accesorios',
-                  ].map((link) => (
-                    <li key={link}>
-                      <span className="text-sm text-muted-foreground">
-                        {link}
-                      </span>
+                    { label: 'Lo último', href: ROUTES.loUltimo },
+                    { label: 'Polos', href: ROUTES.catalogoCategory('polos') },
+                    { label: 'Hoodies', href: ROUTES.catalogoCategory('hoodies') },
+                    { label: 'Jeans', href: ROUTES.catalogoCategory('jeans') },
+                    { label: 'Accesorios', href: ROUTES.catalogoCategory('accesorios') },
+                  ].map(({ label, href }) => (
+                    <li key={label}>
+                      <Link href={href} className="footer-link">
+                        {label}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -461,7 +467,7 @@ export default function HomePage() {
 
         {/* ── Bottom bar ── */}
         <section className="border-t border-border section-px py-6">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 micro-text uppercase tracking-[0.2em] text-muted-foreground sm:flex-row">
             <p>© 2026 DYDALO — Todos los derechos reservados.</p>
             <div className="flex gap-6">
               <span className="text-muted-foreground">Términos</span>
