@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { formatPrice } from "@/lib/format";
 import { showCartToast } from "@/components/cart-toast";
+import { useCart } from "@/contexts/cart-context";
 import { products, type Product } from "@/data/products";
 
 interface ProductDetailSheetProps {
@@ -57,10 +58,12 @@ export function ProductDetailSheet({
     }
   };
 
+  const { updateQuantity } = useCart();
   const product = products.find((p) => p.id === productId) ?? null;
 
   const handleAddToCart = () => {
     if (!product) return;
+    updateQuantity(product.id, 1);
     showCartToast(
       `${product.name} — ${selectedColor} / ${selectedSize}`,
       product.price,
