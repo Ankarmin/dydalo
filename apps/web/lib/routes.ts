@@ -15,4 +15,18 @@ export const ROUTES = {
   faq: "/faq",
   loUltimo: "/#lo-ultimo",
   catalogoAnchor: "/#catalogo",
+  // Auth
+  login: "/login",
+  registro: "/registro",
+  recuperarPassword: "/recuperar-password",
+  nuevaPassword: "/nueva-password",
+  // Cuenta
+  cuenta: "/cuenta",
+  pedidos: "/cuenta/pedidos",
+  direcciones: "/cuenta/direcciones",
+  // Admin
+  admin: "/admin",
+  adminProductos: "/admin/productos",
+  adminPedidos: "/admin/pedidos",
+  favoritos: "/favoritos",
 } as const;
