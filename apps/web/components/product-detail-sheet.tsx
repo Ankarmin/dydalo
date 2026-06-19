@@ -16,6 +16,7 @@ import { formatPrice } from "@/lib/format";
 import { showCartToast } from "@/components/cart-toast";
 import { useCart } from "@/contexts/cart-context";
 import { FALLBACK_IMAGE } from "@/lib/constants";
+import { ignoreToastClicks } from "@/lib/toast-guard";
 import { products, type Product } from "@/data/products";
 
 interface ProductDetailSheetProps {
@@ -72,12 +73,7 @@ export function ProductDetailSheet({
     handleOpenChange(false);
   };
 
-  const handleInteractOutside = useCallback((e: Event) => {
-    const target = e.target as HTMLElement;
-    if (target.closest("[data-toast-notification]")) {
-      e.preventDefault();
-    }
-  }, []);
+  const handleInteractOutside = useCallback(ignoreToastClicks, []);
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>

@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ROUTES } from '@/lib/routes';
+import { ignoreToastClicks } from '@/lib/toast-guard';
 
 export default function HomePage() {
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
@@ -315,7 +316,7 @@ export default function HomePage() {
         open={newsletterEmail !== null}
         onOpenChange={() => setNewsletterEmail(null)}
       >
-        <DialogContent className="border-border bg-background sm:max-w-sm">
+        <DialogContent className="border-border bg-background sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
           <DialogHeader>
             <DialogTitle className="text-xl font-bold uppercase tracking-tight">
               GRACIAS

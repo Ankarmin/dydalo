@@ -8,6 +8,7 @@ import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/format";
 import { FALLBACK_IMAGE } from "@/lib/constants";
+import { ignoreToastClicks } from "@/lib/toast-guard";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -34,7 +35,7 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
+      <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md" onInteractOutside={ignoreToastClicks}>
         <SheetHeader className="border-b border-border px-6 py-6 text-left">
           <p className="text-sm font-bold uppercase tracking-subhead text-accent">
             Tu wishlist

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowUpRight, ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
 import { showComingSoonToast } from "@/components/auth/auth-toast";
+import { ignoreToastClicks } from "@/lib/toast-guard";
 import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,7 +62,7 @@ export function SiteHeader() {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex w-full flex-col border-border bg-background p-0 sm:max-w-sm">
+          <SheetContent side="left" className="flex w-full flex-col border-border bg-background p-0 sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
             <SheetHeader className="border-b border-border px-6 py-6 text-left">
               <SheetTitle>
                 <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
@@ -249,7 +250,7 @@ export function SiteHeader() {
                 </span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md">
+            <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md" onInteractOutside={ignoreToastClicks}>
               <SheetHeader className="border-b border-border px-6 py-6 text-left">
                 <p className="text-sm font-bold uppercase tracking-subhead text-accent">
                   Tu selección
