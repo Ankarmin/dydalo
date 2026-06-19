@@ -9,7 +9,7 @@ export function showFavoriteToast(productName: string, added: boolean) {
     (t) => (
       <div
         onClick={() => toast.dismiss(t)}
-        className="group relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
+        className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-favorite" />
 
