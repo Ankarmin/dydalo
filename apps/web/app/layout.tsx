@@ -4,10 +4,10 @@ import { Suspense } from "react";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
+import { AuthProvider } from "@/contexts/auth-context";
 import { CartProvider } from "@/contexts/cart-context";
 import { FavoritesProvider } from "@/contexts/favorites-context";
-import { SiteHeader } from "@/components/site-header";
-import { SocialWidget } from "@/components/SocialWidget";
+import { ConditionalShell } from "@/components/conditional-shell";
 import { SITE_NAME, SITE_DEFAULT_TITLE, SITE_DESCRIPTION, BRAND_SUBTITLE, FALLBACK_IMAGE, THEME_STORAGE_KEY } from "@/lib/constants";
 import "./globals.css";
 
@@ -63,6 +63,8 @@ export default function RootLayout({
         <link rel="icon" href="/favicon-light.ico" media="(prefers-color-scheme: light)" />
         <link rel="manifest" href="/site-dark.webmanifest" media="(prefers-color-scheme: dark)" />
         <link rel="manifest" href="/site-light.webmanifest" media="(prefers-color-scheme: light)" />
+      </head>
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
         <Script id="theme-script" strategy="beforeInteractive">
           {`(function(){
             try{
@@ -72,19 +74,18 @@ export default function RootLayout({
             }catch(e){}
           })();`}
         </Script>
-      </head>
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
         <ThemeProvider>
-          <CartProvider>
-            <FavoritesProvider>
-              <SiteHeader />
-              <div id="main-content">
-                <Suspense fallback={null}>{children}</Suspense>
-              </div>
-              <Toaster />
-              <SocialWidget />
-            </FavoritesProvider>
-          </CartProvider>
+          <AuthProvider>
+            <CartProvider>
+              <FavoritesProvider>
+                <ConditionalShell />
+                <div id="main-content">
+                  <Suspense fallback={null}>{children}</Suspense>
+                </div>
+                <Toaster />
+              </FavoritesProvider>
+            </CartProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
