@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, LogOut, Package, MapPin, Loader2 } from "lucide-react";
+import { User, LogOut, Package, MapPin, Loader2, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 import { showLogoutToast } from "@/components/auth/auth-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,18 +17,33 @@ import {
 import { ROUTES } from "@/lib/routes";
 
 export function UserButton() {
-  const [isLoggedIn] = useState(false);
+  const { state, meta, actions } = useAuth();
+  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAuthenticated = mounted && state.status === "authenticated";
 
   function handleLogout() {
     setIsLoggingOut(true);
-    setTimeout(() => {
-      showLogoutToast();
-      setIsLoggingOut(false);
-    }, 800);
+    actions.logout();
+    showLogoutToast();
+    router.push(ROUTES.home);
   }
 
-  if (!isLoggedIn) {
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" aria-label="Iniciar sesión" disabled>
+        <User />
+      </Button>
+    );
+  }
+
+  if (!isAuthenticated || !state.user) {
     return (
       <Button variant="ghost" size="icon" aria-label="Iniciar sesión" asChild>
         <Link href={ROUTES.login}>
@@ -45,31 +62,46 @@ export function UserButton() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium truncate">Usuario DYDALO</p>
+          <p className="text-sm font-medium truncate">{state.user.name}</p>
           <p className="text-xs text-muted-foreground truncate">
-            usuario@dydalo.com
+            {state.user.email}
           </p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={ROUTES.cuenta} className="cursor-pointer">
-            <User className="size-4" />
-            Mi Cuenta
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={ROUTES.pedidos} className="cursor-pointer">
-            <Package className="size-4" />
-            Mis Pedidos
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={ROUTES.direcciones} className="cursor-pointer">
-            <MapPin className="size-4" />
-            Direcciones
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        {meta.isAdmin && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.admin} className="cursor-pointer">
+                <LayoutDashboard className="size-4" />
+                Panel Admin
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {!meta.isAdmin && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.cuenta} className="cursor-pointer">
+                <User className="size-4" />
+                Mi Cuenta
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.pedidos} className="cursor-pointer">
+                <Package className="size-4" />
+                Mis Pedidos
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.direcciones} className="cursor-pointer">
+                <MapPin className="size-4" />
+                Direcciones
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem
           onClick={handleLogout}
           disabled={isLoggingOut}
