@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 import { showLoginSuccessToast, showGoogleComingSoonToast } from "@/components/auth/auth-toast";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/lib/routes";
 
-const MOCK_CREDENTIALS = { email: "demo@dydalo.com", password: "Demo1234" };
-
 export function LoginForm() {
+  const { actions } = useAuth();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -35,22 +35,19 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
-  function onSubmit(values: LoginInput) {
+  async function onSubmit(values: LoginInput) {
     setError(null);
     setIsPending(true);
 
-    setTimeout(() => {
-      if (
-        values.email === MOCK_CREDENTIALS.email &&
-        values.password === MOCK_CREDENTIALS.password
-      ) {
-        showLoginSuccessToast();
-        router.push(ROUTES.cuenta);
-      } else {
-        setError("Email o contraseña incorrectos");
-        setIsPending(false);
-      }
-    }, 1200);
+    const result = await actions.login(values.email, values.password);
+
+    if (result.success) {
+      showLoginSuccessToast();
+      router.push(ROUTES.admin);
+    } else {
+      setError(result.error);
+      setIsPending(false);
+    }
   }
 
   return (
