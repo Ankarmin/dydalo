@@ -3,10 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/format';
-import { products } from '@/data/products';
+import { useProducts } from '@/lib/use-products';
+import { useSiteConfig } from '@/lib/use-site-config';
+import { categoriesStore } from '@/lib/data-store.categories';
+import { catalogCategories } from '@/data/products';
 import { FavoriteButton } from '@/components/favorites/favorite-button';
 import { ProductDetailSheet } from '@/components/product-detail-sheet';
 import { FEATURED_PRODUCTS_COUNT, LOGO_DARK, LOGO_LIGHT } from '@/lib/constants';
@@ -23,13 +26,22 @@ import { ignoreToastClicks } from '@/lib/toast-guard';
 export default function HomePage() {
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const [newsletterEmail, setNewsletterEmail] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const newsletterRef = useRef<HTMLInputElement>(null);
+  const { featuredProducts } = useProducts();
+  const config = useSiteConfig();
+  const clientCategories = categoriesStore.getActive();
+  const categories = mounted && clientCategories.length > 0 ? clientCategories : catalogCategories;
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const displayedProducts = featuredProducts.slice(0, FEATURED_PRODUCTS_COUNT);
 
   return (
     <main className="page-root">
       <section className="relative isolate flex min-h-[92svh] items-center justify-center overflow-hidden px-5 pt-16 text-center">
         <Image
-          src="/images/dydalo-hero.jpg"
+          src={config.heroSettings.backgroundImage}
           alt="Collage urbano nocturno sobre una pared de asfalto"
           fill
           priority
@@ -38,14 +50,14 @@ export default function HomePage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/20 via-background/25 to-background" />
         <div className="relative z-10 flex w-full max-w-7xl flex-col items-center">
           <p className="mb-4 text-xs font-bold tracking-[0.25em] text-foreground/75 sm:tracking-[0.42em]">
-            UNDERGROUND STREETWEAR
+            {config.heroSettings.subtitle}
           </p>
           <h1 className="w-full flex justify-center">
             <Image src={LOGO_DARK} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-dark" />
             <Image src={LOGO_LIGHT} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-light" />
           </h1>
           <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
-            THE REAL CREAM
+            {config.heroSettings.title}
           </p>
           <Button
             asChild
@@ -53,8 +65,8 @@ export default function HomePage() {
             size="hero"
             className="mt-10 w-full max-w-sm"
           >
-            <Link href={ROUTES.catalogo}>
-              VER CATÁLOGO <ArrowUpRight />
+            <Link href={config.heroSettings.ctaLink}>
+              {config.heroSettings.ctaText} <ArrowUpRight />
             </Link>
           </Button>
         </div>
@@ -104,7 +116,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {products.slice(0, FEATURED_PRODUCTS_COUNT).map((product, index) => (
+          {displayedProducts.map((product: any, index: number) => (
               <article key={product.id} className="group relative">
                 <ProductDetailSheet
                   productId={product.id}
