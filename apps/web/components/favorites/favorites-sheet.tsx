@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { FALLBACK_IMAGE } from "@/lib/constants";
 import { ignoreToastClicks } from "@/lib/toast-guard";
 import { Button } from "@/components/ui/button";
+import { categoriesStore } from "@/lib/data-store.categories";
 import {
   Sheet,
   SheetContent,
@@ -100,7 +101,7 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
                   <div className="flex min-w-0 flex-1 flex-col justify-between">
                     <div>
                       <p className="micro-label">
-                        {product.label}
+                        {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                       </p>
                       <h3 className="mt-1 truncate text-sm font-bold uppercase">
                         {product.name}

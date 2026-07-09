@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { showCartToast } from "@/components/cart-toast";
 import { ROUTES } from "@/lib/routes";
+import { categoriesStore } from "@/lib/data-store.categories";
 
 export function FavoritesPageClient() {
   const { favorites, favoritesCount, clearAll } = useFavorites();
@@ -63,7 +64,7 @@ export function FavoritesPageClient() {
               className="product-glass relative block aspect-square w-full overflow-hidden"
             >
               <span className="absolute left-4 top-4 z-10 product-label">
-                {product.label}
+                {categoriesStore.getBySlug(product.category)?.name ?? product.category}
               </span>
               <FavoriteButton
                 productId={product.id}

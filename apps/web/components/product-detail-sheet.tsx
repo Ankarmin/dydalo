@@ -17,7 +17,9 @@ import { showCartToast } from "@/components/cart-toast";
 import { useCart } from "@/contexts/cart-context";
 import { FALLBACK_IMAGE } from "@/lib/constants";
 import { ignoreToastClicks } from "@/lib/toast-guard";
-import { products, type Product } from "@/data/products";
+import { type Product } from "@/data/products";
+import { productsStore } from "@/lib/data-store.products";
+import { categoriesStore } from "@/lib/data-store.categories";
 
 interface ProductDetailSheetProps {
   productId: number;
@@ -49,7 +51,7 @@ export function ProductDetailSheet({
       }
       return;
     }
-    const product = products.find((p) => p.id === productId);
+    const product = productsStore.getById(productId);
     setSelectedSize(product?.sizes?.[0] ?? null);
     setSelectedColor(product?.colors?.[0]?.name ?? null);
     setBrokenImages(false);
@@ -61,7 +63,7 @@ export function ProductDetailSheet({
   };
 
   const { updateQuantity } = useCart();
-  const product = products.find((p) => p.id === productId) ?? null;
+  const product = productsStore.getById(productId) ?? null;
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -115,12 +117,12 @@ export function ProductDetailSheet({
 
             <div className="flex flex-1 flex-col overflow-y-auto px-6 pb-6">
               <div className="border-b border-border pb-6 pt-6">
-                <p className="micro-label">{product.label}</p>
+                <p className="micro-label">{categoriesStore.getBySlug(product.category)?.name ?? product.category}</p>
                 <h2 className="mt-2 text-2xl font-bold uppercase tracking-tight">
                   {product.name}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {product.type}
+                  {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                 </p>
                 <p className="mt-3 text-xl font-bold">
                   {formatPrice(product.price)}
