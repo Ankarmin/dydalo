@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/format";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
 import type { Product } from "@/data/products";
+import { categoriesStore } from "@/lib/data-store.categories";
 
 type SortKey =
   | "relevantes"
@@ -132,7 +133,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
                   aria-label={`Ver detalles de ${product.name}`}
                 >
                   <span className="absolute left-4 top-4 z-10 product-label">
-                    {product.label}
+                    {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                   </span>
                   <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
                     {padIndex(index + 1)}

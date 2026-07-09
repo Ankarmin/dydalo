@@ -9,10 +9,10 @@ import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
 import { Button } from "@/components/ui/button";
 import {
-  catalogCategories,
-  products,
   type Product,
+  catalogCategories,
 } from "@/data/products";
+import { categoriesStore } from "@/lib/data-store.categories";
 
 const MAX_PER_CATEGORY = 4;
 
@@ -20,15 +20,15 @@ function padIndex(n: number): string {
   return n.toString().padStart(2, "0");
 }
 
-function getProductsForCategory(slug: string): Product[] {
+function getProductsForCategory(products: Product[], slug: string): Product[] {
   return products.filter((p) => p.category === slug);
 }
 
-export function CatalogGrouped() {
+export function CatalogGrouped({ products }: { products: Product[] }) {
   return (
     <div className="space-y-24">
-      {catalogCategories.map((cat) => {
-        const categoryProducts = getProductsForCategory(cat.slug);
+      {(categoriesStore.getActive().length > 0 ? categoriesStore.getActive() : catalogCategories).map((cat) => {
+        const categoryProducts = getProductsForCategory(products, cat.slug);
         if (categoryProducts.length === 0) return null;
 
         const displayed = categoryProducts.slice(0, MAX_PER_CATEGORY);
@@ -60,7 +60,7 @@ export function CatalogGrouped() {
                         aria-label={`Ver detalles de ${product.name}`}
                       >
                         <span className="absolute left-4 top-4 z-10 product-label">
-                          {product.label}
+                          {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                         </span>
                         <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
                           {padIndex(index + 1)}
