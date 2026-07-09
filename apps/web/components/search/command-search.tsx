@@ -19,6 +19,7 @@ import {
   groupResultsByCategory,
 } from "@/lib/search-index";
 import { formatPrice } from "@/lib/format";
+import { categoriesStore } from "@/lib/data-store.categories";
 import { ROUTES } from "@/lib/routes";
 
 interface CommandSearchProps {
@@ -122,7 +123,7 @@ export function CommandSearch({ open: externalOpen, onOpenChange: externalOnOpen
               {items.map((product) => (
                 <CommandItem
                   key={product.id}
-                  value={`${product.name} ${product.label} ${category}`}
+                  value={`${product.name} ${product.type} ${category}`}
                   onSelect={() =>
                     runCommand(() =>
                       router.push(
@@ -145,7 +146,7 @@ export function CommandSearch({ open: externalOpen, onOpenChange: externalOnOpen
                         {product.name}
                       </p>
                       <p className="truncate micro-text text-muted-foreground">
-                        {product.label} · {product.type}
+                        {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                       </p>
                     </div>
                     <p className="shrink-0 text-xs font-semibold text-muted-foreground">

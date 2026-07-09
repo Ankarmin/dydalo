@@ -1,6 +1,8 @@
-import { products, catalogCategories, type Product } from "@/data/products";
+import { productsStore } from "@/lib/data-store.products";
+import { categoriesStore } from "@/lib/data-store.categories";
+import type { AdminProduct } from "@/lib/data-store.types";
 
-export type SearchResult = Product & {
+export type SearchResult = AdminProduct & {
   matchScore: number;
 };
 
@@ -12,7 +14,7 @@ function normalize(text: string): string {
 }
 
 function getCategoryName(slug: string): string {
-  return catalogCategories.find((c) => c.slug === slug)?.name ?? slug;
+  return categoriesStore.getBySlug(slug)?.name ?? slug;
 }
 
 export function searchProducts(query: string): SearchResult[] {
@@ -20,6 +22,7 @@ export function searchProducts(query: string): SearchResult[] {
 
   const q = normalize(query.trim());
   const tokens = q.split(/\s+/).filter(Boolean);
+  const products = productsStore.getAll().filter((p) => p.active);
 
   const results: SearchResult[] = [];
 
@@ -28,9 +31,9 @@ export function searchProducts(query: string): SearchResult[] {
 
     for (const token of tokens) {
       const name = normalize(product.name);
-      const label = normalize(product.label);
       const type = normalize(product.type);
       const catName = normalize(getCategoryName(product.category));
+      const sku = normalize(product.sku);
 
       if (name === token) {
         score += 30;
@@ -38,17 +41,17 @@ export function searchProducts(query: string): SearchResult[] {
         score += 10;
       }
 
-      if (label.includes(token)) {
-        score += 5;
-      }
       if (type.includes(token)) {
-        score += 4;
+        score += 5;
       }
       if (catName.includes(token)) {
         score += 3;
       }
+      if (sku.includes(token)) {
+        score += 4;
+      }
 
-      const allFields = [name, label, type, catName].join(" ");
+      const allFields = [name, type, catName, sku].join(" ");
       if (score === 0 && allFields.includes(token)) {
         score += 2;
       }
@@ -60,7 +63,7 @@ export function searchProducts(query: string): SearchResult[] {
   }
 
   return results
-    .sort((a, b) => b.matchScore - a.matchScore)
+    .toSorted((a, b) => b.matchScore - a.matchScore)
     .slice(0, 15);
 }
 
