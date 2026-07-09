@@ -24,7 +24,9 @@ import { FavoritesSheet } from "@/components/favorites/favorites-sheet";
 import { CommandSearch } from "@/components/search/command-search";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
-import { catalogCategories, products } from "@/data/products";
+import { products } from "@/data/products";
+import { categoriesStore } from "@/lib/data-store.categories";
+import { catalogCategories } from "@/data/products";
 import { socialLinks } from "@/lib/social-links";
 import { socialPresentation } from "@/lib/social-presentation";
 import { LOGO_DARK, LOGO_LIGHT } from "@/lib/constants";
@@ -94,7 +96,7 @@ export function SiteHeader() {
                 </button>
                 {catalogExpanded && (
                   <div className="flex flex-col gap-1 pb-4">
-                    {catalogCategories.map((cat) => {
+                    {(categoriesStore.getActive().length > 0 ? categoriesStore.getActive() : catalogCategories).map((cat) => {
                       const count = getProductCount(cat.slug);
                       return (
                         <SheetClose key={cat.slug} asChild>
@@ -306,7 +308,7 @@ export function SiteHeader() {
                         <div className="flex min-w-0 flex-1 flex-col justify-between">
                           <div>
                             <p className="micro-label">
-                              {product.label}
+                              {categoriesStore.getBySlug(product.category)?.name ?? product.category}
                             </p>
                             <h3 className="mt-1 truncate text-sm font-bold uppercase">
                               {product.name}

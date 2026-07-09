@@ -7,7 +7,8 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 import { LOGO_DARK, LOGO_LIGHT } from "@/lib/constants";
-import { catalogCategories, products } from "@/data/products";
+import { products, catalogCategories } from "@/data/products";
+import { categoriesStore } from "@/lib/data-store.categories";
 
 function getProductCount(slug: string): number {
   return products.filter((p) => p.category === slug).length;
@@ -109,7 +110,7 @@ export function HeaderNav({
                 role="menu"
                 className="absolute left-0 top-full z-50 min-w-[13rem] popover-panel p-1.5 shadow-lg"
               >
-                {catalogCategories.map((cat) => {
+                {(categoriesStore.getActive().length > 0 ? categoriesStore.getActive() : catalogCategories).map((cat) => {
                   const count = getProductCount(cat.slug);
                   return (
                     <Link
