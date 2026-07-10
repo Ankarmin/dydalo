@@ -9,7 +9,8 @@ import {
   useEffect,
 } from "react";
 import type { ReactNode } from "react";
-import { products, type Product } from "@/data/products";
+import { productsStore } from "@/lib/data-store.products";
+import type { AdminProduct } from "@/lib/data-store.types";
 
 const STORAGE_KEY = "dydalo-favs";
 
@@ -34,7 +35,7 @@ function saveFavorites(ids: Set<number>) {
 }
 
 type FavoritesContextValue = {
-  favorites: Product[];
+  favorites: AdminProduct[];
   favoriteIds: Set<number>;
   favoritesCount: number;
   isFavorite: (productId: number) => boolean;
@@ -75,7 +76,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const favoritesCount = favoriteIds.size;
 
   const favorites = useMemo(
-    () => products.filter((p) => favoriteIds.has(p.id)),
+    () => productsStore.getAll().filter((p) => favoriteIds.has(p.id)),
     [favoriteIds],
   );
 
