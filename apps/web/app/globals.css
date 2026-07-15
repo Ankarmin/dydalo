@@ -161,6 +161,33 @@
   }
 }
 
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(from var(--accent) l c h / 0.45);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(from var(--accent) l c h / 0.75);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(from var(--accent) l c h / 0.45) transparent;
+}
+
 @utility asphalt {
   background-image:
     radial-gradient(
@@ -224,7 +251,7 @@
 }
 
 /* ── Typography ── */
-@utility overline {
+@utility section-tag {
   font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 700;
