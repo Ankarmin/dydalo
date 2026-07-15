@@ -21,13 +21,6 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 export const STORAGE_KEY = "dydalo-theme";
 const ATTR = "data-theme";
 
-function getSystemTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : "dark";
-}
-
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "dark";
   try {
@@ -36,7 +29,7 @@ function getStoredTheme(): Theme {
   } catch {
     /* localStorage inaccesible */
   }
-  return getSystemTheme();
+  return "dark";
 }
 
 function applyTheme(theme: Theme) {
@@ -54,18 +47,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       /* localStorage no disponible */
     }
   }, [theme]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: light)");
-    const handler = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) {
-        setThemeState(e.matches ? "light" : "dark");
-      }
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
 
   const setTheme = useCallback((t: Theme) => setThemeState(t), []);
   const toggleTheme = useCallback(

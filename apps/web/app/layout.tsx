@@ -53,25 +53,21 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-dark-16x16.png" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-light-16x16.png" media="(prefers-color-scheme: light)" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-dark-32x32.png" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-light-32x32.png" media="(prefers-color-scheme: light)" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon-dark.png" media="(prefers-color-scheme: dark)" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon-light.png" media="(prefers-color-scheme: light)" />
-        <link rel="icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" href="/favicon-light.ico" media="(prefers-color-scheme: light)" />
-        <link rel="manifest" href="/site-dark.webmanifest" media="(prefers-color-scheme: dark)" />
-        <link rel="manifest" href="/site-light.webmanifest" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-dark-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-dark-32x32.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon-dark.png" />
+        <link rel="icon" href="/favicon-dark.ico" />
+        <link rel="manifest" href="/site-dark.webmanifest" />
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <Script id="theme-script" strategy="beforeInteractive">
           {`(function(){
             try{
-              var t=localStorage.getItem('${THEME_STORAGE_KEY}');
-              if(!t){t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';}
+              var t=localStorage.getItem('${THEME_STORAGE_KEY}')||'dark';
               document.documentElement.setAttribute('data-theme',t);
-            }catch(e){}
+            }catch(e){
+              document.documentElement.setAttribute('data-theme','dark');
+            }
           })();`}
         </Script>
         <ThemeProvider>
