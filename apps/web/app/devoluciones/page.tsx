@@ -46,7 +46,7 @@ export default function DevolucionesPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Devoluciones</p>
+          <p className="section-tag">Devoluciones</p>
           <h1 className="page-hero-heading">
             Sin letra pequeña.
           </h1>
@@ -91,7 +91,7 @@ export default function DevolucionesPage() {
       {/* ── Condiciones ── */}
       <section className="border-t border-border section-px section-md">
         <div className="container-page">
-          <p className="overline">Condiciones claras</p>
+          <p className="section-tag">Condiciones claras</p>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
             {conditions.map((condition) => (
               <div

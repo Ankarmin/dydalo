@@ -56,7 +56,7 @@ export default function ColaboracionesPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Colaboraciones</p>
+          <p className="section-tag">Colaboraciones</p>
           <h1 className="page-hero-heading">
             Juntos rompemos
             <br />

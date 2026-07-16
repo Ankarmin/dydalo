@@ -38,7 +38,7 @@ export default function ContactoPage() {
         <div className="flex items-center section-px pt-32 pb-12 lg:pt-0">
           <div className="mx-auto w-full max-w-md">
             <div className="lg:hidden">
-              <p className="overline">Contacto</p>
+              <p className="section-tag">Contacto</p>
               <h1 className="page-hero-heading">
                 Háblanos directo.
               </h1>

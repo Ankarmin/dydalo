@@ -16,7 +16,7 @@ export default function GuiaDeTallasPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Guía de Tallas</p>
+          <p className="section-tag">Guía de Tallas</p>
           <h1 className="page-hero-heading">
             Que el número no te engañe.
           </h1>

@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowUpRight } from 'lucide-react';
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_STANDARD_PRICE, SHIPPING_INTERNATIONAL_PRICE } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Envíos',
-  description: 'De la calle a tu casa. Express, estándar e internacional. Envíos gratis en pedidos superiores a $150.',
+  description: `De la calle a tu casa. Express, estándar e internacional. Envíos gratis en pedidos superiores a $${FREE_SHIPPING_THRESHOLD}.`,
 };
 import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,7 @@ const rates = [
     icon: '🚀',
     name: 'Express',
     time: '1-2 días',
-    price: '$12',
+    price: `$${SHIPPING_STANDARD_PRICE}`,
     detail: 'Entrega prioritaria con seguimiento en tiempo real.',
   },
   {
@@ -45,13 +46,13 @@ const rates = [
     name: 'Estándar',
     time: '3-5 días',
     price: '$5',
-    detail: 'Gratis en pedidos superiores a $150.',
+    detail: `Gratis en pedidos superiores a $${FREE_SHIPPING_THRESHOLD}.`,
   },
   {
     icon: '🌍',
     name: 'Internacional',
     time: '7-14 días',
-    price: '$20',
+    price: `$${SHIPPING_INTERNATIONAL_PRICE}`,
     detail: 'Envíos a más de 30 países. Aduanas no incluidas.',
   },
 ];
@@ -62,7 +63,7 @@ export default function EnviosPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Envíos</p>
+          <p className="section-tag">Envíos</p>
           <h1 className="page-hero-heading">
             De la calle a tu casa.
           </h1>
@@ -105,7 +106,7 @@ export default function EnviosPage() {
       {/* ── Tarifas ── */}
       <section className="border-t border-border section-px section-md">
         <div className="container-page">
-          <p className="overline">Tarifas</p>
+          <p className="section-tag">Tarifas</p>
           <h2 className="mt-2 text-3xl font-bold uppercase tracking-tight md:text-4xl">
             Lo que cuesta llegar.
           </h2>
@@ -135,7 +136,7 @@ export default function EnviosPage() {
 
           <div className="mt-8 inline-block border border-accent bg-accent/10 px-5 py-3">
             <p className="text-sm font-bold uppercase tracking-wide text-accent">
-              Envíos gratis en pedidos superiores a $150
+              Envíos gratis en pedidos superiores a ${FREE_SHIPPING_THRESHOLD}
             </p>
           </div>
         </div>

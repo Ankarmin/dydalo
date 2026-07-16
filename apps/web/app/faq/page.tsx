@@ -15,7 +15,7 @@ export default function FaqPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">FAQ</p>
+          <p className="section-tag">FAQ</p>
           <h1 className="page-hero-heading">
             Sin vueltas.
           </h1>
