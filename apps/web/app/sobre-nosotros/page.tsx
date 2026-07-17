@@ -15,7 +15,7 @@ export default function SobreNosotrosPage() {
       {/* ── Hero ── */}
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">
+          <p className="section-tag">
             Sobre Nosotros
           </p>
           <h1 className="page-hero-heading lg:text-8xl">

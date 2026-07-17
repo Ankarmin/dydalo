@@ -41,7 +41,7 @@ export default function NuestraHistoriaPage() {
 
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Nuestra Historia</p>
+          <p className="section-tag">Nuestra Historia</p>
           <h1 className="page-hero-heading lg:text-8xl">
             No nacimos.
             <br />

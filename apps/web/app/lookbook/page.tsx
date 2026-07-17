@@ -16,7 +16,7 @@ export default function LookbookPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Lookbook</p>
+          <p className="section-tag">Lookbook</p>
           <h1 className="page-hero-heading lg:text-8xl">Flow sin límites.</h1>
           <p className="hero-description">
             Una carta de amor a la calle. Historias visuales que capturan la esencia de DYDALO: sin filtros, sin poses, sin miedo.

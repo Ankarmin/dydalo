@@ -14,7 +14,7 @@ export default function BlogPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
-          <p className="overline">Blog</p>
+          <p className="section-tag">Blog</p>
           <h1 className="page-hero-heading">
             La cultura no se copia, se vive.
           </h1>
