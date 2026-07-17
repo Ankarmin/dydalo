@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { User, LogOut, ShoppingBag, X } from "lucide-react";
+import { User, LogOut, ShoppingCart, X } from "lucide-react";
 import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from "@/lib/constants";
 
 const FAVORITE = { bg: "bg-favorite", border: "border-favorite" } as const;
@@ -30,7 +30,7 @@ function notify(
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="overline">{title}</p>
+          <p className="section-tag">{title}</p>
           {description && (
             <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wider text-foreground">
               {description}
@@ -103,7 +103,7 @@ export function showGoogleComingSoonToast() {
 
 export function showComingSoonToast() {
   notify(
-    <ShoppingBag className="size-4 text-muted-foreground" />,
+    <ShoppingCart className="size-4 text-muted-foreground" />,
     MUTED,
     "próximamente",
     "Esta funcionalidad estará disponible pronto",

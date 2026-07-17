@@ -1,7 +1,7 @@
 'use client';
 
 import { toast } from 'sonner';
-import { ShoppingBag, X } from 'lucide-react';
+import { ShoppingCart, X } from 'lucide-react';
 import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from '@/lib/constants';
 import { formatPrice } from '@/lib/format';
 
@@ -18,13 +18,13 @@ export function showCartToast(productName: string, price: number) {
 
         {/* Icon */}
         <div className="relative flex size-10 shrink-0 items-center justify-center border border-accent bg-accent/10">
-          <ShoppingBag className="size-4 text-accent" />
+          <ShoppingCart className="size-4 text-accent" />
           <span className="absolute -right-1 -top-1 size-3 animate-pulse bg-accent" />
         </div>
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <p className="overline">agregado a la bolsa</p>
+          <p className="section-tag">agregado al carrito</p>
           <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wider text-foreground">
             {productName}
           </p>

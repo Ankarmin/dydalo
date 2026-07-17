@@ -22,7 +22,7 @@ export function showFavoriteToast(productName: string, added: boolean) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="overline">
+          <p className="section-tag">
             {added ? "guardado en favoritos" : "eliminado de favoritos"}
           </p>
           <p className="mt-0.5 truncate text-xs font-bold uppercase tracking-wider text-foreground">

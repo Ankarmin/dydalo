@@ -5,13 +5,11 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { formatPrice } from '@/lib/format';
 import { useProducts } from '@/lib/use-products';
 import { useSiteConfig } from '@/lib/use-site-config';
 import { categoriesStore } from '@/lib/data-store.categories';
 import { catalogCategories } from '@/data/products';
-import { FavoriteButton } from '@/components/favorites/favorite-button';
-import { ProductDetailSheet } from '@/components/product-detail-sheet';
+import { ProductCard } from '@/components/product-card';
 import { FEATURED_PRODUCTS_COUNT, LOGO_DARK, LOGO_LIGHT } from '@/lib/constants';
 import {
   Dialog,
@@ -24,7 +22,6 @@ import { ROUTES } from '@/lib/routes';
 import { ignoreToastClicks } from '@/lib/toast-guard';
 
 export default function HomePage() {
-  const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const [newsletterEmail, setNewsletterEmail] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const newsletterRef = useRef<HTMLInputElement>(null);
@@ -94,7 +91,7 @@ export default function HomePage() {
           look dydalo.
         </p>
         <div className="md:col-span-7 md:col-start-6">
-          <p className="mb-4 overline">NO ES SOLO ROPA</p>
+          <p className="mb-4 section-tag">NO ES SOLO ROPA</p>
           <h2 className="max-w-4xl text-4xl font-medium leading-[0.98] tracking-[-0.05em] md:text-6xl lg:text-7xl">
             HECHO PARA QUIEN NO PIDE PERMISO.
           </h2>
@@ -116,61 +113,13 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {displayedProducts.map((product: any, index: number) => (
-              <article key={product.id} className="group relative">
-                <ProductDetailSheet
-                  productId={product.id}
-                  trigger={
-                    <button
-                      type="button"
-                      className="product-glass relative aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
-                      aria-label={`Ver detalles de ${product.name}`}
-                    >
-                      <span className="absolute left-2 top-2 z-10 product-label sm:left-4 sm:top-4">
-                        {product.label}
-                      </span>
-                      <span className="absolute right-3 top-2 z-10 text-lg font-bold tracking-tight text-foreground/20">
-                        0{index + 1}
-                      </span>
-                      <FavoriteButton
-                        productId={product.id}
-                        productName={product.name}
-                        variant="card"
-                      />
-                      <Image
-                        src={
-                          brokenImages.has(product.id)
-                            ? '/images/dydalo-hero.jpg'
-                            : product.image
-                        }
-                        alt={product.name}
-                        width={1024}
-                        height={1024}
-                        priority={index === 0}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        onError={() =>
-                          setBrokenImages((prev) => new Set(prev).add(product.id))
-                        }
-                        className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-                    </button>
-                  }
-                />
-                <div className="mt-4 flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold uppercase tracking-tight">
-                      {product.name}
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {product.type}
-                    </p>
-                  </div>
-                  <p className="shrink-0 text-sm font-semibold">
-                    {formatPrice(product.price)}
-                  </p>
-                </div>
-              </article>
-            ))}
+          {displayedProducts.map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              priority={index === 0}
+            />
+          ))}
         </div>
 
         <div className="mt-16 flex justify-center">
