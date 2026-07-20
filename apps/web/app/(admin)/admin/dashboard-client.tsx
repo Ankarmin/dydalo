@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   Package,
-  ShoppingBag,
+  ShoppingCart,
   DollarSign,
   Users,
   TrendingUp,
@@ -18,6 +18,7 @@ import { usersStore } from "@/lib/data-store.users";
 import { seedIfEmpty } from "@/lib/seed-data";
 import type { AdminProduct, Order } from "@/lib/data-store";
 import { ROUTES } from "@/lib/routes";
+import { LOW_STOCK_THRESHOLD, RECENT_ORDERS_LIMIT, PENDING_ORDERS_WARNING_THRESHOLD } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
 
@@ -89,6 +90,13 @@ export function DashboardClient() {
     setLoading(false);
   }, []);
 
+  const [clock, setClock] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setClock(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -103,7 +111,7 @@ export function DashboardClient() {
   }
 
   const activeProducts = products.filter((p) => p.active).length;
-  const lowStock = products.filter((p) => p.stock <= 5 && p.active).length;
+  const lowStock = products.filter((p) => p.stock <= LOW_STOCK_THRESHOLD && p.active).length;
   const customerUsers = usersStore.getAll().filter((u) => u.role === "customer").length;
 
   const now = new Date();
@@ -118,7 +126,7 @@ export function DashboardClient() {
 
   const recentOrders = orders
     .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+    .slice(0, RECENT_ORDERS_LIMIT);
 
   const userMap = new Map(usersStore.getAll().map((u) => [u.id, u]));
 
@@ -136,7 +144,8 @@ export function DashboardClient() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-heading">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          {now.toLocaleDateString("es-PE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {now.toLocaleDateString("es-PE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}{" — "}
+          {clock.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         </p>
       </div>
 
@@ -147,15 +156,15 @@ export function DashboardClient() {
           value={activeProducts}
           subtitle={`${lowStock} con stock bajo`}
           icon={Package}
-          variant={lowStock > 5 ? "warning" : "default"}
+          variant={lowStock > LOW_STOCK_THRESHOLD ? "warning" : "default"}
           href={ROUTES.adminProductos}
         />
         <StatCard
           title="Pedidos del Mes"
           value={monthOrders.length}
           subtitle={`${pendingOrders} pendientes`}
-          icon={ShoppingBag}
-          variant={pendingOrders > 3 ? "warning" : "default"}
+          icon={ShoppingCart}
+          variant={pendingOrders > PENDING_ORDERS_WARNING_THRESHOLD ? "warning" : "default"}
           href={ROUTES.adminPedidos}
         />
         <StatCard
@@ -304,7 +313,7 @@ export function DashboardClient() {
           <div>
             <p className="text-sm font-semibold text-yellow-400">Atención: Stock Bajo</p>
             <p className="text-sm text-muted-foreground">
-              Hay {lowStock} producto{lowStock > 1 ? "s" : ""} con stock bajo (≤ 5 unidades).
+              Hay {lowStock} producto{lowStock > 1 ? "s" : ""} con stock bajo (≤ {LOW_STOCK_THRESHOLD} unidades).
             </p>
             <Link href={ROUTES.adminProductos} className="text-xs text-accent hover:underline mt-1 inline-block">
               Revisar productos
