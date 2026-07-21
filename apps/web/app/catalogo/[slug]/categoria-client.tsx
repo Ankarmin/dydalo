@@ -11,10 +11,15 @@ export function CategoriaClient({ slug, categoryName }: { slug: string; category
 
   return (
     <div>
-      <p className="text-xs font-bold tracking-micro text-muted-foreground mb-8">
-        {categoryProducts.length}{" "}
-        {categoryProducts.length === 1 ? "producto" : "productos"}
-      </p>
+      <div className="mb-8">
+        <h1 className="text-xl font-bold uppercase tracking-tight">
+          {categoryName}
+        </h1>
+        <p className="mt-1 text-xs font-bold tracking-[0.16em] text-muted-foreground">
+          {categoryProducts.length}{" "}
+          {categoryProducts.length === 1 ? "producto" : "productos"}
+        </p>
+      </div>
 
       {categoryProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">

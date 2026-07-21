@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { categoriesStore } from "@/lib/data-store.categories";
@@ -40,12 +38,7 @@ export default async function CategoriaPage({
 
   return (
     <main className="page-root">
-      <section className="section-px page-top pb-8">
-        <h1 className="text-2xl font-bold uppercase tracking-tight">
-          {categoryName}
-        </h1>
-      </section>
-      <section className="section-px pb-16">
+      <section className="section-px page-top pb-16">
         <CategoriaClient slug={slug} categoryName={categoryName} />
       </section>
     </main>
