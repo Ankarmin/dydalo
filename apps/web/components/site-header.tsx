@@ -3,15 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowUpRight, ChevronDown, Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
-import { showComingSoonToast } from "@/components/auth/auth-toast";
+import { ChevronDown, Heart, Menu, Search, User } from "lucide-react";
 import { ignoreToastClicks } from "@/lib/toast-guard";
-import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -21,6 +18,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { HeaderNav, marcaItems } from "@/components/header-nav";
 import { UserButton } from "@/components/auth/user-button";
 import { FavoritesSheet } from "@/components/favorites/favorites-sheet";
+import { CartSheet } from "@/components/cart-sheet";
 import { CommandSearch } from "@/components/search/command-search";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
@@ -42,7 +40,6 @@ export function SiteHeader() {
   const { favoritesCount } = useFavorites();
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
   const [catalogExpanded, setCatalogExpanded] = useState(false);
   const [marcaExpanded, setMarcaExpanded] = useState(false);
 
@@ -238,150 +235,13 @@ export function SiteHeader() {
             <UserButton />
           </div>
           <ThemeToggle />
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Abrir bolsa con ${cartCount} productos`}
-                className="relative"
-              >
-                <ShoppingBag />
-                <span className="absolute -right-1 -top-1 grid size-4 place-items-center bg-accent text-[9px] font-bold text-accent-foreground">
-                  {cartCount}
-                </span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="flex w-full flex-col border-border bg-background p-0 sm:max-w-md" onInteractOutside={ignoreToastClicks}>
-              <SheetHeader className="border-b border-border px-6 py-6 text-left">
-                <p className="text-sm font-bold uppercase tracking-subhead text-accent">
-                  Tu selección
-                </p>
-                <SheetTitle className="text-3xl font-bold tracking-[-0.05em]">
-                  TU BOLSA
-                </SheetTitle>
-                <SheetDescription>
-                  {cartCount === 0
-                    ? "Todavía no elegiste tu flow."
-                    : `${cartCount} piezas seleccionadas`}
-                </SheetDescription>
-              </SheetHeader>
-
-              {cartProducts.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-                  <ShoppingBag
-                    className="mb-5 size-10 text-muted-foreground"
-                    strokeWidth={1.25}
-                  />
-                  <p className="text-xl font-bold">LA BOLSA ESTÁ VACÍA</p>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
-                    Encuentra una pieza que hable por ti y añádela a tu
-                    selección.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-y-auto px-6">
-                  {cartProducts.map((product) => {
-                    const quantity = cart[product.id] ?? 0;
-                    return (
-                      <article
-                        key={product.id}
-                        className="flex gap-4 border-b border-border py-5"
-                      >
-                        <Image
-                          src={
-                            brokenImages.has(product.id)
-                              ? "/images/dydalo-hero.jpg"
-                              : product.image
-                          }
-                          alt={product.name}
-                          width={112}
-                          height={112}
-                          sizes="112px"
-                          onError={() =>
-                            setBrokenImages((prev) =>
-                              new Set(prev).add(product.id),
-                            )
-                          }
-                          className="size-24 object-cover"
-                        />
-                        <div className="flex min-w-0 flex-1 flex-col justify-between">
-                          <div>
-                            <p className="micro-label">
-                              {categoriesStore.getBySlug(product.category)?.name ?? product.category}
-                            </p>
-                            <h3 className="mt-1 truncate text-sm font-bold uppercase">
-                              {product.name}
-                            </h3>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {formatPrice(product.price)}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center border border-border">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-11 rounded-none"
-                                aria-label={`Quitar una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, -1)}
-                              >
-                                −
-                              </Button>
-                              <span className="w-7 text-center text-xs font-bold">
-                                {quantity}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-11 rounded-none"
-                                aria-label={`Añadir una unidad de ${product.name}`}
-                                onClick={() => updateQuantity(product.id, 1)}
-                              >
-                                +
-                              </Button>
-                            </div>
-                            <p className="text-sm font-bold">
-                              {formatPrice(product.price * quantity)}
-                            </p>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="border-t border-border bg-secondary/40 p-6">
-                <div className="mb-5 flex items-end justify-between">
-                  <div>
-                    <p className="micro-text font-bold tracking-[0.18em] text-muted-foreground">
-                      SUBTOTAL
-                    </p>
-                    <p className="mt-1 text-3xl font-bold tracking-tight">
-                      {formatPrice(subtotal)}
-                    </p>
-                  </div>
-                  <p className="text-right micro-text leading-4 text-muted-foreground">
-                    ENVÍO CALCULADO
-                    <br />
-                    EN EL CHECKOUT
-                  </p>
-                </div>
-                <Button
-                  variant="hero"
-                  size="hero"
-                  className="w-full"
-                  disabled={!cartCount}
-                  onClick={() =>
-                    showComingSoonToast()
-                  }
-                >
-                  FINALIZAR COMPRA <ArrowUpRight />
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <CartSheet
+            cartCount={cartCount}
+            cartProducts={cartProducts}
+            cart={cart}
+            subtotal={subtotal}
+            updateQuantity={updateQuantity}
+          />
         </>
       }
     />
