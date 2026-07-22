@@ -8,7 +8,7 @@ import {
   LayoutDashboard,
   Package,
   Tags,
-  ShoppingBag,
+  ShoppingCart,
   Users,
   ArrowLeft,
   LogOut,
@@ -22,7 +22,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 const NAV_ITEMS = [
   {
@@ -44,7 +43,7 @@ const NAV_ITEMS = [
   {
     label: "Pedidos",
     href: ROUTES.adminPedidos,
-    icon: ShoppingBag,
+    icon: ShoppingCart,
   },
   {
     label: "Clientes",
@@ -132,7 +131,7 @@ export function AdminSidebar() {
           collapsed ? "w-[60px]" : "w-[240px]"
         )}
       >
-        <div className={cn("flex items-center gap-2 px-3 py-4 shrink-0", collapsed ? "justify-center" : "px-4")}>
+        <div className={cn("flex items-center justify-center gap-2 px-3 py-4 shrink-0", collapsed ? "justify-center" : "px-4")}>
           {!collapsed && (
             <Link href={ROUTES.home} className="flex items-center gap-2">
               <Image src={LOGO_DARK} alt="DYDALO" width={100} height={23} className="h-5 w-auto logo-dark" />
