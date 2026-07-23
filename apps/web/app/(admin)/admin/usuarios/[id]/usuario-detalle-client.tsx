@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, User, Mail, Phone, Calendar, ShoppingBag, DollarSign, Loader2 } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, ShoppingCart, DollarSign, Loader2 } from "lucide-react";
 import { usersStore } from "@/lib/data-store.users";
 import { ordersStore } from "@/lib/data-store.orders";
 import type { User as UserType, Order } from "@/lib/data-store.types";
@@ -85,7 +85,7 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
-            <ShoppingBag className="size-4 text-muted-foreground" />
+            <ShoppingCart className="size-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Total Pedidos</span>
           </div>
           <p className="text-2xl font-bold">{orders.length}</p>

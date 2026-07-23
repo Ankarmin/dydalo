@@ -3,9 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { Heart, Trash2 } from "lucide-react";
 import { useFavorites } from "@/contexts/favorites-context";
-import { useCart } from "@/contexts/cart-context";
 import { formatPrice } from "@/lib/format";
 import { FALLBACK_IMAGE } from "@/lib/constants";
 import { ignoreToastClicks } from "@/lib/toast-guard";
@@ -21,7 +20,6 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
-import { showCartToast } from "@/components/cart-toast";
 import { ROUTES } from "@/lib/routes";
 
 interface FavoritesSheetProps {
@@ -30,7 +28,6 @@ interface FavoritesSheetProps {
 
 export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
   const { favorites, favoritesCount, clearAll } = useFavorites();
-  const { updateQuantity } = useCart();
   const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
 
   return (
@@ -98,37 +95,23 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
                       className="size-24 object-cover"
                     />
                   </Link>
-                  <div className="flex min-w-0 flex-1 flex-col justify-between">
-                    <div>
-                      <p className="micro-label">
-                        {categoriesStore.getBySlug(product.category)?.name ?? product.category}
-                      </p>
-                      <h3 className="mt-1 truncate text-sm font-bold uppercase">
-                        {product.name}
-                      </h3>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatPrice(product.price)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FavoriteButton
-                        productId={product.id}
-                        productName={product.name}
-                        variant="inline"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        aria-label={`Añadir ${product.name} a la bolsa`}
-                        onClick={() => {
-                          updateQuantity(product.id, 1);
-                          showCartToast(product.name, product.price);
-                        }}
-                      >
-                        <ShoppingBag className="size-3.5" />
-                      </Button>
-                    </div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-center">
+                    <p className="micro-label">
+                      {categoriesStore.getBySlug(product.category)?.name ?? product.category}
+                    </p>
+                    <h3 className="mt-1 truncate text-sm font-bold uppercase">
+                      {product.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatPrice(product.price)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center">
+                    <FavoriteButton
+                      productId={product.id}
+                      productName={product.name}
+                      variant="inline"
+                    />
                   </div>
                 </article>
               ))}

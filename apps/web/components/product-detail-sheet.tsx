@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useCallback } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,10 @@ import {
 import { formatPrice } from "@/lib/format";
 import { showCartToast } from "@/components/cart-toast";
 import { useCart } from "@/contexts/cart-context";
-import { FALLBACK_IMAGE } from "@/lib/constants";
 import { ignoreToastClicks } from "@/lib/toast-guard";
-import { type Product } from "@/data/products";
 import { productsStore } from "@/lib/data-store.products";
 import { categoriesStore } from "@/lib/data-store.categories";
+import { SafeImage } from "@/components/safe-image";
 
 interface ProductDetailSheetProps {
   productId: number;
@@ -35,7 +33,6 @@ export function ProductDetailSheet({
   onOpenChange: externalOnOpenChange,
 }: ProductDetailSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const [brokenImages, setBrokenImages] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
@@ -54,7 +51,6 @@ export function ProductDetailSheet({
     const product = productsStore.getById(productId);
     setSelectedSize(product?.sizes?.[0] ?? null);
     setSelectedColor(product?.colors?.[0]?.name ?? null);
-    setBrokenImages(false);
     if (isControlled) {
       externalOnOpenChange?.(true);
     } else {
@@ -95,14 +91,13 @@ export function ProductDetailSheet({
             </SheetHeader>
 
             <div className="relative aspect-[4/3] w-full overflow-hidden">
-              <Image
-                src={brokenImages ? FALLBACK_IMAGE : product.image}
+              <SafeImage
+                src={product.image}
                 alt={product.name}
                 width={1024}
                 height={768}
                 sizes="(max-width: 640px) 100vw, 448px"
                 className="size-full object-cover"
-                onError={() => setBrokenImages(true)}
               />
               <button
                 type="button"
@@ -199,7 +194,7 @@ export function ProductDetailSheet({
                   className="w-full"
                   onClick={handleAddToCart}
                 >
-                  AÑADIR A LA BOLSA <ArrowUpRight />
+                  AÑADIR AL CARRITO <ArrowUpRight />
                 </Button>
               </div>
             </div>
