@@ -3,7 +3,7 @@ import { ordersStore } from "./data-store.orders";
 import { usersStore } from "./data-store.users";
 import { blogStore } from "./data-store.blog";
 import { lookbookStore } from "./data-store.lookbook";
-import type { User, Order, BlogPost, LookbookEntry, CreateOrderInput } from "./data-store.types";
+import type { User, BlogPost, LookbookEntry, CreateOrderInput } from "./data-store.types";
 
 let seeded = false;
 
@@ -15,8 +15,6 @@ export function seedIfEmpty(): void {
 
   const users = usersStore.getAll();
   if (users.length > 0) return;
-
-  const now = new Date().toISOString();
 
   const sampleUsers: Omit<User, "id" | "createdAt" | "updatedAt">[] = [
     { name: "Carlos Mendoza", email: "carlos@email.com", role: "customer", phone: "+51 987 654 321" },
@@ -92,7 +90,6 @@ export function seedIfEmpty(): void {
 
   const createdOrders = orderInputs.map((input) => ordersStore.create(input));
 
-  const nowMs = Date.now();
   ordersStore.transitionStatus(createdOrders[0].id, "confirmado", createdUsers[0].id);
   ordersStore.transitionStatus(createdOrders[0].id, "enviado", createdUsers[0].id);
   ordersStore.transitionStatus(createdOrders[1].id, "confirmado", createdUsers[1].id);
