@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CategoriaEditarClient } from "./categoria-editar-client";
+import { CategoryForm } from "@/components/admin/category-form";
 
 export const metadata: Metadata = { title: "Editar Categoría" };
 
@@ -9,5 +9,5 @@ export default async function CategoriaEditarPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <CategoriaEditarClient slug={slug} />;
+  return <CategoryForm slug={slug} />;
 }

@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-import { CategoriaNuevaClient } from "./categoria-nueva-client";
+"use client";
 
-export const metadata: Metadata = { title: "Nueva Categoría" };
+import { CategoryForm } from "@/components/admin/category-form";
 
 export default function CategoriaNuevaPage() {
-  return <CategoriaNuevaClient />;
+  return <CategoryForm />;
 }
