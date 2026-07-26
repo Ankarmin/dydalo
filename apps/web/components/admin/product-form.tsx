@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,7 @@ import { productsStore } from "@/lib/data-store.products";
 import type { ProductSize } from "@/lib/data-store.types";
 import { categoriesStore } from "@/lib/data-store.categories";
 import { ROUTES } from "@/lib/routes";
+import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,7 @@ const formSchema = z.object({
   price: z.coerce.number().positive("Debe ser mayor a 0"),
   sku: z.string().min(1, "SKU requerido"),
   stock: z.coerce.number().int().nonnegative("No puede ser negativo"),
-  discount: z.coerce.number().min(0).max(100).nullish(),
+  discount: z.coerce.number().min(0).max(100).nullable(),
   image: z.string().default(""),
   active: z.boolean(),
   featured: z.boolean(),
@@ -48,35 +49,69 @@ const formSchema = z.object({
   colors: z.array(z.object({ name: z.string().min(1), hex: z.string() })).min(1, "Al menos un color"),
 });
 
-const defaultValues = {
+type FormValues = z.infer<typeof formSchema>;
+
+type ColorItem = FormValues["colors"][number];
+
+const defaultValues: FormValues = {
   name: "",
-  type: "Ropa" as const,
+  type: "Ropa",
   category: "",
   price: 0,
   sku: "",
   stock: 0,
-  discount: null as number | null,
+  discount: null,
   image: "",
   active: true,
   featured: false,
-  sizes: ["M", "L"] as string[],
-  colors: [{ name: "Negro", hex: "#1a1a1a" }],
+  sizes: ["M", "L"],
+  colors: [{ name: "Negro", hex: DEFAULT_PRODUCT_COLOR_HEX }],
 };
 
-export function ProductoNuevoClient() {
+interface ProductFormProps {
+  productId?: number;
+}
+
+export function ProductForm({ productId }: ProductFormProps) {
   const router = useRouter();
+  const isEdit = productId !== undefined;
+  const [loading, setLoading] = useState(isEdit);
+  const [notFound, setNotFound] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   const [categories] = useState(categoriesStore.getActive());
   const [newSize, setNewSize] = useState("");
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
 
-  const sizes = form.watch("sizes") as string[];
+  useEffect(() => {
+    if (!isEdit) return;
+    const product = productsStore.getById(productId);
+    if (!product) {
+      setNotFound(true);
+      return;
+    }
+    form.reset({
+      name: product.name,
+      type: product.type as FormValues["type"],
+      category: product.category,
+      price: product.price,
+      sku: product.sku,
+      stock: product.stock,
+      discount: product.discount,
+      image: product.image,
+      active: product.active,
+      featured: product.featured,
+      sizes: product.sizes as unknown as string[],
+      colors: product.colors,
+    });
+    setLoading(false);
+  }, [productId, form, isEdit]);
+
+  const sizes = form.watch("sizes");
   const colors = form.watch("colors");
 
   function addSize() {
@@ -87,31 +122,58 @@ export function ProductoNuevoClient() {
   }
 
   function removeSize(index: number) {
-    form.setValue("sizes", sizes.filter((_: string, i: number) => i !== index), { shouldValidate: true });
+    form.setValue("sizes", sizes.filter((_, i) => i !== index), { shouldValidate: true });
   }
 
   function addColor() {
-    form.setValue("colors", [...colors, { name: "", hex: "#1a1a1a" }] as any);
+    form.setValue("colors", [...colors, { name: "", hex: DEFAULT_PRODUCT_COLOR_HEX }], { shouldValidate: true });
   }
 
   function removeColor(index: number) {
-    form.setValue("colors", colors.filter((_: any, i: number) => i !== index) as any, { shouldValidate: true });
+    form.setValue("colors", colors.filter((_, i) => i !== index), { shouldValidate: true });
   }
 
   const onSubmit = form.handleSubmit((values) => {
     setIsPending(true);
 
     setTimeout(() => {
-      const created = productsStore.create({
-        ...(values as any),
-        sizes: values.sizes as unknown as ProductSize[],
-        discount: values.discount ?? null,
-      });
-
-      toast.success(`Producto "${created.name}" creado`);
+      if (isEdit) {
+        const updated = productsStore.update(productId!, {
+          ...values,
+          sizes: values.sizes as unknown as ProductSize[],
+        });
+        if (updated) {
+          toast.success(`Producto "${updated.name}" actualizado`);
+        }
+      } else {
+        const created = productsStore.create({
+          ...values,
+          sizes: values.sizes as unknown as ProductSize[],
+        });
+        toast.success(`Producto "${created.name}" creado`);
+      }
       router.push(ROUTES.adminProductos);
-    }, 400);
+    }, ADMIN_FORM_SIMULATED_DELAY_MS);
   });
+
+  if (notFound) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-sm text-muted-foreground">Producto no encontrado.</p>
+        <Button variant="outline" className="mt-4" asChild>
+          <Link href={ROUTES.adminProductos}>Volver a productos</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -122,8 +184,12 @@ export function ProductoNuevoClient() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-heading">Nuevo Producto</h1>
-          <p className="text-sm text-muted-foreground">Completa los campos para crear un producto</p>
+          <h1 className="text-2xl font-bold tracking-heading">
+            {isEdit ? "Editar Producto" : "Nuevo Producto"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isEdit ? "Modifica los campos del producto" : "Completa los campos para crear un producto"}
+          </p>
         </div>
       </div>
 
@@ -273,19 +339,19 @@ export function ProductoNuevoClient() {
                   </FormItem>
                 )}
               />
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Imagen del producto</FormLabel>
-                  <FormControl>
-                    <ImageUploader value={field.value} onChange={field.onChange} disabled={isPending} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Imagen del producto</FormLabel>
+                    <FormControl>
+                      <ImageUploader value={field.value} onChange={field.onChange} disabled={isPending} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
 
@@ -293,7 +359,7 @@ export function ProductoNuevoClient() {
             <h2 className="text-sm font-semibold">Tallas</h2>
             {sizes.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {sizes.map((size: string, i: number) => (
+                {sizes.map((size, i) => (
                   <Badge key={i} variant="secondary" className="gap-1 pr-1 text-sm">
                     {size}
                     <button type="button" onClick={() => removeSize(i)} className="ml-0.5 rounded-full hover:bg-muted p-0.5" disabled={isPending}>
@@ -317,7 +383,7 @@ export function ProductoNuevoClient() {
               </Button>
             </div>
             {form.formState.errors.sizes && (
-              <p className="text-sm text-destructive">{(form.formState.errors.sizes as any).message}</p>
+              <p className="text-sm text-destructive">{form.formState.errors.sizes.message}</p>
             )}
           </div>
 
@@ -329,7 +395,7 @@ export function ProductoNuevoClient() {
               </Button>
             </div>
             <div className="space-y-3">
-              {colors.map((color: any, index: number) => (
+              {colors.map((color: ColorItem, index: number) => (
                 <div key={index} className="flex items-center gap-3">
                   <Input
                     type="color"
@@ -368,7 +434,7 @@ export function ProductoNuevoClient() {
               ))}
             </div>
             {form.formState.errors.colors && (
-              <p className="text-sm text-destructive">{(form.formState.errors.colors as any).message}</p>
+              <p className="text-sm text-destructive">{form.formState.errors.colors.message}</p>
             )}
           </div>
 
@@ -408,7 +474,7 @@ export function ProductoNuevoClient() {
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="size-4 animate-spin" />}
-              Crear Producto
+              {isEdit ? "Guardar Cambios" : "Crear Producto"}
             </Button>
           </div>
         </form>

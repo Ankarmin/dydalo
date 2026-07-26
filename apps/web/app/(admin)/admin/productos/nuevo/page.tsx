@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
-import { ProductoNuevoClient } from "./producto-nuevo-client";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Nuevo Producto",
-};
+import { ProductForm } from "@/components/admin/product-form";
 
 export default function ProductoNuevoPage() {
-  return <ProductoNuevoClient />;
+  return <ProductForm />;
 }

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ProductoEditarClient } from "./producto-editar-client";
+import { ProductForm } from "@/components/admin/product-form";
 
 export const metadata: Metadata = {
   title: "Editar Producto",
@@ -15,5 +15,5 @@ export default async function ProductoEditarPage({
   const numId = parseInt(id, 10);
   if (isNaN(numId)) notFound();
 
-  return <ProductoEditarClient id={numId} />;
+  return <ProductForm productId={numId} />;
 }
