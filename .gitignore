@@ -64,3 +64,6 @@ next-env.d.ts
 # Agents and Skills
 .agents/
 skills-lock.json
+
+# Docs
+.docs
