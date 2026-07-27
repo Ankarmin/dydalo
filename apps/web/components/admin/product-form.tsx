@@ -38,11 +38,11 @@ const formSchema = z.object({
   name: z.string().min(3, "Mínimo 3 caracteres"),
   type: z.enum(["Ropa", "Calzado", "Accesorios", "Bling"]),
   category: z.string().min(1, "Selecciona una categoría"),
-  price: z.coerce.number().positive("Debe ser mayor a 0"),
+  price: z.number().positive("Debe ser mayor a 0"),
   sku: z.string().min(1, "SKU requerido"),
-  stock: z.coerce.number().int().nonnegative("No puede ser negativo"),
-  discount: z.coerce.number().min(0).max(100).nullable(),
-  image: z.string().default(""),
+  stock: z.number().int().nonnegative("No puede ser negativo"),
+  discount: z.number().min(0).max(100).nullable(),
+  image: z.string(),
   active: z.boolean(),
   featured: z.boolean(),
   sizes: z.array(z.string()).min(1, "Al menos una talla"),
@@ -82,7 +82,7 @@ export function ProductForm({ productId }: ProductFormProps) {
   const [categories] = useState(categoriesStore.getActive());
   const [newSize, setNewSize] = useState("");
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
   });

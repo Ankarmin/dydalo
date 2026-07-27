@@ -21,7 +21,8 @@ import { toast } from "sonner";
 
 const schema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
-  description: z.string().default(""),
+  description: z.string(),
+  image: z.string(),
   active: z.boolean(),
 });
 
@@ -38,9 +39,9 @@ export function CategoryForm({ slug }: CategoryFormProps) {
   const [notFound, setNotFound] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
-  const form = useForm<FormValues>({
+  const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", description: "", active: true },
+    defaultValues: { name: "", description: "", image: "", active: true },
   });
 
   useEffect(() => {
