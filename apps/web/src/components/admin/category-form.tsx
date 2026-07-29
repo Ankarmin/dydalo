@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
@@ -47,7 +48,7 @@ export function CategoryForm({ slug }: CategoryFormProps) {
 
   useEffect(() => {
     if (!category) return;
-    form.reset({ name: category.name, description: category.description, active: category.active });
+    form.reset({ name: category.name, description: category.description, image: category.image, active: category.active });
   }, [category, form]);
 
   function onSubmit(values: FormValues) {
@@ -105,6 +106,15 @@ export function CategoryForm({ slug }: CategoryFormProps) {
             )} />
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea {...field} rows={3} disabled={isPending} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="image" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Imagen</FormLabel>
+                <FormControl>
+                  <ImageUploader value={field.value} onChange={field.onChange} disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
           </div>
 

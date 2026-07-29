@@ -112,7 +112,7 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold tracking-heading">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           {now.toLocaleDateString("es-PE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}{" — "}
@@ -224,11 +224,11 @@ export function DashboardClient() {
           <table className="w-full">
             <thead>
               <tr className="border-t border-border text-left text-xs text-muted-foreground">
-                <th className="px-5 py-3 font-medium">Pedido</th>
-                <th className="px-5 py-3 font-medium">Cliente</th>
-                <th className="px-5 py-3 font-medium">Fecha</th>
-                <th className="px-5 py-3 font-medium">Total</th>
-                <th className="px-5 py-3 font-medium">Estado</th>
+                <th className="px-3 py-2 font-medium">Pedido</th>
+                <th className="px-3 py-2 font-medium">Cliente</th>
+                <th className="px-3 py-2 font-medium">Fecha</th>
+                <th className="px-3 py-2 font-medium">Total</th>
+                <th className="px-3 py-2 font-medium">Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -236,7 +236,7 @@ export function DashboardClient() {
                 const user = userMap.get(order.userId);
                 return (
                   <tr key={order.id} className="border-t border-border text-sm hover:bg-muted/30">
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2">
                       <Link
                         href={ROUTES.adminPedidoDetalle(order.id)}
                         className="font-mono text-xs text-accent hover:underline"
@@ -244,12 +244,12 @@ export function DashboardClient() {
                         #{order.id.slice(0, 8)}
                       </Link>
                     </td>
-                    <td className="px-5 py-3">{user?.name ?? "—"}</td>
+                    <td className="px-3 py-2">{user?.name ?? "—"}</td>
                     <td className="px-5 py-3 text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString("es-PE")}
                     </td>
                     <td className="px-5 py-3 font-medium">{formatPrice(order.total)}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-3 py-2">
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",

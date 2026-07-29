@@ -30,22 +30,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import Link from "next/link";
 import { ImageUploader } from "@/components/admin/image-uploader";
 
+const VALID_SIZES = ["S", "M", "L", "XL", "28", "30", "32", "34", "36", "Única"] as const;
+
 const formSchema = z.object({
   name: z.string().min(3, "Mínimo 3 caracteres"),
-  type: z.enum(["Ropa", "Calzado", "Accesorios", "Bling"]),
   category: z.string().min(1, "Selecciona una categoría"),
   price: z.number().positive("Debe ser mayor a 0"),
   sku: z.string().min(1, "SKU requerido"),
   stock: z.number().int().nonnegative("No puede ser negativo"),
   discount: z.number().min(0).max(100).nullable(),
   image: z.string(),
+  description: z.string(),
   active: z.boolean(),
   featured: z.boolean(),
-  sizes: z.array(z.string()).min(1, "Al menos una talla"),
+  sizes: z.array(z.string()).min(1, "Al menos una talla").superRefine((val, ctx) => {
+    val.forEach((s, i) => {
+      if (!(VALID_SIZES as readonly string[]).includes(s)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Talla "${s}" no es válida`, path: [i] });
+      }
+    });
+  }),
   colors: z.array(z.object({ name: z.string().min(1), hex: z.string() })).min(1, "Al menos un color"),
 });
 
@@ -55,13 +64,13 @@ type ColorItem = FormValues["colors"][number];
 
 const defaultValues: FormValues = {
   name: "",
-  type: "Ropa",
   category: "",
   price: 0,
   sku: "",
   stock: 0,
   discount: null,
   image: "",
+  description: "",
   active: true,
   featured: false,
   sizes: ["M", "L"],
@@ -96,13 +105,13 @@ export function ProductForm({ productId }: ProductFormProps) {
     }
     form.reset({
       name: product.name,
-      type: product.type as FormValues["type"],
       category: product.category,
       price: product.price,
       sku: product.sku,
       stock: product.stock,
       discount: product.discount,
       image: product.image,
+      description: product.description ?? "",
       active: product.active,
       featured: product.featured,
       sizes: product.sizes as unknown as string[],
@@ -212,56 +221,44 @@ export function ProductForm({ productId }: ProductFormProps) {
               )}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Ropa">Ropa</SelectItem>
-                        <SelectItem value="Calzado">Calzado</SelectItem>
-                        <SelectItem value="Accesorios">Accesorios</SelectItem>
-                        <SelectItem value="Bling">Bling</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoría</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.slug} value={cat.slug}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoría</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.slug} value={cat.slug}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Descripción del producto..." rows={3} disabled={isPending} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField

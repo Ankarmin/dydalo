@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
+import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import {
   Pagination,
   PaginationContent,
@@ -32,13 +33,19 @@ export function PedidosClient() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<SortState>(defaultSort);
+
+  const userMap = useMemo(() => {
+    const map = new Map(usersStore.getAll().map((u) => [u.id, u]));
+    return map;
+  }, []);
 
   const filtered = useMemo(() => {
     let result = orders;
     if (query) {
       const q = query.toLowerCase();
       result = result.filter((o) => {
-        const user = usersStore.getById(o.userId);
+        const user = userMap.get(o.userId);
         return (
           o.id.toLowerCase().includes(q) ||
           user?.name.toLowerCase().includes(q) ||
@@ -49,8 +56,26 @@ export function PedidosClient() {
     if (statusFilter !== "todos") {
       result = result.filter((o) => o.status === statusFilter);
     }
+    if (sort.field) {
+      result = [...result].sort((a, b) => {
+        const dir = sort.direction === "asc" ? 1 : -1;
+        switch (sort.field) {
+          case "id": return dir * a.id.localeCompare(b.id);
+          case "cliente": {
+            const ua = userMap.get(a.userId)?.name ?? "";
+            const ub = userMap.get(b.userId)?.name ?? "";
+            return dir * ua.localeCompare(ub);
+          }
+          case "fecha": return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          case "items": return dir * (a.items.length - b.items.length);
+          case "total": return dir * (a.total - b.total);
+          case "estado": return dir * a.status.localeCompare(b.status);
+          default: return 0;
+        }
+      });
+    }
     return result;
-  }, [orders, query, statusFilter]);
+  }, [orders, query, statusFilter, sort, userMap]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -76,7 +101,7 @@ export function PedidosClient() {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1 overflow-x-auto pb-1">
           {(["todos", ...ORDER_STATUSES] as const).map((s) => (
             <Button
               key={s}
@@ -96,26 +121,26 @@ export function PedidosClient() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Pedido</th>
-                <th className="px-4 py-3 font-medium">Cliente</th>
-                <th className="px-4 py-3 font-medium hidden md:table-cell">Fecha</th>
-                <th className="px-4 py-3 font-medium hidden sm:table-cell">Items</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium text-right">Acción</th>
+                <SortableHeader label="Pedido" field="id" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Cliente" field="cliente" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Fecha" field="fecha" currentSort={sort} onSortChange={setSort} className="hidden md:table-cell" />
+                <SortableHeader label="Items" field="items" currentSort={sort} onSortChange={setSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Total" field="total" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Estado" field="estado" currentSort={sort} onSortChange={setSort} />
+                <th className="px-3 py-2 font-medium text-right">Acción</th>
               </tr>
             </thead>
             <tbody>
               {paginated.map((order) => {
-                const user = usersStore.getById(order.userId);
+                const user = userMap.get(order.userId);
                 return (
                   <tr key={order.id} className="border-b border-border text-sm hover:bg-muted/30">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <span className="font-mono text-xs text-muted-foreground">
                         #{order.id.slice(0, 8)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <p className="font-medium">{user?.name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">{user?.email ?? "—"}</p>
                     </td>
@@ -124,7 +149,7 @@ export function PedidosClient() {
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">{order.items.length}</td>
                     <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize",

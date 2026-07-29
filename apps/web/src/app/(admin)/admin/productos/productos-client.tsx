@@ -24,6 +24,7 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
 import { notifyAdmin } from "@/components/admin/admin-toast";
+import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import {
   Pagination,
   PaginationContent,
@@ -45,6 +46,7 @@ export function ProductosClient() {
   const [categoryFilter, setCategoryFilter] = useState("todas");
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<SortState>(defaultSort);
 
   const deferredQuery = useDeferredValue(query);
 
@@ -61,8 +63,21 @@ export function ProductosClient() {
     if (categoryFilter !== "todas") {
       result = result.filter((p) => p.category === categoryFilter);
     }
+    if (sort.field) {
+      result = [...result].sort((a, b) => {
+        const dir = sort.direction === "asc" ? 1 : -1;
+        switch (sort.field) {
+          case "name": return dir * a.name.localeCompare(b.name);
+          case "sku": return dir * a.sku.localeCompare(b.sku);
+          case "category": return dir * a.category.localeCompare(b.category);
+          case "price": return dir * (a.price - b.price);
+          case "stock": return dir * (a.stock - b.stock);
+          default: return 0;
+        }
+      });
+    }
     return result;
-  }, [products, deferredQuery, categoryFilter]);
+  }, [products, deferredQuery, categoryFilter, sort]);
 
   const isStale = query !== deferredQuery;
 
@@ -107,7 +122,7 @@ export function ProductosClient() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-heading">Productos</h1>
           <p className="text-sm text-muted-foreground">
@@ -161,20 +176,20 @@ export function ProductosClient() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Producto</th>
-                <th className="px-4 py-3 font-medium">SKU</th>
-                <th className="px-4 py-3 font-medium hidden md:table-cell">Categoría</th>
-                <th className="px-4 py-3 font-medium">Precio</th>
-                <th className="px-4 py-3 font-medium hidden sm:table-cell">Stock</th>
-                <th className="px-4 py-3 font-medium hidden sm:table-cell">Activo</th>
-                <th className="px-4 py-3 font-medium hidden lg:table-cell">Destacado</th>
-                <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                <SortableHeader label="Producto" field="name" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="SKU" field="sku" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Categoría" field="category" currentSort={sort} onSortChange={setSort} className="hidden md:table-cell" />
+                <SortableHeader label="Precio" field="price" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Stock" field="stock" currentSort={sort} onSortChange={setSort} className="hidden sm:table-cell" />
+                <th className="px-3 py-2 font-medium hidden sm:table-cell">Activo</th>
+                <th className="px-3 py-2 font-medium hidden lg:table-cell">Destacado</th>
+                <th className="px-3 py-2 font-medium text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {paginated.map((product) => (
                 <tr key={product.id} className="border-b border-border text-sm hover:bg-muted/30">
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-md border bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
                         {product.image ? (
@@ -186,9 +201,6 @@ export function ProductosClient() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium truncate max-w-[200px]">{product.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {product.type}
-                        </p>
                       </div>
                     </div>
                   </td>
