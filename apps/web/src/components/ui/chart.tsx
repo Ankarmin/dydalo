@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/utils";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: "", dark: ".dark" } as const;
+const THEMES = { dark: "", light: "[data-theme=light]" } as const;
 
 export type ChartConfig = {
   [k in string]: {

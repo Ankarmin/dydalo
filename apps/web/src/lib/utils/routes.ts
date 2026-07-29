@@ -28,6 +28,7 @@ export const ROUTES = {
   direcciones: "/cuenta/direcciones",
 
   admin: "/admin",
+  adminAnaliticas: "/admin/analiticas",
 
   adminProductos: "/admin/productos",
   adminProductoNuevo: "/admin/productos/nuevo",
@@ -38,7 +39,12 @@ export const ROUTES = {
   adminCategoriaEditar: (slug: string) => `/admin/categorias/${slug}`,
 
   adminPedidos: "/admin/pedidos",
+  adminPedidoNuevo: "/admin/pedidos/nuevo",
   adminPedidoDetalle: (id: string) => `/admin/pedidos/${id}`,
+
+  adminBlog: "/admin/blog",
+  adminBlogNuevo: "/admin/blog/nuevo",
+  adminBlogEditar: (id: string) => `/admin/blog/${id}`,
 
   adminUsuarios: "/admin/usuarios",
   adminUsuarioDetalle: (id: string) => `/admin/usuarios/${id}`,

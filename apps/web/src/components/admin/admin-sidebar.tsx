@@ -6,8 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { LOGO_DARK, LOGO_LIGHT } from "@/config/constants";
 import {
   LayoutDashboard,
+  BarChart3,
   Package,
   Tags,
+  FileText,
   ShoppingCart,
   Users,
   ArrowLeft,
@@ -38,6 +40,11 @@ const NAV_ITEMS: NavItem[] = [
     exact: true,
   },
   {
+    label: "Analíticas",
+    href: ROUTES.adminAnaliticas,
+    icon: BarChart3,
+  },
+  {
     label: "Productos",
     href: ROUTES.adminProductos,
     icon: Package,
@@ -56,6 +63,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Clientes",
     href: ROUTES.adminUsuarios,
     icon: Users,
+  },
+  {
+    label: "Blog",
+    href: ROUTES.adminBlog,
+    icon: FileText,
   },
 ] as const;
 
@@ -163,7 +175,7 @@ export function AdminSidebar() {
       {layoutState.mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-overlay"
             onClick={() => layoutActions.setMobileSidebarOpen(false)}
           />
           <aside className="fixed inset-y-0 left-0 z-50 w-[280px] border-r border-border bg-background shadow-xl animate-in slide-in-from-left duration-200">
