@@ -17,13 +17,19 @@ function getById(id: number): AdminProduct | undefined {
   return map.get(id);
 }
 
-function create(data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt">): AdminProduct {
+function getBySlug(slug: string): AdminProduct | undefined {
+  return getAll().find((p) => p.slug === slug);
+}
+
+function create(data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt" | "slug"> & { slug?: string }): AdminProduct {
   const products = getAll();
   const now = new Date().toISOString();
   const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
+  const slug = data.slug || generateSlug(data.name);
 
   const product: AdminProduct = {
     ...data,
+    slug,
     id: maxId + 1,
     createdAt: now,
     updatedAt: now,
@@ -31,6 +37,15 @@ function create(data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt">): Adm
 
   write(KEYS.products, [...products, product]);
   return product;
+}
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function update(id: number, data: Partial<AdminProduct>): AdminProduct | undefined {
@@ -71,7 +86,6 @@ function seedFromHardcoded(): void {
     sku: `DYD-${p.type.slice(0, 3).toUpperCase()}-${String(p.id).padStart(4, "0")}`,
     createdAt: now,
     updatedAt: now,
-    label: undefined as never,
   } as AdminProduct));
   write(KEYS.products, adminProducts);
 }
@@ -80,4 +94,4 @@ function seed(items: AdminProduct[]): void {
   write(KEYS.products, items);
 }
 
-export const productsStore = { getAll, getById, create, update, delete: remove, seed };
+export const productsStore = { getAll, getById, getBySlug, create, update, delete: remove, seed };

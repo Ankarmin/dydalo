@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 
 export function NewsletterForm({
   id = "newsletter-email",
-  title = "Proximas colaboraciones",
-  description = "Se el primero en enterarte de nuevas colaboraciones y drops exclusivos.",
+  title = "Próximos lanzamientos",
+  description = "Sé el primero en enterarte de nuevos drops y lanzamientos exclusivos.",
   buttonText = "Suscribir",
 }: {
   id?: string;

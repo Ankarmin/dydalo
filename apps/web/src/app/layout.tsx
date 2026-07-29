@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider } from "@/contexts/auth-context";
 import { CartProvider } from "@/contexts/cart-context";
 import { FavoritesProvider } from "@/contexts/favorites-context";
-import { ConditionalShell } from "@/components/layout/conditional-shell";
+import { ConditionalShell, ConditionalFooter } from "@/components/layout/conditional-shell";
 import { SITE_NAME, SITE_DEFAULT_TITLE, SITE_DESCRIPTION, BRAND_SUBTITLE, FALLBACK_IMAGE, THEME_STORAGE_KEY } from "@/config/constants";
 import "./globals.css";
 
@@ -84,6 +84,7 @@ export default function RootLayout({
                 <div id="main-content">
                   <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="size-8 animate-spin rounded-full border-2 border-border border-t-accent" /></div>}>{children}</Suspense>
                 </div>
+                <ConditionalFooter />
                 <Toaster />
               </FavoritesProvider>
             </CartProvider>

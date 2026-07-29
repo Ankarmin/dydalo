@@ -5,14 +5,17 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SocialWidget } from "@/components/layout/SocialWidget";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { useMounted } from "@/hooks/use-mounted";
 
 function ShellInner() {
   const pathname = usePathname();
   const { meta } = useAuth();
   const mounted = useMounted();
+  const isAdminRoute = pathname.startsWith("/admin");
 
   if (!mounted) {
+    if (isAdminRoute) return null;
     return (
       <>
         <SiteHeader />
@@ -21,7 +24,6 @@ function ShellInner() {
     );
   }
 
-  const isAdminRoute = pathname.startsWith("/admin");
   if (isAdminRoute && meta.isAdmin) return null;
 
   return (
@@ -32,10 +34,31 @@ function ShellInner() {
   );
 }
 
+function FooterInner() {
+  const pathname = usePathname();
+  const { meta } = useAuth();
+  const mounted = useMounted();
+
+  if (!mounted) return null;
+
+  const isAdminRoute = pathname.startsWith("/admin");
+  if (isAdminRoute && meta.isAdmin) return null;
+
+  return <SiteFooter />;
+}
+
 export function ConditionalShell() {
   return (
     <Suspense fallback={null}>
       <ShellInner />
+    </Suspense>
+  );
+}
+
+export function ConditionalFooter() {
+  return (
+    <Suspense fallback={null}>
+      <FooterInner />
     </Suspense>
   );
 }

@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { formatPrice } from "@/lib/utils/format";
+import { ROUTES } from "@/lib/utils/routes";
 import { ignoreToastClicks } from "@/lib/utils/toast-guard";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { Button } from "@/components/ui/button";
@@ -29,7 +32,6 @@ interface CartSheetProps {
   cart: Record<number, number>;
   subtotal: number;
   updateQuantity: (productId: number, delta: number) => void;
-  onCheckout?: () => void;
 }
 
 export function CartSheet({
@@ -38,10 +40,17 @@ export function CartSheet({
   cart,
   subtotal,
   updateQuantity,
-  onCheckout,
 }: CartSheetProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+
+  function handleGoToCart() {
+    setOpen(false);
+    router.push(ROUTES.carrito);
+  }
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -166,9 +175,9 @@ export function CartSheet({
             size="hero"
             className="w-full"
             disabled={!cartCount}
-            onClick={onCheckout}
+            onClick={handleGoToCart}
           >
-            IR AL CHECKOUT
+            VER CARRITO
           </Button>
         </div>
       </SheetContent>

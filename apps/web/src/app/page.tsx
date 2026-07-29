@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { HomeHero } from "./_components/home-hero";
 import { HomeProducts } from "./_components/home-products";
 import { HomeNewsletter } from "./_components/home-newsletter";
-import { HomeFooter } from "./_components/home-footer";
 
 export const metadata: Metadata = {
   title: "DYDALO — Streetwear Premium",
@@ -51,10 +50,7 @@ export default function HomePage() {
         <HomeProducts />
       </Suspense>
 
-      <footer className="border-t border-border">
-        <HomeNewsletter />
-        <HomeFooter />
-      </footer>
+      <HomeNewsletter />
     </main>
   );
 }

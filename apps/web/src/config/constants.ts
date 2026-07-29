@@ -25,11 +25,9 @@ export const TOAST_DURATION_MS = 3000;
 
 export const TOAST_CLOSE_LABEL = "Cerrar notificación";
 
-export const FREE_SHIPPING_THRESHOLD = 150;
+export const SHIPPING_PROVINCIA_PRICE = 15;
 
-export const SHIPPING_STANDARD_PRICE = 12;
-
-export const SHIPPING_INTERNATIONAL_PRICE = 20;
+export const SHIPPING_PROVINCIA_COURIER = "Olva";
 
 export const DEFAULT_PRODUCT_COLOR_HEX = "#1a1a1a";
 

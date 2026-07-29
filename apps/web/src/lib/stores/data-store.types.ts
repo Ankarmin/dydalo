@@ -17,6 +17,7 @@ export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "
 export type AdminProduct = {
   id: number;
   name: string;
+  slug: string;
   type: ProductType;
   category: string;
   price: number;
@@ -28,6 +29,7 @@ export type AdminProduct = {
   featured: boolean;
   discount: number | null;
   sku: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -109,18 +111,6 @@ export type BlogPost = {
   updatedAt: string;
 };
 
-export type LookbookEntry = {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  image: string;
-  productIds: number[];
-  order: number;
-  published: boolean;
-  createdAt: string;
-};
-
 export type SiteConfig = {
   siteName: string;
   siteDescription: string;
@@ -169,10 +159,10 @@ export type CreateOrderInput = {
 };
 
 export const STATUS_STYLES: Record<string, string> = {
-  pendiente: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  confirmado: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  enviado: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  entregado: "bg-green-500/10 text-green-400 border-green-500/20",
-  cancelado: "bg-red-500/10 text-red-400 border-red-500/20",
-  devuelto: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  pendiente: "border bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+  confirmado: "border bg-blue-500/10 text-blue-400 border-blue-500/30",
+  enviado: "border bg-purple-500/10 text-purple-400 border-purple-500/30",
+  entregado: "border bg-green-500/10 text-green-400 border-green-500/30",
+  cancelado: "border bg-red-500/10 text-red-400 border-red-500/30",
+  devuelto: "border bg-orange-500/10 text-orange-400 border-orange-500/30",
 };
