@@ -10,15 +10,12 @@ export type User = {
   updatedAt: string;
 };
 
-export type ProductType = "Ropa" | "Calzado" | "Accesorios" | "Bling";
-
 export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "36" | "Única";
 
 export type AdminProduct = {
   id: number;
   name: string;
   slug: string;
-  type: ProductType;
   category: string;
   price: number;
   image: string;

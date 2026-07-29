@@ -1,11 +1,11 @@
 import { read, write, KEYS } from "./data-store.utils";
 import type { CatalogCategory } from "./data-store.types";
-import { catalogCategories as hardcodedCategories } from "@/config/products";
+import { catalogCategories as seedCategories } from "@/config/products";
 
 function getAll(): CatalogCategory[] {
   const stored = read<CatalogCategory[]>(KEYS.categories, []);
   if (stored.length === 0) {
-    seedFromHardcoded();
+    seed(seedCategories);
     return read<CatalogCategory[]>(KEYS.categories, []);
   }
   return stored;
@@ -71,18 +71,6 @@ function reorder(slugs: string[]): void {
     })
     .filter((c): c is CatalogCategory => c !== null);
   write(KEYS.categories, reordered);
-}
-
-function seedFromHardcoded(): void {
-  const categories: CatalogCategory[] = hardcodedCategories.map((c, i) => ({
-    slug: c.slug,
-    name: c.name,
-    description: "",
-    image: "",
-    active: true,
-    order: i + 1,
-  }));
-  write(KEYS.categories, categories);
 }
 
 function seed(items: CatalogCategory[]): void {

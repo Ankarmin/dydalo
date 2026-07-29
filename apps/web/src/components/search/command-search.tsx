@@ -123,7 +123,7 @@ export function CommandSearch({ open: externalOpen, onOpenChange: externalOnOpen
               {items.map((product) => (
                 <CommandItem
                   key={product.id}
-                  value={`${product.name} ${product.type} ${category}`}
+                  value={`${product.name} ${category}`}
                   onSelect={() =>
                     runCommand(() =>
                       router.push(

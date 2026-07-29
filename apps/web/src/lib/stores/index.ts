@@ -17,6 +17,5 @@ export type {
   BlogPost,
   SiteConfig,
   ActionResult,
-  ProductType,
 } from "./data-store.types";
 export { ORDER_STATUSES, VALID_TRANSITIONS, STATUS_STYLES } from "./data-store.types";

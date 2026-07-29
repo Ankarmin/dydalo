@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { products as hardcodedProducts } from "@/config/products";
+import { products } from "@/config/products";
 import { productsStore } from "@/lib/stores/data-store.products";
 import { ProductDetail } from "./_components/product-detail";
 
@@ -9,20 +9,7 @@ interface ProductoPageProps {
 }
 
 function findProduct(slug: string) {
-  const fromStore = productsStore.getBySlug(slug);
-  if (fromStore) return fromStore;
-  const fromHardcoded = hardcodedProducts.find((p) => p.slug === slug);
-  if (!fromHardcoded) return null;
-  return {
-    ...fromHardcoded,
-    stock: 50,
-    active: true,
-    featured: false,
-    discount: null,
-    sku: "",
-    createdAt: "",
-    updatedAt: "",
-  };
+  return productsStore.getBySlug(slug) ?? products.find((p) => p.slug === slug) ?? null;
 }
 
 export async function generateMetadata({
@@ -41,7 +28,7 @@ export async function generateMetadata({
 }
 
 export function generateStaticParams() {
-  return hardcodedProducts.map((p) => ({ slug: p.slug }));
+  return products.map((p) => ({ slug: p.slug }));
 }
 
 export default async function ProductoPage({ params }: ProductoPageProps) {

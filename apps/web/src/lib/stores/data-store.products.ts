@@ -1,11 +1,11 @@
 import { read, write, KEYS } from "./data-store.utils";
 import type { AdminProduct } from "./data-store.types";
-import { products as hardcodedProducts } from "@/config/products";
+import { products as seedProducts } from "@/config/products";
 
 function getAll(): AdminProduct[] {
   const stored = read<AdminProduct[]>(KEYS.products, []);
   if (stored.length === 0) {
-    seedFromHardcoded();
+    seed(seedProducts);
     return read<AdminProduct[]>(KEYS.products, []);
   }
   return stored;
@@ -73,21 +73,6 @@ function remove(id: number): boolean {
   if (filtered.length === products.length) return false;
   write(KEYS.products, filtered);
   return true;
-}
-
-function seedFromHardcoded(): void {
-  const now = new Date().toISOString();
-  const adminProducts: AdminProduct[] = hardcodedProducts.map((p, i) => ({
-    ...p,
-    stock: 50,
-    active: true,
-    featured: i < 8,
-    discount: i % 5 === 0 ? 15 : null,
-    sku: `DYD-${p.type.slice(0, 3).toUpperCase()}-${String(p.id).padStart(4, "0")}`,
-    createdAt: now,
-    updatedAt: now,
-  } as AdminProduct));
-  write(KEYS.products, adminProducts);
 }
 
 function seed(items: AdminProduct[]): void {

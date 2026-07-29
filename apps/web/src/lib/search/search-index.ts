@@ -31,7 +31,6 @@ export function searchProducts(query: string): SearchResult[] {
 
     for (const token of tokens) {
       const name = normalize(product.name);
-      const type = normalize(product.type);
       const catName = normalize(getCategoryName(product.category));
       const sku = normalize(product.sku);
 
@@ -41,9 +40,6 @@ export function searchProducts(query: string): SearchResult[] {
         score += 10;
       }
 
-      if (type.includes(token)) {
-        score += 5;
-      }
       if (catName.includes(token)) {
         score += 3;
       }
@@ -51,7 +47,7 @@ export function searchProducts(query: string): SearchResult[] {
         score += 4;
       }
 
-      const allFields = [name, type, catName, sku].join(" ");
+      const allFields = [name, catName, sku].join(" ");
       if (score === 0 && allFields.includes(token)) {
         score += 2;
       }
