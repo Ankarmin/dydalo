@@ -73,28 +73,30 @@ export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
                   key={product.id}
                   className="flex gap-4 border-b border-border py-5"
                 >
-                  <Link
-                    href={ROUTES.catalogoCategory(product.category)}
-                    className="shrink-0"
-                  >
-                    <Image
-                      src={
-                        brokenImages.has(product.id)
-                          ? FALLBACK_IMAGE
-                          : product.image
-                      }
-                      alt={product.name}
-                      width={96}
-                      height={96}
-                      sizes="96px"
-                      onError={() =>
-                        setBrokenImages((prev) =>
-                          new Set(prev).add(product.id),
-                        )
-                      }
-                      className="size-24 object-cover"
-                    />
-                  </Link>
+                  <SheetClose asChild>
+                    <Link
+                      href={ROUTES.producto(product.slug)}
+                      className="shrink-0"
+                    >
+                      <Image
+                        src={
+                          brokenImages.has(product.id)
+                            ? FALLBACK_IMAGE
+                            : product.image
+                        }
+                        alt={product.name}
+                        width={96}
+                        height={96}
+                        sizes="96px"
+                        onError={() =>
+                          setBrokenImages((prev) =>
+                            new Set(prev).add(product.id),
+                          )
+                        }
+                        className="size-24 object-cover"
+                      />
+                    </Link>
+                  </SheetClose>
                   <div className="flex min-w-0 flex-1 flex-col justify-center">
                     <p className="micro-label">
                       {categoriesStore.getBySlug(product.category)?.name ?? product.category}
