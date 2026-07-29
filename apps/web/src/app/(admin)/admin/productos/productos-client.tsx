@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useDeferredValue } from "react";
+import { useState, useMemo, useDeferredValue, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Pencil, Trash2, Copy } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Download, Upload } from "lucide-react";
 import { productsStore } from "@/lib/stores/data-store.products";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { seedIfEmpty } from "@/config/seed-data";
@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { exportProductsCSV, importProductsFromCSV } from "@/lib/utils/csv";
+import { FEATURED_PRODUCTS_COUNT } from "@/config/constants";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 import {
   Select,
   SelectContent,
@@ -23,7 +26,6 @@ import {
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
-import { notifyAdmin } from "@/components/admin/admin-toast";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import {
   Pagination,
@@ -38,6 +40,7 @@ const PAGE_SIZE = 15;
 
 export function ProductosClient() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [products, setProducts] = useState<AdminProduct[]>(() => {
     seedIfEmpty();
     return productsStore.getAll();
@@ -49,6 +52,11 @@ export function ProductosClient() {
   const [sort, setSort] = useState<SortState>(defaultSort);
 
   const deferredQuery = useDeferredValue(query);
+
+  const featuredCount = useMemo(
+    () => products.filter((p) => p.featured).length,
+    [products]
+  );
 
   const filtered = useMemo(() => {
     let result = products;
@@ -93,21 +101,14 @@ export function ProductosClient() {
   }
 
   function toggleFeatured(product: AdminProduct) {
+    if (!product.featured && featuredCount >= FEATURED_PRODUCTS_COUNT) {
+      notifyAdmin("Límite alcanzado", `Máximo ${FEATURED_PRODUCTS_COUNT} productos destacados`, "error");
+      return;
+    }
     const updated = productsStore.update(product.id, { featured: !product.featured });
     if (updated) {
       setProducts((prev) => prev.map((p) => (p.id === product.id ? updated : p)));
     }
-  }
-
-  function handleDuplicate(product: AdminProduct) {
-    const { sku, ...rest } = product;
-    const created = productsStore.create({
-      ...rest,
-      sku: `${sku}-COPY`,
-      name: `${product.name} (copia)`,
-    });
-    setProducts((prev) => [...prev, created]);
-    notifyAdmin("Producto duplicado");
   }
 
   function handleDelete() {
@@ -118,6 +119,43 @@ export function ProductosClient() {
       notifyAdmin("Producto eliminado");
     }
     setDeleteId(null);
+  }
+
+  function handleExport() {
+    exportProductsCSV(filtered);
+    notifyAdmin("CSV exportado", `${filtered.length} productos`, "success");
+  }
+
+  function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result;
+      if (typeof text !== "string") return;
+
+      const result = importProductsFromCSV(text, (data) =>
+        productsStore.create(data)
+      );
+
+      setProducts(productsStore.getAll());
+
+      if (result.errors.length > 0) {
+        notifyAdmin(
+          "Importación parcial",
+          `${result.created} creados, ${result.errors.length} errores`,
+          "error"
+        );
+      } else {
+        notifyAdmin("Importación completa", `${result.created} productos importados`, "success");
+      }
+    };
+    reader.readAsText(file);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
   return (
@@ -131,12 +169,29 @@ export function ProductosClient() {
               : `${products.length} productos totales`}
           </p>
         </div>
-        <Button asChild>
-          <Link href={ROUTES.adminProductoNuevo}>
-            <Plus className="size-4" />
-            Nuevo Producto
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="size-3.5" />
+            Exportar CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="size-3.5" />
+            Importar CSV
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleImport}
+            className="hidden"
+          />
+          <Button asChild>
+            <Link href={ROUTES.adminProductoNuevo}>
+              <Plus className="size-4" />
+              Nuevo Producto
+            </Link>
+          </Button>
+        </div>
       </div>
 
       
@@ -178,11 +233,11 @@ export function ProductosClient() {
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
                 <SortableHeader label="Producto" field="name" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="SKU" field="sku" currentSort={sort} onSortChange={setSort} />
-                <SortableHeader label="Categoría" field="category" currentSort={sort} onSortChange={setSort} className="hidden md:table-cell" />
+                <SortableHeader label="Categoría" field="category" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Precio" field="price" currentSort={sort} onSortChange={setSort} />
-                <SortableHeader label="Stock" field="stock" currentSort={sort} onSortChange={setSort} className="hidden sm:table-cell" />
-                <th className="px-3 py-2 font-medium hidden sm:table-cell">Activo</th>
-                <th className="px-3 py-2 font-medium hidden lg:table-cell">Destacado</th>
+                <SortableHeader label="Stock" field="stock" currentSort={sort} onSortChange={setSort} />
+                <th className="px-3 py-2 font-medium">Activo</th>
+                <th className="px-3 py-2 font-medium">Destacado</th>
                 <th className="px-3 py-2 font-medium text-right">Acciones</th>
               </tr>
             </thead>
@@ -205,7 +260,7 @@ export function ProductosClient() {
                     </div>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{product.sku}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
+                  <td className="px-4 py-3">
                     <Badge variant="secondary" className="capitalize text-xs">
                       {product.category}
                     </Badge>
@@ -222,27 +277,36 @@ export function ProductosClient() {
                       formatPrice(product.price)
                     )}
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
+                  <td className="px-4 py-3">
                     <span
                       className={cn(
                         "font-medium",
-                        product.stock === 0 ? "text-red-400" : product.stock <= 5 ? "text-yellow-400" : ""
+                        product.stock === 0 ? "text-danger" : product.stock <= 5 ? "text-warning" : ""
                       )}
                     >
                       {product.stock}
                     </span>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
+                  <td className="px-4 py-3">
                     <Switch
                       checked={product.active}
                       onCheckedChange={() => toggleActive(product)}
                     />
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <Switch
-                      checked={product.featured}
-                      onCheckedChange={() => toggleFeatured(product)}
-                    />
+                  <td className="px-4 py-3">
+                    {featuredCount >= FEATURED_PRODUCTS_COUNT && !product.featured ? (
+                      <span
+                        title={`Máximo ${FEATURED_PRODUCTS_COUNT} productos destacados`}
+                        className="inline-block cursor-not-allowed"
+                      >
+                        <Switch checked={false} disabled className="opacity-30" />
+                      </span>
+                    ) : (
+                      <Switch
+                        checked={product.featured}
+                        onCheckedChange={() => toggleFeatured(product)}
+                      />
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-0.5">
@@ -254,15 +318,6 @@ export function ProductosClient() {
                         aria-label="Editar"
                       >
                         <Pencil className="size-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() => handleDuplicate(product)}
-                        aria-label="Duplicar"
-                      >
-                        <Copy className="size-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
