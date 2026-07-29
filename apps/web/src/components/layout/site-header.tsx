@@ -107,14 +107,6 @@ export function SiteHeader() {
                   </div>
                 )}
               </div>
-              <SheetClose asChild>
-                <Link
-                  href={ROUTES.lookbook}
-                  className="flex items-center border-t border-border py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
-                >
-                  LOOKBOOK
-                </Link>
-              </SheetClose>
               <div className="border-t border-border">
                 <button
                   type="button"

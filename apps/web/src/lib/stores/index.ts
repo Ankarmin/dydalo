@@ -3,7 +3,6 @@ export { productsStore } from "./data-store.products";
 export { ordersStore } from "./data-store.orders";
 export { usersStore } from "./data-store.users";
 export { blogStore } from "./data-store.blog";
-export { lookbookStore } from "./data-store.lookbook";
 export { configStore } from "./data-store.config";
 export type {
   User,
@@ -16,7 +15,6 @@ export type {
   ShippingAddress,
   StatusTransition,
   BlogPost,
-  LookbookEntry,
   SiteConfig,
   ActionResult,
   ProductType,

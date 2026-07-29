@@ -2,8 +2,7 @@ import { productsStore } from "@/lib/stores/data-store.products";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { blogStore } from "@/lib/stores/data-store.blog";
-import { lookbookStore } from "@/lib/stores/data-store.lookbook";
-import type { User, BlogPost, LookbookEntry, CreateOrderInput } from "@/lib/stores/data-store.types";
+import type { User, BlogPost, CreateOrderInput } from "@/lib/stores/data-store.types";
 
 let seeded = false;
 
@@ -133,36 +132,4 @@ export function seedIfEmpty(): void {
   ];
 
   blogPosts.forEach((p) => blogStore.create(p));
-
-  const lookbookEntries: Omit<LookbookEntry, "id" | "createdAt">[] = [
-    {
-      title: "Urban Nights",
-      slug: "urban-nights",
-      description: "Colección nocturna urbana con los esenciales DYDALO.",
-      image: "/images/dydalo-satin-set.jpg",
-      productIds: [1, 11, 31, 41],
-      order: 1,
-      published: true,
-    },
-    {
-      title: "Summer Flow",
-      slug: "summer-flow",
-      description: "Estilo fresco para los días de verano.",
-      image: "/images/dydalo-white-basics.jpg",
-      productIds: [71, 81, 85],
-      order: 2,
-      published: true,
-    },
-    {
-      title: "Street Essential",
-      slug: "street-essential",
-      description: "Los básicos que no pueden faltar en tu armario.",
-      image: "/images/dydalo-tracksuit.jpg",
-      productIds: [51, 61, 91],
-      order: 3,
-      published: true,
-    },
-  ];
-
-  lookbookEntries.forEach((e) => lookbookStore.create(e));
 }

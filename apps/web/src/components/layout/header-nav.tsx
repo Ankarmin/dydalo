@@ -13,7 +13,6 @@ import { categoriesStore } from "@/lib/stores/data-store.categories";
 export const marcaItems = [
   { label: "SOBRE NOSOTROS", href: ROUTES.sobreNosotros },
   { label: "NUESTRA HISTORIA", href: ROUTES.nuestraHistoria },
-  { label: "COLABORACIONES", href: ROUTES.colaboraciones },
   { label: "BLOG", href: ROUTES.blog },
 ] as const;
 
@@ -129,13 +128,6 @@ export function HeaderNav({
               </div>
             )}
           </div>
-          <span className="text-accent">/</span>
-          <Link
-            href={ROUTES.lookbook}
-            className="transition-colors hover:text-accent focus-ring"
-          >
-            LOOKBOOK
-          </Link>
           <span className="text-accent">/</span>
           <div
             ref={marcaRef}

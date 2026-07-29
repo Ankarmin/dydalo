@@ -1,11 +1,10 @@
-const SCHEMA_VERSION = "v1";
+const SCHEMA_VERSION = "v2";
 
 export const KEYS = {
   products: `dydalo_products:${SCHEMA_VERSION}`,
   orders: `dydalo_orders:${SCHEMA_VERSION}`,
   users: `dydalo_users:${SCHEMA_VERSION}`,
   blog: `dydalo_blog:${SCHEMA_VERSION}`,
-  lookbook: `dydalo_lookbook:${SCHEMA_VERSION}`,
   config: `dydalo_config:${SCHEMA_VERSION}`,
   categories: `dydalo_categories:${SCHEMA_VERSION}`,
   images: `dydalo_images:${SCHEMA_VERSION}`,
