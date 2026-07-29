@@ -81,7 +81,7 @@ export function UsuariosClient() {
                 <SortableHeader label="Usuario" field="name" currentSort={adminSort} onSortChange={setAdminSort} />
                 <SortableHeader label="Email" field="email" currentSort={adminSort} onSortChange={setAdminSort} />
                 <SortableHeader label="Rol" field="role" currentSort={adminSort} onSortChange={setAdminSort} />
-                <SortableHeader label="Registro" field="createdAt" currentSort={adminSort} onSortChange={setAdminSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Registro" field="createdAt" currentSort={adminSort} onSortChange={setAdminSort} />
               </tr>
             </thead>
             <tbody>
@@ -99,7 +99,7 @@ export function UsuariosClient() {
                   <td className="px-3 py-2">
                     <Badge variant="default" className="text-xs">Admin</Badge>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {new Date(user.createdAt).toLocaleDateString("es-PE")}
                   </td>
                 </tr>
@@ -121,7 +121,7 @@ export function UsuariosClient() {
                 <SortableHeader label="Usuario" field="name" currentSort={customerSort} onSortChange={setCustomerSort} />
                 <SortableHeader label="Email" field="email" currentSort={customerSort} onSortChange={setCustomerSort} />
                 <SortableHeader label="Pedidos" field="pedidos" currentSort={customerSort} onSortChange={setCustomerSort} />
-                <SortableHeader label="Registro" field="createdAt" currentSort={customerSort} onSortChange={setCustomerSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Registro" field="createdAt" currentSort={customerSort} onSortChange={setCustomerSort} />
               </tr>
             </thead>
             <tbody>
@@ -139,7 +139,7 @@ export function UsuariosClient() {
                   </td>
                     <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">{user.email}</td>
                     <td className="px-3 py-2">{userOrderCount}</td>
-                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                    <td className="px-4 py-3 text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString("es-PE")}
                     </td>
                   </tr>

@@ -73,7 +73,7 @@ export function CategoriasClient() {
             <tr className="border-b border-border text-left text-xs text-muted-foreground">
               <th className="px-4 py-3 font-medium w-10">#</th>
               <th className="px-4 py-3 font-medium">Nombre</th>
-              <th className="px-4 py-3 font-medium hidden sm:table-cell">Slug</th>
+              <th className="px-4 py-3 font-medium">Slug</th>
               <th className="px-4 py-3 font-medium">Activo</th>
               <th className="px-4 py-3 font-medium">Productos</th>
               <th className="px-4 py-3 font-medium text-right">Acciones</th>
@@ -114,7 +114,7 @@ export function CategoriasClient() {
                         {cat.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono hidden sm:table-cell">
+                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
                       {cat.slug}
                     </td>
                     <td className="px-4 py-3">

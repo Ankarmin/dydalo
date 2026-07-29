@@ -10,7 +10,7 @@ import { productsStore } from "@/lib/stores/data-store.products";
 import type { ProductSize } from "@/lib/stores/data-store.types";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { ROUTES } from "@/lib/utils/routes";
-import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX } from "@/config/constants";
+import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX, FEATURED_PRODUCTS_COUNT } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import Link from "next/link";
 import { ImageUploader } from "@/components/admin/image-uploader";
@@ -45,7 +44,6 @@ const formSchema = z.object({
   stock: z.number().int().nonnegative("No puede ser negativo"),
   discount: z.number().min(0).max(100).nullable(),
   image: z.string(),
-  description: z.string(),
   active: z.boolean(),
   featured: z.boolean(),
   sizes: z.array(z.string()).min(1, "Al menos una talla").superRefine((val, ctx) => {
@@ -70,7 +68,6 @@ const defaultValues: FormValues = {
   stock: 0,
   discount: null,
   image: "",
-  description: "",
   active: true,
   featured: false,
   sizes: ["M", "L"],
@@ -90,6 +87,14 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   const [categories] = useState(categoriesStore.getActive());
   const [newSize, setNewSize] = useState("");
+  const featuredCount = productsStore.getAll().filter((p) => p.featured).length;
+  const featuredLimitReached = featuredCount >= FEATURED_PRODUCTS_COUNT;
+
+  const isCurrentlyFeatured = isEdit
+    ? productsStore.getById(productId)?.featured ?? false
+    : false;
+
+  const featuredBlocked = featuredLimitReached && !isCurrentlyFeatured;
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -111,7 +116,6 @@ export function ProductForm({ productId }: ProductFormProps) {
       stock: product.stock,
       discount: product.discount,
       image: product.image,
-      description: product.description ?? "",
       active: product.active,
       featured: product.featured,
       sizes: product.sizes as unknown as string[],
@@ -241,20 +245,6 @@ export function ProductForm({ productId }: ProductFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="Descripción del producto..." rows={3} disabled={isPending} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -453,13 +443,22 @@ export function ProductForm({ productId }: ProductFormProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Destacado</p>
-                <p className="text-xs text-muted-foreground">Aparece en la homepage</p>
+                <p className="text-xs text-muted-foreground">
+                  {featuredBlocked
+                    ? `Límite de ${FEATURED_PRODUCTS_COUNT} productos destacados alcanzado`
+                    : "Aparece en la homepage"}
+                </p>
               </div>
               <FormField
                 control={form.control}
                 name="featured"
                 render={({ field }) => (
-                  <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isPending} />
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={featuredBlocked || isPending}
+                    className={featuredBlocked ? "opacity-30" : ""}
+                  />
                 )}
               />
             </div>
