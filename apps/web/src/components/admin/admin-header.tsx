@@ -70,7 +70,7 @@ export function AdminHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-background px-4 lg:px-6">
-      {/* Mobile menu toggle */}
+      
       <Button
         variant="ghost"
         size="icon"
@@ -81,7 +81,7 @@ export function AdminHeader() {
         <Menu className="size-5" />
       </Button>
 
-      {/* Desktop sidebar toggle */}
+      
       <Button
         variant="ghost"
         size="icon"
@@ -96,17 +96,17 @@ export function AdminHeader() {
         )}
       </Button>
 
-      {/* Breadcrumb */}
+      
       <div className="flex-1 min-w-0">
         <Suspense fallback={<BreadcrumbSkeleton />}>
           <AdminBreadcrumb />
         </Suspense>
       </div>
 
-      {/* Theme toggle */}
+      
       <ThemeToggle />
 
-      {/* User menu */}
+      
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="Menú de usuario">

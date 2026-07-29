@@ -12,7 +12,7 @@ const defaultConfig: SiteConfig = {
   contactPhone: "",
   address: "",
   socialLinks: {},
-  shippingInfo: "",
+  shippingInfo: "**Lima Metropolitana:** Envío gratis. 2-3 días hábiles.\n\n**Provincia:** Envíos vía Olva desde S/ 15. 5-12 días hábiles.",
   returnPolicy: "",
   sizeGuide: "",
   faq: [],

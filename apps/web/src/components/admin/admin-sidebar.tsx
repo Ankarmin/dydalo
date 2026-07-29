@@ -131,7 +131,7 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
+      
       <aside
         className={cn(
           "hidden lg:flex flex-col border-r border-border bg-background transition-all duration-200",
@@ -159,7 +159,7 @@ export function AdminSidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar overlay */}
+      
       {layoutState.mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div

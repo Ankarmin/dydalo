@@ -30,7 +30,7 @@ function saveFavorites(ids: Set<number>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {
-    // localStorage lleno o no disponible — ignorar silenciosamente
+
   }
 }
 

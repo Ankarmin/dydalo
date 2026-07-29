@@ -12,7 +12,7 @@ export default function SobreNosotrosPage() {
   return (
     <main className="page-root">
 
-      {/* ── Hero ── */}
+      
       <section className="page-hero">
         <div className="container-page">
           <p className="section-tag">
@@ -24,7 +24,7 @@ export default function SobreNosotrosPage() {
         </div>
       </section>
 
-      {/* ── Contenido ── */}
+      
       <section className="section-px pb-12 pt-12">
         <div className="container-page">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
@@ -63,7 +63,7 @@ export default function SobreNosotrosPage() {
             </div>
           </div>
 
-          {/* ── Cierre ── */}
+          
           <div className="mt-12 border-l-2 border-accent pl-6 md:pl-8">
             <p className="text-lg font-semibold uppercase tracking-wide text-foreground/80 md:text-xl">
               No vestimos a todos por igual. Nosotros ponemos las herramientas,
@@ -71,7 +71,7 @@ export default function SobreNosotrosPage() {
             </p>
           </div>
 
-          {/* ── CTA ── */}
+          
           <div className="mt-8">
             <Button variant="hero" size="hero" asChild>
               <Link href={ROUTES.home}>Explorar Colecciones</Link>

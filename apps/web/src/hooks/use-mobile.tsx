@@ -11,7 +11,7 @@ export function useIsMobile() {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
     mql.addEventListener("change", onChange);
-    // Set initial value in the next tick to avoid cascading renders
+
     const timer = setTimeout(() => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     }, 0);

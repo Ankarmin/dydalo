@@ -1,109 +1,76 @@
-import Link from 'next/link';
-import type { Metadata } from 'next';
-import { ArrowUpRight } from 'lucide-react';
-import { FREE_SHIPPING_THRESHOLD, SHIPPING_STANDARD_PRICE, SHIPPING_INTERNATIONAL_PRICE } from '@/config/constants';
+import Link from "next/link";
+import type { Metadata } from "next";
+import { ArrowUpRight, MapPin, Truck, Search, Package } from "lucide-react";
+import { SHIPPING_PROVINCIA_PRICE, SHIPPING_PROVINCIA_COURIER } from "@/config/constants";
+import { ROUTES } from "@/lib/utils/routes";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: 'Envíos',
-  description: `De la calle a tu casa. Express, estándar e internacional. Envíos gratis en pedidos superiores a $${FREE_SHIPPING_THRESHOLD}.`,
+  title: "Envíos",
+  description:
+    `Envíos gratis en Lima Metropolitana. Envíos a provincia vía ${SHIPPING_PROVINCIA_COURIER} desde S/ ${SHIPPING_PROVINCIA_PRICE}. Conoce tiempos de entrega y tarifas.`,
 };
-import { ROUTES } from '@/lib/utils/routes';
-import { Button } from '@/components/ui/button';
 
 const steps = [
   {
     step: 1,
-    title: 'Pedido',
-    description: 'Procesamos tu pedido en 24h.',
+    icon: Search,
+    title: "Pedido Confirmado",
+    description: "Procesamos tu pedido en 24 horas.",
   },
   {
     step: 2,
-    title: 'Preparado',
-    description: 'Tu pedido está siendo preparado con cuidado.',
+    icon: Package,
+    title: "Empaquetado",
+    description: "Preparamos tu pedido con protección y seguridad.",
   },
   {
     step: 3,
-    title: 'En ruta',
-    description: 'Sigue tu envío en tiempo real con tu número de tracking.',
+    icon: Truck,
+    title: "En Ruta",
+    description: `Recibirás tu número de tracking por email. Envíos a provincia vía ${SHIPPING_PROVINCIA_COURIER}.`,
   },
   {
     step: 4,
-    title: 'Entregado',
-    description: 'En tu puerta. Sin excusas, sin demoras.',
+    icon: MapPin,
+    title: "Entregado",
+    description: "En tu puerta. Sin excusas, sin demoras.",
   },
 ];
 
 const rates = [
   {
-    icon: '🚀',
-    name: 'Express',
-    time: '1-2 días',
-    price: `$${SHIPPING_STANDARD_PRICE}`,
-    detail: 'Entrega prioritaria con seguimiento en tiempo real.',
+    icon: MapPin,
+    name: "Lima Metropolitana",
+    price: "GRATIS",
+    time: "2-3 días hábiles",
+    detail: "Envío sin costo en todos los pedidos dentro de Lima Metropolitana. Entrega rápida y segura directamente a tu puerta.",
   },
   {
-    icon: '📦',
-    name: 'Estándar',
-    time: '3-5 días',
-    price: '$5',
-    detail: `Gratis en pedidos superiores a $${FREE_SHIPPING_THRESHOLD}.`,
-  },
-  {
-    icon: '🌍',
-    name: 'Internacional',
-    time: '7-14 días',
-    price: `$${SHIPPING_INTERNATIONAL_PRICE}`,
-    detail: 'Envíos a más de 30 países. Aduanas no incluidas.',
+    icon: Truck,
+    name: "Provincia",
+    price: `S/ ${SHIPPING_PROVINCIA_PRICE} — S/ 25`,
+    time: "5-12 días hábiles",
+    detail: `Envíos a todo el Perú vía ${SHIPPING_PROVINCIA_COURIER}. El costo varía según peso y destino y es asumido por el cliente. Recibirás el tracking de ${SHIPPING_PROVINCIA_COURIER} por email.`,
   },
 ];
 
 export default function EnviosPage() {
   return (
     <main className="page-root">
-
       <section className="page-hero">
         <div className="container-page">
           <p className="section-tag">Envíos</p>
           <h1 className="page-hero-heading">
-            De la calle a tu casa.
+            De Lima a todo el Perú.
           </h1>
           <p className="hero-description">
-            Cada pedido es un viaje. Desde que haces clic hasta que abres la
-            caja, esto es lo que pasa.
+            Envíos gratis en Lima Metropolitana. Para provincia, coordinamos con{" "}
+            {SHIPPING_PROVINCIA_COURIER} para que tu pedido llegue seguro.
           </p>
         </div>
       </section>
 
-      {/* ── Timeline ── */}
-      <section className="section-px section-md">
-        <div className="container-page">
-          <div className="relative">
-            {/* Línea conectora */}
-            <div className="absolute left-7 top-0 h-full w-0.5 bg-accent md:hidden" />
-            <div className="absolute left-0 right-0 top-14 hidden h-0.5 bg-accent md:block" />
-
-            <div className="grid gap-8 md:grid-cols-4">
-              {steps.map((item) => (
-                <div key={item.step} className="relative flex items-start gap-4 md:flex-col md:items-center md:text-center">
-                  <span className="relative z-10 flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-bold text-accent-foreground">
-                    {item.step}
-                  </span>
-                  <div className="md:text-center">
-                    <h3 className="text-lg font-bold uppercase tracking-tight">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 body-sm">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Tarifas ── */}
       <section className="border-t border-border section-px section-md">
         <div className="container-page">
           <p className="section-tag">Tarifas</p>
@@ -111,13 +78,13 @@ export default function EnviosPage() {
             Lo que cuesta llegar.
           </h2>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
             {rates.map((rate) => (
               <div
                 key={rate.name}
                 className="product-glass card-lift p-6"
               >
-                <span className="text-2xl">{rate.icon}</span>
+                <rate.icon className="size-8 text-accent" />
                 <h3 className="mt-4 text-lg font-bold uppercase tracking-tight">
                   {rate.name}
                 </h3>
@@ -127,29 +94,48 @@ export default function EnviosPage() {
                     / {rate.time}
                   </span>
                 </div>
-                <p className="mt-2 body-sm">
-                  {rate.detail}
-                </p>
+                <p className="mt-2 body-sm">{rate.detail}</p>
               </div>
             ))}
-          </div>
-
-          <div className="mt-8 inline-block border border-accent bg-accent/10 px-5 py-3">
-            <p className="text-sm font-bold uppercase tracking-wide text-accent">
-              Envíos gratis en pedidos superiores a ${FREE_SHIPPING_THRESHOLD}
-            </p>
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      <section className="border-t border-border section-px section-md">
+        <div className="container-page">
+          <div className="relative">
+            <div className="absolute left-7 top-0 h-full w-0.5 bg-accent md:hidden" />
+            <div className="absolute left-0 right-0 top-14 hidden h-0.5 bg-accent md:block" />
+
+            <div className="grid gap-8 md:grid-cols-4">
+              {steps.map((item) => (
+                <div
+                  key={item.step}
+                  className="relative flex items-start gap-4 md:flex-col md:items-center md:text-center"
+                >
+                  <span className="relative z-10 flex size-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-bold text-accent-foreground">
+                    <item.icon className="size-5" />
+                  </span>
+                  <div className="md:text-center">
+                    <h3 className="text-lg font-bold uppercase tracking-tight">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 body-sm">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border section-px section-lg">
         <div className="container-page text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-4xl">
-            ¿Listo para tu próximo envío?
+            ¿Listo para tu pedido?
           </p>
           <Button asChild variant="hero" size="hero" className="mt-10">
-            <Link href={ROUTES.catalogoAnchor}>
+            <Link href={ROUTES.catalogo}>
               Ir al catálogo <ArrowUpRight />
             </Link>
           </Button>

@@ -8,7 +8,6 @@ export function showFavoriteToast(productName: string, added: boolean) {
   toast.custom(
     (t) => (
       <div
-        data-toast-notification
         onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
         className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
@@ -18,7 +17,7 @@ export function showFavoriteToast(productName: string, added: boolean) {
           <Heart
             className={`size-4 text-favorite transition-all ${added ? "fill-favorite" : ""}`}
           />
-          <span className="absolute -right-1 -top-1 size-3 animate-pulse bg-favorite" />
+          {added && <span className="absolute -right-1 -top-1 size-3 animate-pulse bg-favorite" />}
         </div>
 
         <div className="min-w-0 flex-1">

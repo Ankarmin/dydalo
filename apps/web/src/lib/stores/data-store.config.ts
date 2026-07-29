@@ -9,7 +9,7 @@ const DEFAULT_CONFIG: SiteConfig = {
   contactPhone: "",
   address: "",
   socialLinks: {},
-  shippingInfo: "## Envíos\n\nInformación sobre envíos próximamente.",
+  shippingInfo: "## Envíos\n\n**Lima Metropolitana:** Envío gratis en todos los pedidos. Entrega en 2-3 días hábiles.\n\n**Provincia:** Envíos vía Olva desde S/ 15. Entrega en 5-12 días hábiles. El costo varía según peso y destino.",
   returnPolicy: "## Devoluciones\n\nPolítica de devoluciones próximamente.",
   sizeGuide: "## Guía de Tallas\n\nGuía de tallas próximamente.",
   faq: [

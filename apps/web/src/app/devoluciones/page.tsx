@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Package, Mail, BadgeDollarSign, Check } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Devoluciones',
@@ -12,21 +12,21 @@ import { Button } from '@/components/ui/button';
 const steps = [
   {
     number: '01',
-    icon: '📦',
+    Icon: Package,
     title: 'Solicita tu cambio',
     detail: '30 días de plazo',
     description: 'Tienes un mes entero desde que recibes tu pedido para decidir. Sin prisas.',
   },
   {
     number: '02',
-    icon: '📨',
+    Icon: Mail,
     title: 'Envíalo de vuelta',
     detail: 'Sin costo de envío',
     description: 'Te enviamos una etiqueta de devolución gratuita. Solo déjalo en el punto de recogida.',
   },
   {
     number: '03',
-    icon: '💵',
+    Icon: BadgeDollarSign,
     title: 'Recibe tu reembolso',
     detail: 'En 5-7 días hábiles',
     description: 'En cuanto recibamos tu paquete, procesamos el reembolso. Sin preguntas, sin excusas.',
@@ -57,7 +57,7 @@ export default function DevolucionesPage() {
         </div>
       </section>
 
-      {/* ── 3 pasos ── */}
+      
       <section className="section-px section-md">
         <div className="container-page">
           <div className="grid gap-8 md:grid-cols-3">
@@ -71,7 +71,7 @@ export default function DevolucionesPage() {
                 </span>
 
                 <div className="relative z-10">
-                  <span className="text-3xl">{step.icon}</span>
+                  <step.Icon className="size-8 text-accent" />
                   <h3 className="mt-5 text-xl font-bold uppercase tracking-tight">
                     {step.title}
                   </h3>
@@ -88,7 +88,7 @@ export default function DevolucionesPage() {
         </div>
       </section>
 
-      {/* ── Condiciones ── */}
+      
       <section className="border-t border-border section-px section-md">
         <div className="container-page">
           <p className="section-tag">Condiciones claras</p>
@@ -98,9 +98,7 @@ export default function DevolucionesPage() {
                 key={condition}
                 className="flex items-start gap-3 border border-border p-4"
               >
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent micro-text font-bold text-accent-foreground">
-                  ✓
-                </span>
+                <Check className="mt-0.5 size-4 shrink-0 text-accent" />
                 <p className="body-sm">
                   {condition}
                 </p>
@@ -110,7 +108,7 @@ export default function DevolucionesPage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      
       <section className="border-t border-border section-px section-lg">
         <div className="container-page text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-4xl">

@@ -27,7 +27,7 @@ function getStoredTheme(): Theme {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === "light" || stored === "dark") return stored;
   } catch {
-    /* localStorage inaccesible */
+
   }
   return "dark";
 }
@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(THEME_STORAGE_KEY, theme);
     } catch {
-      /* localStorage no disponible */
+
     }
   }, [theme]);
 

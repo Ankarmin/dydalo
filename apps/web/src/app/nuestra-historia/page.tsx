@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Nuestra Historia',
-  description: 'De un sótano en Barcelona a envíos globales. La historia de DYDALO, la marca que nunca pidió permiso.',
+  description: "De un sótano en Barcelona al streetwear nacional. La historia de DYDALO, la marca que nunca pidió permiso.",
 };
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const timeline = [
     year: '2024',
     title: 'The Real Cream',
     description:
-      'Colecciones globales con envíos a 30 países. Manteniendo la esencia cruda de nuestros inicios en cada puntada.',
+      "Colecciones nacionales manteniendo la esencia cruda de nuestros inicios en cada puntada.",
   },
   {
     year: '2026',

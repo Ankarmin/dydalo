@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'FAQ',
-  description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios y pagos en DYDALO.',
+  description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios, pagos, productos, cuenta y tallas en DYDALO.',
 };
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';

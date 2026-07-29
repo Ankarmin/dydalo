@@ -4,10 +4,14 @@ import { toast } from "sonner";
 import { User, LogOut, ShoppingCart, X } from "lucide-react";
 import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from "@/config/constants";
 
-const FAVORITE = { bg: "bg-favorite", border: "border-favorite" } as const;
-const MUTED = { bg: "bg-muted-foreground", border: "border-muted-foreground" } as const;
+const ACCENT_BORDER = "border-favorite" as const;
+const MUTED_BORDER = "border-muted-foreground" as const;
 
 type Accent = { bg: string; border: string };
+
+const FAVORITE: Accent = { bg: "bg-favorite", border: "border-favorite" };
+const MUTED: Accent = { bg: "bg-muted-foreground", border: "border-muted-foreground" };
+const GREEN: Accent = { bg: "bg-green-500", border: "border-green-500" };
 
 function notify(
   icon: React.ReactNode,
@@ -18,13 +22,12 @@ function notify(
   toast.custom(
     (t) => (
       <div
-        data-toast-notification
         onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
         className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${accent.bg}`} />
 
-        <div className={`relative flex size-10 shrink-0 items-center justify-center border ${accent.bg} ${accent.border} ${accent.bg}/10`}>
+        <div className={`relative flex size-10 shrink-0 items-center justify-center border ${accent.border} ${accent.bg}/10`}>
           {icon}
           <span className={`absolute -right-1 -top-1 size-3 animate-pulse ${accent.bg}`} />
         </div>

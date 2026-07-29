@@ -98,8 +98,6 @@
 
 [data-theme="light"] {
   color-scheme: light;
-  --favorite: oklch(0.58 0.235 27);
-  --favorite-foreground: oklch(0.99 0 0);
   --background: oklch(0.985 0.002 247);
   --foreground: oklch(0.09 0 0);
   --card: oklch(1 0 0);
@@ -120,6 +118,8 @@
   --input: oklch(0.80 0.015 270);
   --ring: oklch(0.58 0.235 27);
   --ink: oklch(0.92 0.015 250);
+  --favorite: oklch(0.58 0.235 27);
+  --favorite-foreground: oklch(0.99 0 0);
   --shadow-punch: 8px 8px 0 oklch(0.58 0.235 27);
   --hero-overlay-top: rgba(0,0,0,0.2);
   --hero-overlay-mid: rgba(0,0,0,0.1);
@@ -142,7 +142,6 @@
   * {
     border-color: var(--color-border);
   }
-
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -151,11 +150,9 @@
     overflow-x: hidden;
     overflow-wrap: break-word;
   }
-
   html {
     scroll-behavior: smooth;
   }
-
   :target {
     scroll-margin-top: 5rem;
   }
@@ -165,145 +162,76 @@
   }
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: oklch(from var(--accent) l c h / 0.45);
   border-radius: 3px;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(from var(--accent) l c h / 0.75);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
+::-webkit-scrollbar-thumb:hover { background: oklch(from var(--accent) l c h / 0.75); }
+::-webkit-scrollbar-corner { background: transparent; }
 html {
   scrollbar-width: thin;
   scrollbar-color: oklch(from var(--accent) l c h / 0.45) transparent;
 }
 
-@utility asphalt {
-  background-image:
-    radial-gradient(
-      circle at 20% 10%,
-      color-mix(in oklab, var(--accent) 12%, transparent),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 70% 80%,
-      color-mix(in oklab, var(--accent) 9%, transparent),
-      transparent 30%
-    );
+::view-transition-old(root) { animation: fade-out 0.15s ease-out; }
+::view-transition-new(root) { animation: fade-in 0.15s ease-in; }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.logo-dark { display: inline; }
+.logo-light { display: none; }
+[data-theme="light"] .logo-dark { display: none; }
+[data-theme="light"] .logo-light { display: inline; }
+
+@keyframes ticker { to { transform: translateX(-50%); } }
+@keyframes shimmer {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
 }
 
+@utility animate-shimmer { animation: shimmer 2s ease-out; }
+@utility ticker-track { animation: ticker 22s linear infinite; }
+@utility asphalt {
+  background-image:
+    radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 28%),
+    radial-gradient(circle at 70% 80%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 30%);
+}
 @utility product-glass {
   background:
-    linear-gradient(
-      145deg,
-      color-mix(in oklab, var(--foreground) 7%, transparent),
-      transparent 44%
-    ),
-    radial-gradient(
-      circle at 75% 18%,
-      color-mix(in oklab, var(--accent) 12%, transparent),
-      transparent 30%
-    ),
+    linear-gradient(145deg, color-mix(in oklab, var(--foreground) 7%, transparent), transparent 44%),
+    radial-gradient(circle at 75% 18%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 30%),
     var(--card);
 }
 
-@keyframes ticker {
-  to {
-    transform: translateX(-50%);
-  }
-}
-@utility ticker-track {
-  animation: ticker 22s linear infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: scaleX(0);
-  }
-  100% {
-    transform: scaleX(1);
-  }
-}
-
-@utility animate-shimmer {
-  animation: shimmer 2s ease-out;
-}
-
-/* ── Layout ── */
 @utility section-px {
   padding-inline: 1.25rem;
-  @media (width >= 48rem) {
-    padding-inline: 2.5rem;
-  }
-  @media (width >= 64rem) {
-    padding-inline: 4rem;
-  }
+  @media (width >= 48rem) { padding-inline: 2.5rem; }
+  @media (width >= 64rem) { padding-inline: 4rem; }
 }
-
-/* ── Typography ── */
-@utility section-tag {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--color-accent);
-}
-
-@utility body-text {
-  font-size: 1rem;
-  line-height: 1.625;
-  color: var(--color-muted-foreground);
-}
-
-@utility heading-label {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
+@utility container-page { margin-inline: auto; max-width: 72rem; }
+@utility page-root {
+  min-height: 100svh;
+  background-color: var(--color-background);
   color: var(--color-foreground);
 }
-
-/* ── Layout ── */
-@utility container-page {
-  margin-inline: auto;
-  max-width: 72rem;
+@utility page-hero {
+  background-image:
+    radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 28%),
+    radial-gradient(circle at 70% 80%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 30%);
+  padding-inline: 1.25rem;
+  padding-bottom: 2rem;
+  padding-top: 8rem;
+  @media (width >= 48rem) { padding-inline: 2.5rem; }
+  @media (width >= 64rem) { padding-inline: 4rem; }
 }
+@utility page-top { padding-top: 7rem; }
+@utility page-bottom { padding-bottom: 4rem; }
+@utility section-lg { padding-block: 5rem; }
+@utility section-md { padding-block: 4rem; }
+@utility section-sm { padding-block: 3rem; }
 
-/* ── Focus ── */
-@utility focus-ring {
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--ring);
-  }
-}
-
-/* ── Cards ── */
-@utility card-lift {
-  border: 1px solid var(--color-border);
-  transition: all 0.2s;
-  &:hover {
-    transform: translateY(-0.25rem);
-    border-color: var(--accent);
-  }
-}
-
-/* ── Typography ── */
 @utility page-hero-heading {
   margin-top: 1rem;
   max-width: 48rem;
@@ -312,11 +240,42 @@ html {
   text-transform: uppercase;
   line-height: 0.92;
   letter-spacing: -0.04em;
-  @media (width >= 48rem) {
-    font-size: clamp(3rem, 7vw, 4.5rem);
-  }
+  @media (width >= 48rem) { font-size: clamp(3rem, 7vw, 4.5rem); }
 }
-
+@utility hero-description {
+  margin-top: 1.5rem;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.625;
+  color: var(--color-muted-foreground);
+}
+@utility section-tag {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--color-accent);
+}
+@utility heading-label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-foreground);
+}
+@utility body-text {
+  font-size: 1rem;
+  line-height: 1.625;
+  color: var(--color-muted-foreground);
+}
+@utility body-sm {
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: var(--color-muted-foreground);
+}
+@utility micro-text { font-size: 0.625rem; line-height: 1rem; }
 @utility micro-label {
   font-size: 0.5625rem;
   line-height: 1;
@@ -325,7 +284,39 @@ html {
   letter-spacing: 0.2em;
   color: var(--color-accent);
 }
+@utility product-label {
+  font-size: 0.5625rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  background: oklch(from var(--background) l c h / 0.8);
+  backdrop-filter: blur(12px);
+}
 
+@utility focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+}
+@utility card-lift {
+  border: 1px solid var(--color-border);
+  transition: all 0.2s;
+  &:hover { transform: translateY(-0.25rem); border-color: var(--accent); }
+}
+
+@utility form-input {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+  &::placeholder { color: var(--color-muted-foreground); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 1px var(--accent); }
+}
 @utility form-label {
   display: block;
   margin-bottom: 0.5rem;
@@ -335,21 +326,6 @@ html {
   letter-spacing: 0.2em;
   color: var(--color-muted-foreground);
 }
-
-/* ── Forms ── */
-@utility form-input {
-  border: 1px solid var(--color-border);
-  background: transparent;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  color: var(--color-foreground);
-  &::placeholder { color: var(--color-muted-foreground); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 1px var(--accent);
-  }
-}
-
 @utility newsletter-btn {
   background-color: var(--accent);
   padding: 0.625rem 1.25rem;
@@ -365,122 +341,18 @@ html {
     box-shadow: 0 0 0 2px var(--ring), 0 0 0 4px var(--color-ring-offset-background);
   }
 }
-
 @utility footer-link {
   font-size: 0.875rem;
   color: var(--color-muted-foreground);
   transition: color 0.15s;
   &:hover { color: var(--color-accent); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--ring);
-  }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }
 }
 
-/* Theme-based logo visibility */
-.logo-dark {
-  display: inline;
-}
-.logo-light {
-  display: none;
-}
-[data-theme="light"] .logo-dark {
-  display: none;
-}
-[data-theme="light"] .logo-light {
-  display: inline;
-}
-
-/* ── Page Shell ── */
-@utility page-root {
-  min-height: 100svh;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-}
-
-@utility page-hero {
-  background-image:
-    radial-gradient(
-      circle at 20% 10%,
-      color-mix(in oklab, var(--accent) 12%, transparent),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 70% 80%,
-      color-mix(in oklab, var(--accent) 9%, transparent),
-      transparent 30%
-    );
-  padding-inline: 1.25rem;
-  padding-bottom: 2rem;
-  padding-top: 8rem;
-  @media (width >= 48rem) {
-    padding-inline: 2.5rem;
-  }
-  @media (width >= 64rem) {
-    padding-inline: 4rem;
-  }
-}
-
-/* ── Typography Body ── */
-@utility body-sm {
-  font-size: 0.875rem;
-  line-height: 1.625;
-  color: var(--color-muted-foreground);
-}
-
-@utility hero-description {
-  margin-top: 1.5rem;
-  max-width: 36rem;
-  font-size: 1rem;
-  line-height: 1.625;
-  color: var(--color-muted-foreground);
-}
-
-/* ── Tipografía de producto ── */
-@utility product-label {
-  font-size: 0.5625rem;
-  line-height: 1;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding-inline: 0.75rem;
-  padding-block: 0.5rem;
-  background: oklch(from var(--background) l c h / 0.8);
-  backdrop-filter: blur(12px);
-}
-
-@utility micro-text {
-  font-size: 0.625rem;
-  line-height: 1rem;
-}
-
-/* ── Secciones ── */
-@utility section-lg {
-  padding-block: 5rem;
-}
-
-@utility section-md {
-  padding-block: 4rem;
-}
-
-@utility section-sm {
-  padding-block: 3rem;
-}
-
-@utility page-top {
-  padding-top: 7rem;
-}
-
-@utility page-bottom {
-  padding-bottom: 4rem;
-}
-
-/* ── Componentes glass ── */
 @utility chip-label {
   background: oklch(from var(--background) l c h / 0.8);
   backdrop-filter: blur(12px);
 }
-
 @utility popover-panel {
   background: oklch(from var(--background) l c h / 0.95);
   backdrop-filter: blur(24px);
@@ -493,9 +365,7 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

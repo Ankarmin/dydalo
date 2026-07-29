@@ -3,15 +3,14 @@
 import { useSiteConfig } from "@/hooks/use-site-config";
 
 const FALLBACK_FAQS = [
-  { question: "¿Cómo realizo un pedido?", answer: "Navega por nuestro catálogo, selecciona los productos que te gustan y contáctanos por Instagram o email para coordinar tu pedido." },
-  { question: "¿Cuánto tarda el envío?", answer: "Los envíos nacionales tardan entre 3 y 7 días hábiles dependiendo de tu ubicación." },
-  { question: "¿Hacen envíos internacionales?", answer: "Sí, realizamos envíos a toda Latinoamérica. Los tiempos varían según el país de destino." },
+  { question: "¿Cuánto tarda el envío?", answer: "Lima Metropolitana: 2-3 días hábiles (envío gratis). Provincia vía Olva: 5-12 días hábiles (costo desde S/ 15)." },
+  { question: "¿Hacen envíos a todo el Perú?", answer: "Sí. Envíos gratis en Lima Metropolitana y envíos a provincia vía Olva." },
   { question: "¿Puedo devolver un producto?", answer: "Aceptamos devoluciones dentro de los 7 días posteriores a la entrega, siempre que el producto esté sin usar y en su empaque original." },
-  { question: "¿Cómo sé mi talla?", answer: "Contamos con una guía de tallas detallada en nuestra web. También puedes contactarnos para asesoría personalizada." },
-  { question: "¿Métodos de pago?", answer: "Aceptamos transferencias bancarias, Yape, Plin y pagos con tarjeta." },
-  { question: "¿Tienen tienda física?", answer: "Por ahora operamos 100% online. Puedes encontrarnos en nuestras redes sociales para conocer nuestros pop-up stores." },
-  { question: "¿Cómo los contacto?", answer: "Escríbenos a través de Instagram (@dydalo.oficial) o por email a contacto@dydalo.com." },
-  { question: "¿Son productos originales?", answer: "Todos nuestros productos son diseños originales DYDALO, fabricados con materiales de alta calidad." },
+  { question: "¿Métodos de pago?", answer: "Aceptamos Yape, Plin, transferencia bancaria y tarjetas de crédito o débito." },
+  { question: "¿Cómo elijo mi talla?", answer: "Revisa nuestra guía de tallas con medidas en centímetros para cada tipo de prenda." },
+  { question: "¿Necesito crear una cuenta para comprar?", answer: "Sí. El registro es gratis y toma menos de un minuto." },
+  { question: "¿Los productos son originales?", answer: "Todos nuestros productos son diseños originales DYDALO, fabricados con materiales de alta calidad." },
+  { question: "¿Cómo los contacto?", answer: "Escríbenos a través de nuestro formulario de contacto en la web o por Instagram @dydalo.oficial." },
 ];
 
 export function FaqClient() {

@@ -6,62 +6,197 @@ import { Button } from '@/components/ui/button';
 
 const faqs = [
   {
-    category: 'Pedidos',
-    question: '¿Cuánto tarda el envío?',
+    category: "Pedidos",
+    question: "¿Cómo realizo un pedido?",
     answer:
-      'Express: 1-2 días laborables. Estándar: 3-5 días. Internacional: 7-14 días. Envíos gratis en pedidos superiores a $150.',
+      "Explora nuestro catálogo, selecciona la talla y color que prefieras, agrega al carrito y finaliza la compra completando tus datos de envío.",
   },
   {
-    category: 'Pedidos',
-    question: '¿Puedo modificar mi pedido después de pagar?',
+    category: "Pedidos",
+    question: "¿Puedo modificar mi pedido después de pagar?",
     answer:
-      'Tienes 1 hora tras el pago para modificar tu pedido. Escríbenos a contacto y lo gestionamos sin problema.',
+      "Tienes 1 hora tras el pago para solicitar cambios. Escríbenos por el formulario de contacto incluyendo tu número de pedido y lo gestionamos.",
   },
   {
-    category: 'Pedidos',
-    question: '¿Cómo sé si mi pedido ha sido enviado?',
+    category: "Pedidos",
+    question: "¿Cómo sé si mi pedido fue confirmado?",
     answer:
-      'Recibirás un email de confirmación con el número de tracking en cuanto tu pedido salga del almacén.',
+      "Recibirás un email de confirmación con el resumen de tu compra en cuanto el pago sea procesado exitosamente.",
   },
   {
-    category: 'Envíos',
-    question: '¿Hacen envíos internacionales?',
+    category: "Pedidos",
+    question: "¿Puedo cancelar un pedido?",
     answer:
-      'Sí. Envíos a más de 30 países. El coste se calcula en el checkout según país de destino. Las aduanas locales no están incluidas.',
+      "Sí, siempre que aún no haya sido enviado. Escríbenos por contacto indicando tu número de pedido y lo cancelamos sin costo.",
   },
   {
-    category: 'Envíos',
-    question: '¿Cómo sigo mi pedido?',
+    category: "Pedidos",
+    question: "¿Hay un pedido mínimo?",
     answer:
-      'Usa el número de tracking que recibiste por email en la web de la empresa de mensajería. Si no lo encuentras, revisa spam o escríbenos.',
+      "No. Puedes comprar desde un solo producto sin monto mínimo.",
+  },
+
+  {
+    category: "Envíos",
+    question: "¿Cuánto tarda el envío?",
+    answer:
+      "Lima Metropolitana: 2-3 días hábiles con envío gratis. Provincia vía Olva: 5-12 días hábiles con costo desde S/ 15.",
   },
   {
-    category: 'Cambios',
-    question: '¿Puedo cambiar de talla o color?',
+    category: "Envíos",
+    question: "¿El envío es gratis en todos los pedidos?",
     answer:
-      'Sí. Tienes 30 días para cambios sin coste. Solo asegúrate de que la prenda esté sin usar y con etiquetas originales.',
+      "El envío es gratis solo en Lima Metropolitana. Para provincia, el costo varía según peso y destino y lo asume el cliente.",
   },
   {
-    category: 'Cambios',
-    question: '¿Cuánto tarda un reembolso?',
+    category: "Envíos",
+    question: "¿Hacen envíos a todo el Perú?",
     answer:
-      '5-7 días hábiles desde que recibimos la devolución en nuestro almacén. Recibirás una notificación en cuanto se procese.',
+      "Sí. Realizamos envíos a todo el territorio nacional: gratis en Lima y vía Olva para provincia.",
   },
   {
-    category: 'Pagos',
-    question: '¿Qué métodos de pago aceptan?',
+    category: "Envíos",
+    question: "¿Cómo rastreo mi pedido?",
     answer:
-      'Tarjeta de crédito/débito, PayPal, Apple Pay, Google Pay y transferencia bancaria.',
+      "Recibirás el número de tracking de Olva por email cuando tu pedido salga de nuestro almacén. Úsalo en la web de Olva Courier para seguir el estado.",
   },
   {
-    category: 'Pagos',
-    question: '¿Es seguro pagar en vuestra web?',
+    category: "Envíos",
+    question: "¿Qué pasa si no estoy en casa al momento de la entrega?",
     answer:
-      'Totalmente. Usamos cifrado SSL y no almacenamos datos de pago. Tus datos están protegidos en todo momento.',
+      "Olva realiza hasta 2 intentos de entrega. Si no es posible, coordinarán contigo una nueva fecha o podrás recogerlo en la agencia más cercana.",
+  },
+
+  {
+    category: "Cambios y Devoluciones",
+    question: "¿Puedo cambiar de talla o color?",
+    answer:
+      "Sí. Tienes 7 días desde la entrega para solicitar un cambio. La prenda debe estar sin usar, con etiquetas originales y en su empaque.",
+  },
+  {
+    category: "Cambios y Devoluciones",
+    question: "¿Cuánto tarda un reembolso?",
+    answer:
+      "5-7 días hábiles desde que recibimos la devolución en nuestro almacén. Recibirás una notificación por email cuando se procese.",
+  },
+  {
+    category: "Cambios y Devoluciones",
+    question: "¿Quién paga el envío de una devolución?",
+    answer:
+      "Si el producto tiene falla de fábrica, nosotros asumimos el costo. Si es por cambio de talla o color, el envío corre por cuenta del cliente.",
+  },
+  {
+    category: "Cambios y Devoluciones",
+    question: "¿Qué productos no tienen devolución?",
+    answer:
+      "Los productos en oferta final o artículos de uso personal no tienen devolución por motivos de higiene.",
+  },
+
+  {
+    category: "Pagos",
+    question: "¿Qué métodos de pago aceptan?",
+    answer:
+      "Aceptamos Yape, Plin, transferencia bancaria y tarjetas de crédito o débito a través de pasarelas de pago seguras.",
+  },
+  {
+    category: "Pagos",
+    question: "¿Es seguro pagar en su web?",
+    answer:
+      "Totalmente. Usamos cifrado SSL y pasarelas de pago seguras. No almacenamos datos de tarjetas ni información bancaria.",
+  },
+  {
+    category: "Pagos",
+    question: "¿Puedo pagar contra entrega?",
+    answer:
+      "Por el momento solo aceptamos pago anticipado. Estamos trabajando para ofrecer la opción de pago contra entrega próximamente.",
+  },
+  {
+    category: "Pagos",
+    question: "¿Emite boleta o factura?",
+    answer:
+      "Sí. Emitimos boleta de venta electrónica para todos los pedidos. Si necesitas factura, indícalo en los comentarios de tu pedido.",
+  },
+
+  {
+    category: "Productos",
+    question: "¿Los productos son originales?",
+    answer:
+      "Sí. Todos nuestros productos son diseños originales DYDALO, fabricados con materiales de alta calidad y atención al detalle.",
+  },
+  {
+    category: "Productos",
+    question: "¿Cómo sé si un producto está disponible?",
+    answer:
+      "Los productos sin stock muestran la etiqueta Agotado. Te recomendamos seguirnos en redes o suscribirte al newsletter para enterarte de nuevos drops.",
+  },
+  {
+    category: "Productos",
+    question: "¿Cada cuánto lanzan nuevos productos?",
+    answer:
+      "Lanzamos colecciones en drops limitados durante el año. Síguenos en Instagram para enterarte antes que nadie.",
+  },
+  {
+    category: "Productos",
+    question: "¿Los colores en la foto son exactos?",
+    answer:
+      "Hacemos nuestro mejor esfuerzo para mostrar los colores con precisión, pero pueden variar ligeramente según la pantalla de tu dispositivo.",
+  },
+
+  {
+    category: "Mi Cuenta",
+    question: "¿Necesito crear una cuenta para comprar?",
+    answer:
+      "Sí. Necesitas una cuenta para realizar pedidos y dar seguimiento a tus compras. El registro es gratis y toma menos de un minuto.",
+  },
+  {
+    category: "Mi Cuenta",
+    question: "¿Olvidé mi contraseña?",
+    answer:
+      "Usa la opción Recuperar contraseña en la pantalla de inicio de sesión. Te enviaremos un enlace para restablecerla.",
+  },
+  {
+    category: "Mi Cuenta",
+    question: "¿Cómo actualizo mis datos personales?",
+    answer:
+      "Ve a Mi Cuenta en el menú superior. Allí puedes editar tu nombre, email, dirección de envío y teléfono.",
+  },
+  {
+    category: "Mi Cuenta",
+    question: "¿Puedo ver mi historial de pedidos?",
+    answer:
+      "Sí. En Mi Cuenta → Pedidos encuentras todos tus pedidos con su estado actual (pendiente, confirmado, enviado, entregado).",
+  },
+
+  {
+    category: "Tallas",
+    question: "¿Cómo elijo mi talla?",
+    answer:
+      "Tenemos una guía de tallas detallada en nuestra web con medidas en centímetros para cada tipo de prenda. Revísala antes de comprar.",
+  },
+  {
+    category: "Tallas",
+    question: "¿Qué hago si no estoy seguro de mi talla?",
+    answer:
+      "Escríbenos por el formulario de contacto con tus medidas (pecho, cintura, cadera) y te asesoramos para elegir la talla correcta.",
+  },
+  {
+    category: "Tallas",
+    question: "¿Todas las prendas usan la misma tabla de tallas?",
+    answer:
+      "No. La tabla de tallas varía entre ropa y calzado. Consulta la guía específica para cada tipo de producto antes de comprar.",
   },
 ];
 
-const categories = ['Todos', 'Pedidos', 'Envíos', 'Cambios', 'Pagos'];
+const categories = [
+  "Todos",
+  "Pedidos",
+  "Envíos",
+  "Cambios y Devoluciones",
+  "Pagos",
+  "Productos",
+  "Mi Cuenta",
+  "Tallas",
+];
 
 export function FaqAccordion() {
   const [activeCategory, setActiveCategory] = useState('Todos');

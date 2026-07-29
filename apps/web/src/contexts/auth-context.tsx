@@ -3,7 +3,7 @@
 import { createContext, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { use } from "react";
-import { ADMIN_CREDENTIALS, AUTH_STORAGE_KEY } from "@/config/auth-constants";
+import { ADMINS, ADMIN_PASSWORD, AUTH_STORAGE_KEY } from "@/config/auth-constants";
 
 type UserRole = "admin" | "customer";
 
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { user, status: "authenticated" };
       }
     } catch {
-      // localStorage might be mocked/incomplete in SSR
+
     }
     return { user: null, status: "unauthenticated" };
   });
@@ -61,11 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
     await new Promise((r) => setTimeout(r, 800));
 
-    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+    if (email in ADMINS && password === ADMIN_PASSWORD) {
+      const name = ADMINS[email];
       const user: User = {
-        id: "admin-001",
-        name: "Administrador",
-        email: ADMIN_CREDENTIALS.email,
+        id: `admin-${email.split("@")[0]}`,
+        name,
+        email,
         role: "admin",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
       } catch {
-        /* quota exceeded o incognito */
+
       }
       setState({ user, status: "authenticated" });
       return { success: true };
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     } catch {
-      /* ignorar error en incognito */
+
     }
     setState({ user: null, status: "unauthenticated" });
   }, []);
