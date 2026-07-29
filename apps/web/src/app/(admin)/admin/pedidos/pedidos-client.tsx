@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Eye } from "lucide-react";
+import { Eye, Plus, Download } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { seedIfEmpty } from "@/config/seed-data";
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
+import { exportOrdersCSV } from "@/lib/utils/csv";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import {
   Pagination,
@@ -80,15 +82,34 @@ export function PedidosClient() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  function handleExport() {
+    exportOrdersCSV(filtered, usersStore.getAll());
+    notifyAdmin("CSV exportado", `${filtered.length} pedidos`, "success");
+  }
+
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-heading">Pedidos</h1>
-        <p className="text-sm text-muted-foreground">
-          {query || statusFilter !== "todos"
-            ? `${filtered.length} de ${orders.length} pedidos`
-            : `${orders.length} pedidos totales`}
-        </p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-heading">Pedidos</h1>
+          <p className="text-sm text-muted-foreground">
+            {query || statusFilter !== "todos"
+              ? `${filtered.length} de ${orders.length} pedidos`
+              : `${orders.length} pedidos totales`}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="size-3.5" />
+            Exportar CSV
+          </Button>
+          <Button asChild>
+            <Link href={ROUTES.adminPedidoNuevo}>
+              <Plus className="size-4" />
+              Nuevo Pedido
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -123,8 +144,8 @@ export function PedidosClient() {
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
                 <SortableHeader label="Pedido" field="id" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Cliente" field="cliente" currentSort={sort} onSortChange={setSort} />
-                <SortableHeader label="Fecha" field="fecha" currentSort={sort} onSortChange={setSort} className="hidden md:table-cell" />
-                <SortableHeader label="Items" field="items" currentSort={sort} onSortChange={setSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Fecha" field="fecha" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Items" field="items" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Total" field="total" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Estado" field="estado" currentSort={sort} onSortChange={setSort} />
                 <th className="px-3 py-2 font-medium text-right">Acción</th>
@@ -144,10 +165,10 @@ export function PedidosClient() {
                       <p className="font-medium">{user?.name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">{user?.email ?? "—"}</p>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                    <td className="px-4 py-3 text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString("es-PE")}
                     </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">{order.items.length}</td>
+                    <td className="px-4 py-3">{order.items.length}</td>
                     <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
                     <td className="px-3 py-2">
                       <span
