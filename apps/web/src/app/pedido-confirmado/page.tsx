@@ -8,6 +8,7 @@ import { ordersStore } from "@/lib/stores/data-store.orders";
 import { formatPrice } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import type { Order } from "@/lib/stores/data-store.types";
 
 export default function PedidoConfirmadoPage() {
@@ -65,6 +66,14 @@ export default function PedidoConfirmadoPage() {
     <main className="page-root">
       <section className="section-px pb-20 pt-24 md:pt-28">
         <div className="mx-auto max-w-2xl">
+          <PageBreadcrumbs
+            className="mb-8"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Carrito", href: ROUTES.carrito },
+              { label: "Pedido confirmado" },
+            ]}
+          />
           <div className="flex flex-col items-center text-center">
             <div className="flex size-16 items-center justify-center rounded-full bg-green-500/10">
               <Check className="size-8 text-green-500" />

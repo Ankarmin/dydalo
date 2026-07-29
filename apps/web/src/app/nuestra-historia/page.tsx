@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 const timeline = [
   {
@@ -38,10 +39,15 @@ const timeline = [
 export default function NuestraHistoriaPage() {
   return (
     <main className="page-root">
-
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Nuestra Historia</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Nuestra historia" },
+            ]}
+          />
           <h1 className="page-hero-heading lg:text-8xl">
             No nacimos.
             <br />

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { CartClient } from "./_components/cart-client";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
+import { ROUTES } from "@/lib/utils/routes";
 
 export const metadata: Metadata = {
   title: "Carrito",
@@ -11,7 +13,13 @@ export default function CarritoPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Carrito</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Carrito" },
+            ]}
+          />
           <h1 className="page-hero-heading">Tu selección.</h1>
         </div>
       </section>

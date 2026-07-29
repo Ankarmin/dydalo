@@ -9,14 +9,20 @@ export const metadata: Metadata = {
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
 import { GuiaTabs } from './guia-tabs';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 export default function GuiaDeTallasPage() {
   return (
     <main className="page-root">
-
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Guía de Tallas</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Guía de tallas" },
+            ]}
+          />
           <h1 className="page-hero-heading">
             Que el número no te engañe.
           </h1>

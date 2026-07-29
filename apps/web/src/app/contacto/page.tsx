@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { ContactoForm } from './contacto-form';
 import type { Metadata } from 'next';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
+import { ROUTES } from '@/lib/utils/routes';
 
 export const metadata: Metadata = {
   title: 'Contacto',
@@ -10,6 +12,15 @@ export const metadata: Metadata = {
 export default function ContactoPage() {
   return (
     <main className="page-root">
+      <div className="section-px pt-24">
+        <PageBreadcrumbs
+          className="mb-4"
+          items={[
+            { label: "Home", href: ROUTES.home },
+            { label: "Contacto" },
+          ]}
+        />
+      </div>
       <div className="lg:grid lg:min-h-screen lg:grid-cols-2">
         <div className="relative h-64 lg:h-auto">
           <Image

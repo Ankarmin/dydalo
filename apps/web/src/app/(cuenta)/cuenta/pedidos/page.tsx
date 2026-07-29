@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/utils/routes";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Mis Pedidos",
@@ -10,7 +11,15 @@ export const metadata: Metadata = {
 
 export default function PedidosPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-4">
+      <PageBreadcrumbs
+        className="mb-0"
+        items={[
+          { label: "Home", href: ROUTES.home },
+          { label: "Mi cuenta", href: ROUTES.cuenta },
+          { label: "Mis pedidos" },
+        ]}
+      />
       <div>
         <h1 className="text-2xl font-bold tracking-heading">MIS PEDIDOS</h1>
         <p className="mt-1 text-sm text-muted-foreground">

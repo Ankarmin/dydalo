@@ -7,17 +7,20 @@ export const metadata: Metadata = {
 };
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 export default function SobreNosotrosPage() {
   return (
     <main className="page-root">
-
-      
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">
-            Sobre Nosotros
-          </p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Sobre nosotros" },
+            ]}
+          />
           <h1 className="page-hero-heading lg:text-8xl">
             ESTO ES DYDALO
           </h1>

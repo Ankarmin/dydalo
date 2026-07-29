@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { BlogClient } from './blog-client';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
+import { ROUTES } from '@/lib/utils/routes';
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -11,7 +13,13 @@ export default function BlogPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Blog</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Blog" },
+            ]}
+          />
           <h1 className="page-hero-heading">
             La cultura no se copia, se vive.
           </h1>

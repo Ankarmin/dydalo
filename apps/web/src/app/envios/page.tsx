@@ -4,6 +4,7 @@ import { ArrowUpRight, MapPin, Truck, Search, Package } from "lucide-react";
 import { SHIPPING_PROVINCIA_PRICE, SHIPPING_PROVINCIA_COURIER } from "@/config/constants";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Envíos",
@@ -60,7 +61,13 @@ export default function EnviosPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Envíos</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Envíos" },
+            ]}
+          />
           <h1 className="page-hero-heading">
             De Lima a todo el Perú.
           </h1>

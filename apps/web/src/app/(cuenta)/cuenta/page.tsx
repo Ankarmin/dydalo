@@ -4,6 +4,7 @@ import { Mail, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/utils/routes";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Mi Cuenta",
@@ -11,7 +12,14 @@ export const metadata: Metadata = {
 
 export default function CuentaPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-4">
+      <PageBreadcrumbs
+        className="mb-0"
+        items={[
+          { label: "Home", href: ROUTES.home },
+          { label: "Mi cuenta" },
+        ]}
+      />
       <div>
         <h1 className="text-2xl font-bold tracking-heading">MI PERFIL</h1>
         <p className="mt-1 text-sm text-muted-foreground">

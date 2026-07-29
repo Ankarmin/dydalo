@@ -8,14 +8,20 @@ export const metadata: Metadata = {
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
 import { FaqAccordion } from './faq-accordion';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 export default function FaqPage() {
   return (
     <main className="page-root">
-
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">FAQ</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "FAQ" },
+            ]}
+          />
           <h1 className="page-hero-heading">
             Sin vueltas.
           </h1>

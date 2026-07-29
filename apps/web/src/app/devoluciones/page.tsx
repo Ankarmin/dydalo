@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 const steps = [
   {
@@ -43,10 +44,15 @@ const conditions = [
 export default function DevolucionesPage() {
   return (
     <main className="page-root">
-
       <section className="page-hero">
         <div className="container-page">
-          <p className="section-tag">Devoluciones</p>
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Devoluciones" },
+            ]}
+          />
           <h1 className="page-hero-heading">
             Sin letra pequeña.
           </h1>

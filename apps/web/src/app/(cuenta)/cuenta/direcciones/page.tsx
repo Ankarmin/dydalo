@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
+import { ROUTES } from "@/lib/utils/routes";
 
 export const metadata: Metadata = {
   title: "Direcciones",
@@ -8,7 +10,15 @@ export const metadata: Metadata = {
 
 export default function DireccionesPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pt-4">
+      <PageBreadcrumbs
+        className="mb-0"
+        items={[
+          { label: "Home", href: ROUTES.home },
+          { label: "Mi cuenta", href: ROUTES.cuenta },
+          { label: "Direcciones" },
+        ]}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-heading">

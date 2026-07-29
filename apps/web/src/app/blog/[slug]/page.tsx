@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { Calendar, Tag } from 'lucide-react';
 import { ROUTES } from '@/lib/utils/routes';
 import { Button } from '@/components/ui/button';
+import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 
 const postTitles: Record<string, string> = {
   'como-combinar-streetwear': 'Cómo combinar streetwear sin perder identidad',
@@ -103,13 +104,14 @@ export default async function BlogPostPage({
 
       <article className="section-px page-top pb-12 md:pb-20">
         <div className="mx-auto max-w-3xl">
-          <Link
-            href={ROUTES.blog}
-            className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-micro text-muted-foreground transition-colors hover:text-accent"
-          >
-            <ArrowLeft className="size-3.5" />
-            Blog
-          </Link>
+          <PageBreadcrumbs
+            className="mb-8"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Blog", href: ROUTES.blog },
+              { label: post.title },
+            ]}
+          />
           <div className="flex items-center gap-4 micro-text uppercase tracking-micro text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="size-3" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ROUTES } from "@/lib/utils/routes";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Libro de Reclamaciones",
@@ -14,6 +15,13 @@ export default function LibroDeReclamacionesPage() {
     <main className="page-root">
       <section className="page-hero">
         <div className="container-page">
+          <PageBreadcrumbs
+            className="mb-4"
+            items={[
+              { label: "Home", href: ROUTES.home },
+              { label: "Libro de reclamaciones" },
+            ]}
+          />
           <p className="section-tag">Legal</p>
           <h1 className="page-hero-heading lg:text-6xl">
             LIBRO DE RECLAMACIONES

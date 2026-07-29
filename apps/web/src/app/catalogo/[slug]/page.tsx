@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { catalogCategories } from "@/config/products";
 import { CategoriaClient } from "./categoria-client";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
+import { ROUTES } from "@/lib/utils/routes";
 
 export function generateStaticParams() {
   const cats = categoriesStore.getAll();
@@ -41,6 +43,14 @@ export default async function CategoriaPage({
   return (
     <main className="page-root">
       <section className="section-px page-top pb-16">
+        <PageBreadcrumbs
+          className="mb-6"
+          items={[
+            { label: "Home", href: ROUTES.home },
+            { label: "Catálogo", href: ROUTES.catalogo },
+            { label: categoryName },
+          ]}
+        />
         <CategoriaClient slug={slug} categoryName={categoryName} />
       </section>
     </main>
