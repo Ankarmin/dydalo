@@ -26,7 +26,6 @@ export type AdminProduct = {
   featured: boolean;
   discount: number | null;
   sku: string;
-  description?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -137,7 +136,6 @@ export type ActionResult<T = void> =
 export type CatalogCategory = {
   slug: string;
   name: string;
-  description: string;
   image: string;
   active: boolean;
   order: number;
@@ -156,10 +154,10 @@ export type CreateOrderInput = {
 };
 
 export const STATUS_STYLES: Record<string, string> = {
-  pendiente: "border bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
-  confirmado: "border bg-blue-500/10 text-blue-400 border-blue-500/30",
-  enviado: "border bg-purple-500/10 text-purple-400 border-purple-500/30",
-  entregado: "border bg-green-500/10 text-green-400 border-green-500/30",
-  cancelado: "border bg-red-500/10 text-red-400 border-red-500/30",
-  devuelto: "border bg-orange-500/10 text-orange-400 border-orange-500/30",
+  pendiente: "border bg-warning/10 text-warning border-warning/30",
+  confirmado: "border bg-info/10 text-info border-info/30",
+  enviado: "border bg-purple/10 text-purple border-purple/30",
+  entregado: "border bg-success/10 text-success border-success/30",
+  cancelado: "border bg-danger/10 text-danger border-danger/30",
+  devuelto: "border bg-orange/10 text-orange border-orange/30",
 };

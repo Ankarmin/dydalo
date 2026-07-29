@@ -62,10 +62,10 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="size-4 text-green-400" />
+            <DollarSign className="size-4 text-success" />
             <span className="text-xs text-muted-foreground">Total Gastado</span>
           </div>
-          <p className="text-2xl font-bold text-green-400">{formatPrice(totalSpent)}</p>
+          <p className="text-2xl font-bold text-success">{formatPrice(totalSpent)}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -110,7 +110,7 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
               <thead>
                 <tr className="border-t border-border text-left text-xs text-muted-foreground">
                   <th className="px-5 py-3 font-medium">Pedido</th>
-                  <th className="px-5 py-3 font-medium hidden sm:table-cell">Fecha</th>
+                  <th className="px-5 py-3 font-medium">Fecha</th>
                   <th className="px-5 py-3 font-medium">Items</th>
                   <th className="px-5 py-3 font-medium">Total</th>
                   <th className="px-5 py-3 font-medium">Estado</th>
@@ -127,7 +127,7 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
                         #{order.id.slice(0, 8)}
                       </Link>
                     </td>
-                    <td className="px-5 py-3 text-muted-foreground hidden sm:table-cell">
+                    <td className="px-5 py-3 text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString("es-PE")}
                     </td>
                     <td className="px-5 py-3">{order.items.length}</td>

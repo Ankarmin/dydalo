@@ -12,10 +12,10 @@ export function showOrderConfirmedToast(orderId: string, total: number) {
         onClick={(e) => { e.stopPropagation(); toast.dismiss(t); }}
         className="group pointer-events-auto relative flex items-center gap-4 border border-border bg-background px-5 py-4 shadow-lg animate-in slide-in-from-right-full duration-500 cursor-pointer"
       >
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-success" />
 
-        <div className="relative flex size-10 shrink-0 items-center justify-center border border-green-500 bg-green-500/10">
-          <CheckCircle className="size-4 text-green-500" />
+        <div className="relative flex size-10 shrink-0 items-center justify-center border border-success bg-success/10">
+          <CheckCircle className="size-4 text-success" />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -36,7 +36,7 @@ export function showOrderConfirmedToast(orderId: string, total: number) {
           <X className="size-3.5" />
         </button>
 
-        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-green-500 origin-left animate-shimmer" />
+        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-success origin-left animate-shimmer" />
       </div>
     ),
     {

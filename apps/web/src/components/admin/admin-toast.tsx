@@ -7,8 +7,8 @@ import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from "@/config/constants";
 type NotificationVariant = "success" | "error" | "info";
 
 const variants: Record<NotificationVariant, { bg: string; border: string; Icon: typeof CheckCircle }> = {
-  success: { bg: "bg-green-500", border: "border-green-500", Icon: CheckCircle },
-  error: { bg: "bg-red-500", border: "border-red-500", Icon: AlertTriangle },
+  success: { bg: "bg-success", border: "border-success", Icon: CheckCircle },
+  error: { bg: "bg-danger", border: "border-danger", Icon: AlertTriangle },
   info: { bg: "bg-accent", border: "border-accent", Icon: Info },
 };
 

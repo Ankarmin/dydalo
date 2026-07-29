@@ -245,7 +245,7 @@ export function CartClient() {
                           type="button"
                           onClick={() => handleRemoveItem(product.id)}
                           aria-label={`Eliminar ${product.name} del carrito`}
-                          className="flex size-10 items-center justify-center text-muted-foreground transition-colors hover:text-red-500"
+                          className="flex size-10 items-center justify-center text-muted-foreground transition-colors hover:text-danger"
                         >
                           <Trash2 className="size-3.5" />
                         </button>

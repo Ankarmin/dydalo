@@ -4,14 +4,10 @@ import { toast } from "sonner";
 import { User, LogOut, ShoppingCart, X } from "lucide-react";
 import { TOAST_DURATION_MS, TOAST_CLOSE_LABEL } from "@/config/constants";
 
-const ACCENT_BORDER = "border-favorite" as const;
-const MUTED_BORDER = "border-muted-foreground" as const;
-
 type Accent = { bg: string; border: string };
 
 const FAVORITE: Accent = { bg: "bg-favorite", border: "border-favorite" };
 const MUTED: Accent = { bg: "bg-muted-foreground", border: "border-muted-foreground" };
-const GREEN: Accent = { bg: "bg-green-500", border: "border-green-500" };
 
 function notify(
   icon: React.ReactNode,

@@ -124,18 +124,18 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             <div className="mt-3">
               {product.stock > LOW_STOCK_THRESHOLD ? (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-500">
-                  <span className="size-2 rounded-full bg-green-500" />
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+                  <span className="size-2 rounded-full bg-success" />
                   En stock
                 </span>
               ) : product.stock > 0 ? (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-yellow-500">
-                  <span className="size-2 rounded-full bg-yellow-500" />
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-warning">
+                  <span className="size-2 rounded-full bg-warning" />
                   Quedan {product.stock}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-red-500">
-                  <span className="size-2 rounded-full bg-red-500" />
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-danger">
+                  <span className="size-2 rounded-full bg-danger" />
                   Agotado
                 </span>
               )}
@@ -226,17 +226,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </button>
               </div>
             </div>
-
-            {product.description && (
-              <div className="mt-6 border-t border-border pt-6">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Descripción
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {product.description}
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="mt-auto mb-2 flex flex-col gap-3 pt-6 sm:flex-row">

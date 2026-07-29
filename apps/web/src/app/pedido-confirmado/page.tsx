@@ -75,8 +75,8 @@ export default function PedidoConfirmadoPage() {
             ]}
           />
           <div className="flex flex-col items-center text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-green-500/10">
-              <Check className="size-8 text-green-500" />
+            <div className="flex size-16 items-center justify-center rounded-full bg-success/10">
+              <Check className="size-8 text-success" />
             </div>
             <h1 className="mt-6 text-3xl font-bold uppercase tracking-tight">
               ¡Pedido Confirmado!
