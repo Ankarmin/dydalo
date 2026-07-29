@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from "react";
 import { productsStore } from "@/lib/stores/data-store.products";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
+import { isCookieAllowed } from "@/contexts/cookie-consent-context";
 
 const STORAGE_KEY = "dydalo-favs";
 
@@ -27,6 +28,7 @@ function loadFavorites(): Set<number> {
 }
 
 function saveFavorites(ids: Set<number>) {
+  if (!isCookieAllowed("functional")) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {

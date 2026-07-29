@@ -40,3 +40,5 @@ export const LOW_STOCK_THRESHOLD = 5;
 export const RECENT_ORDERS_LIMIT = 5;
 
 export const PENDING_ORDERS_WARNING_THRESHOLD = 3;
+
+export const COOKIE_CONSENT_STORAGE_KEY = "dydalo-cookie-consent";

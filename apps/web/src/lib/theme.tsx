@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { THEME_STORAGE_KEY } from "@/config/constants";
+import { isCookieAllowed } from "@/contexts/cookie-consent-context";
 
 type Theme = "light" | "dark";
 
@@ -41,10 +42,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch {
+    if (isCookieAllowed("functional")) {
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+      } catch {
 
+      }
     }
   }, [theme]);
 

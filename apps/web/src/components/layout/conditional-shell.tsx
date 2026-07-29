@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SocialWidget } from "@/components/layout/SocialWidget";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { CookieConsentBanner } from "@/components/cookies/cookie-consent-banner";
 import { useMounted } from "@/hooks/use-mounted";
 
 function ShellInner() {
@@ -30,6 +31,7 @@ function ShellInner() {
     <>
       <SiteHeader />
       <SocialWidget />
+      <CookieConsentBanner />
     </>
   );
 }
