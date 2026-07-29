@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 
 const schema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
@@ -56,16 +56,16 @@ export function CategoryForm({ slug }: CategoryFormProps) {
       if (isEdit) {
         const updated = categoriesStore.update(slug!, values);
         if (updated) {
-          toast.success(`Categoría "${updated.name}" actualizada`);
+          notifyAdmin("Categoría actualizada", updated.name, "success");
           router.push(ROUTES.adminCategorias);
           return;
         }
-        toast.error("Error al actualizar categoría");
+        notifyAdmin("Error al actualizar", "Categoría no encontrada", "error");
         setIsPending(false);
         return;
       }
       const created = categoriesStore.create(values);
-      toast.success(`Categoría "${created.name}" creada`);
+      notifyAdmin("Categoría creada", created.name, "success");
       router.push(ROUTES.adminCategorias);
     }, ADMIN_FORM_SIMULATED_DELAY_MS);
   }

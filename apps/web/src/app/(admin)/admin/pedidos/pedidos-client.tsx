@@ -59,7 +59,11 @@ export function PedidosClient() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-heading">Pedidos</h1>
-        <p className="text-sm text-muted-foreground">{orders.length} pedidos totales</p>
+        <p className="text-sm text-muted-foreground">
+          {query || statusFilter !== "todos"
+            ? `${filtered.length} de ${orders.length} pedidos`
+            : `${orders.length} pedidos totales`}
+        </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -123,11 +127,11 @@ export function PedidosClient() {
                     <td className="px-4 py-3">
                       <span
                         className={cn(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium capitalize",
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize",
                           STATUS_STYLES[order.status]
                         )}
                       >
-                        {order.status}
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -23,7 +23,7 @@ import {
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
-import { toast } from "sonner";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 import {
   Pagination,
   PaginationContent,
@@ -73,7 +73,7 @@ export function ProductosClient() {
     const updated = productsStore.update(product.id, { active: !product.active });
     if (updated) {
       setProducts((prev) => prev.map((p) => (p.id === product.id ? updated : p)));
-      toast.success(updated.active ? "Producto activado" : "Producto desactivado");
+      notifyAdmin(updated.active ? "Producto activado" : "Producto desactivado");
     }
   }
 
@@ -92,7 +92,7 @@ export function ProductosClient() {
       name: `${product.name} (copia)`,
     });
     setProducts((prev) => [...prev, created]);
-    toast.success("Producto duplicado");
+    notifyAdmin("Producto duplicado");
   }
 
   function handleDelete() {
@@ -100,7 +100,7 @@ export function ProductosClient() {
     const ok = productsStore.delete(deleteId);
     if (ok) {
       setProducts((prev) => prev.filter((p) => p.id !== deleteId));
-      toast.success("Producto eliminado");
+      notifyAdmin("Producto eliminado");
     }
     setDeleteId(null);
   }
@@ -110,7 +110,11 @@ export function ProductosClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-heading">Productos</h1>
-          <p className="text-sm text-muted-foreground">{products.length} productos totales</p>
+          <p className="text-sm text-muted-foreground">
+            {categoryFilter !== "todas" || query
+              ? `${filtered.length} de ${products.length} productos`
+              : `${products.length} productos totales`}
+          </p>
         </div>
         <Button asChild>
           <Link href={ROUTES.adminProductoNuevo}>
@@ -120,7 +124,7 @@ export function ProductosClient() {
         </Button>
       </div>
 
-      {/* Filtros */}
+      
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -146,7 +150,7 @@ export function ProductosClient() {
         </Select>
       </div>
 
-      {/* Tabla */}
+      
       <div
         className={cn(
           "rounded-xl border border-border bg-card overflow-hidden transition-opacity",

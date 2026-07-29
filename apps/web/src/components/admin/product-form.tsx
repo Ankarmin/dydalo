@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 import Link from "next/link";
 import { ImageUploader } from "@/components/admin/image-uploader";
 
@@ -143,14 +143,14 @@ export function ProductForm({ productId }: ProductFormProps) {
           sizes: values.sizes as unknown as ProductSize[],
         });
         if (updated) {
-          toast.success(`Producto "${updated.name}" actualizado`);
+          notifyAdmin("Producto actualizado", updated.name, "success");
         }
       } else {
         const created = productsStore.create({
           ...values,
           sizes: values.sizes as unknown as ProductSize[],
         });
-        toast.success(`Producto "${created.name}" creado`);
+        notifyAdmin("Producto creado", created.name, "success");
       }
       router.push(ROUTES.adminProductos);
     }, ADMIN_FORM_SIMULATED_DELAY_MS);

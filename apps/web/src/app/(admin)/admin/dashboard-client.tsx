@@ -252,7 +252,7 @@ export function DashboardClient() {
                     <td className="px-5 py-3">
                       <span
                         className={cn(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
                           STATUS_STYLES[order.status]
                         )}
                       >

@@ -4,31 +4,32 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useStoreData } from "@/hooks/use-store-data";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import type { CatalogCategory } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
-import { toast } from "sonner";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 
 export function CategoriasClient() {
   const router = useRouter();
-  const categories = useStoreData(() => categoriesStore.getAll(), [] as CatalogCategory[]);
+  const [categories, setCategories] = useState<CatalogCategory[]>(() => categoriesStore.getAll());
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
 
   function toggleActive(cat: CatalogCategory) {
     const updated = categoriesStore.update(cat.slug, { active: !cat.active });
     if (updated) {
-      toast.success(updated.active ? "Categoría activada" : "Categoría desactivada");
+      setCategories((prev) => prev.map((c) => (c.slug === cat.slug ? updated : c)));
+      notifyAdmin(updated.active ? "Categoría activada" : "Categoría desactivada");
     }
   }
 
   function handleDelete() {
     if (!deleteSlug) return;
     categoriesStore.delete(deleteSlug);
-    toast.success("Categoría eliminada");
+    setCategories((prev) => prev.filter((c) => c.slug !== deleteSlug));
+    notifyAdmin("Categoría eliminada");
     setDeleteSlug(null);
   }
 
@@ -38,7 +39,8 @@ export function CategoriasClient() {
     [reordered[index - 1], reordered[index]] = [reordered[index], reordered[index - 1]];
     const slugs = reordered.map((c) => c.slug);
     categoriesStore.reorder(slugs);
-    toast.success("Orden actualizado");
+    setCategories(reordered.map((c, i) => ({ ...c, order: i + 1 })));
+    notifyAdmin("Orden actualizado");
   }
 
   function moveDown(index: number) {
@@ -47,7 +49,8 @@ export function CategoriasClient() {
     [reordered[index], reordered[index + 1]] = [reordered[index + 1], reordered[index]];
     const slugs = reordered.map((c) => c.slug);
     categoriesStore.reorder(slugs);
-    toast.success("Orden actualizado");
+    setCategories(reordered.map((c, i) => ({ ...c, order: i + 1 })));
+    notifyAdmin("Orden actualizado");
   }
 
   return (

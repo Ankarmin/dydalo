@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, Package } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
-import { useStoreData } from "@/hooks/use-store-data";
 import type { Order, OrderStatus } from "@/lib/stores";
 import { VALID_TRANSITIONS, STATUS_STYLES } from "@/lib/stores";
 import { useAuth } from "@/contexts/auth-context";
@@ -21,11 +20,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
-import { toast } from "sonner";
+import { notifyAdmin } from "@/components/admin/admin-toast";
 
 export function PedidoDetalleClient({ id }: { id: string }) {
   const { state: authState } = useAuth();
-  const order = useStoreData(() => ordersStore.getById(id), undefined as Order | undefined);
+  const [order, setOrder] = useState<Order | undefined>(() => ordersStore.getById(id));
   const [updating, setUpdating] = useState(false);
 
   function handleStatusChange(newStatus: OrderStatus) {
@@ -35,9 +34,10 @@ export function PedidoDetalleClient({ id }: { id: string }) {
     setTimeout(() => {
       const result = ordersStore.transitionStatus(order.id, newStatus, authState.user!.id);
       if (result.success) {
-        toast.success(`Pedido actualizado a "${newStatus}"`);
+        setOrder({ ...result.data });
+        notifyAdmin("Pedido actualizado", `${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`);
       } else {
-        toast.error(result.error);
+        notifyAdmin("Error", result.error, "error");
       }
       setUpdating(false);
     }, 400);
@@ -79,18 +79,18 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Estado y acciones */}
+      
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium">Estado:</span>
             <span
               className={cn(
-                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
                 STATUS_STYLES[order.status]
               )}
             >
-              {order.status}
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
             </span>
           </div>
           {allowedTransitions.length > 0 && (
@@ -103,7 +103,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
                 <SelectContent>
                   {allowedTransitions.map((s) => (
                     <SelectItem key={s} value={s} className="capitalize">
-                      {s}
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -113,7 +113,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Cliente */}
+      
       <div className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold mb-3">Cliente</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -138,7 +138,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Items */}
+      
       <div className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold mb-3">Productos ({order.items.length})</h2>
         <div className="space-y-2">
@@ -187,7 +187,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Historial de estados */}
+      
       {order.statusHistory.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
           <h2 className="text-sm font-semibold mb-3">Historial de Cambios</h2>

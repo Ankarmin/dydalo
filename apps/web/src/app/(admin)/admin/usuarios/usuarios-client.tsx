@@ -22,7 +22,7 @@ export function UsuariosClient() {
         <p className="text-sm text-muted-foreground">{users.length} clientes registrados</p>
       </div>
 
-      {/* Admin */}
+      
       <div className="rounded-xl border border-border bg-card">
         <div className="p-5 pb-3">
           <h2 className="text-sm font-semibold">Administradores ({adminUsers.length})</h2>
@@ -62,7 +62,7 @@ export function UsuariosClient() {
         </div>
       </div>
 
-      {/* Clientes */}
+      
       <div className="rounded-xl border border-border bg-card">
         <div className="p-5 pb-3">
           <h2 className="text-sm font-semibold">Clientes ({customerUsers.length})</h2>
