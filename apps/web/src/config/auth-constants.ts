@@ -5,4 +5,4 @@ export const ADMINS: Record<string, string> = {
 
 export const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD ?? "admin";
 
-export const AUTH_STORAGE_KEY = "dydalo_auth:v1" as const;
+export const AUTH_STORAGE_KEY = "dydalo_auth" as const;

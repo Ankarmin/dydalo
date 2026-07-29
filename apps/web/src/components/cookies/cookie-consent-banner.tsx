@@ -54,7 +54,7 @@ export function CookieConsentBanner() {
             </button>
 
             <div className="pr-6 md:pr-0">
-              <p className="text-xs leading-relaxed text-muted-foreground md:text-sm">
+              <p className="text-center text-xs leading-relaxed text-muted-foreground sm:text-left md:text-sm">
                 Usamos cookies para mejorar tu experiencia. Al continuar
                 navegando aceptas nuestra{" "}
                 <Link
@@ -67,11 +67,11 @@ export function CookieConsentBanner() {
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-3">
+            <div className="flex shrink-0 items-center justify-center gap-3 w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 px-4 text-xs md:h-10 md:px-6"
+                className="flex-1 sm:flex-none h-9 px-4 text-xs md:h-10 md:px-6"
                 onClick={() => setSettingsOpen(true)}
               >
                 Configurar
@@ -79,7 +79,7 @@ export function CookieConsentBanner() {
               <Button
                 variant="hero"
                 size="sm"
-                className="h-9 px-5 text-xs md:h-10 md:px-8"
+                className="flex-1 sm:flex-none h-9 px-5 text-xs md:h-10 md:px-8"
                 onClick={acceptAll}
               >
                 Aceptar

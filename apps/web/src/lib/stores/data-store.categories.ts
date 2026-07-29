@@ -1,13 +1,25 @@
-import { read, write, KEYS } from "./data-store.utils";
+import { read, write, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
 import type { CatalogCategory } from "./data-store.types";
 import { catalogCategories as seedCategories } from "@/config/products";
 
+const SEED_HASH = String(JSON.stringify(seedCategories).length);
+
 function getAll(): CatalogCategory[] {
+  const storedHash = getSeedHash(KEYS.categories);
+
+  if (storedHash !== SEED_HASH) {
+    seed(seedCategories);
+    setSeedHash(KEYS.categories, SEED_HASH);
+    return read<CatalogCategory[]>(KEYS.categories, []);
+  }
+
   const stored = read<CatalogCategory[]>(KEYS.categories, []);
   if (stored.length === 0) {
     seed(seedCategories);
+    setSeedHash(KEYS.categories, SEED_HASH);
     return read<CatalogCategory[]>(KEYS.categories, []);
   }
+
   return stored;
 }
 

@@ -21,9 +21,7 @@ export async function generateMetadata({
 
   return {
     title: `${product.name} | DYDALO`,
-    description:
-      product.description ??
-      `Compra ${product.name} en DYDALO. Envíos a todo el Perú.`,
+    description: `Compra ${product.name} en DYDALO. Envíos a todo el Perú.`,
   };
 }
 

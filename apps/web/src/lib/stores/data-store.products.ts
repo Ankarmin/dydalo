@@ -1,13 +1,25 @@
-import { read, write, KEYS } from "./data-store.utils";
+import { read, write, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
 import type { AdminProduct } from "./data-store.types";
 import { products as seedProducts } from "@/config/products";
 
+const SEED_HASH = String(JSON.stringify(seedProducts).length);
+
 function getAll(): AdminProduct[] {
+  const storedHash = getSeedHash(KEYS.products);
+
+  if (storedHash !== SEED_HASH) {
+    seed(seedProducts);
+    setSeedHash(KEYS.products, SEED_HASH);
+    return read<AdminProduct[]>(KEYS.products, []);
+  }
+
   const stored = read<AdminProduct[]>(KEYS.products, []);
   if (stored.length === 0) {
     seed(seedProducts);
+    setSeedHash(KEYS.products, SEED_HASH);
     return read<AdminProduct[]>(KEYS.products, []);
   }
+
   return stored;
 }
 

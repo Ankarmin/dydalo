@@ -13,7 +13,6 @@ import { ROUTES } from "@/lib/utils/routes";
 import { ADMIN_FORM_SIMULATED_DELAY_MS } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import {
@@ -23,7 +22,6 @@ import { notifyAdmin } from "@/components/admin/admin-toast";
 
 const schema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
-  description: z.string(),
   image: z.string(),
   active: z.boolean(),
 });
@@ -43,12 +41,12 @@ export function CategoryForm({ slug }: CategoryFormProps) {
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", description: "", image: "", active: true },
+    defaultValues: { name: "", image: "", active: true },
   });
 
   useEffect(() => {
     if (!category) return;
-    form.reset({ name: category.name, description: category.description, image: category.image, active: category.active });
+    form.reset({ name: category.name, image: category.image, active: category.active });
   }, [category, form]);
 
   function onSubmit(values: FormValues) {
@@ -103,9 +101,6 @@ export function CategoryForm({ slug }: CategoryFormProps) {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} placeholder="NOMBRE CATEGORÍA" disabled={isPending} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="description" render={({ field }) => (
-              <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea {...field} rows={3} disabled={isPending} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="image" render={({ field }) => (
               <FormItem>

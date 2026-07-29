@@ -1,14 +1,26 @@
-const SCHEMA_VERSION = "v2";
-
 export const KEYS = {
-  products: `dydalo_products:${SCHEMA_VERSION}`,
-  orders: `dydalo_orders:${SCHEMA_VERSION}`,
-  users: `dydalo_users:${SCHEMA_VERSION}`,
-  blog: `dydalo_blog:${SCHEMA_VERSION}`,
-  config: `dydalo_config:${SCHEMA_VERSION}`,
-  categories: `dydalo_categories:${SCHEMA_VERSION}`,
-  images: `dydalo_images:${SCHEMA_VERSION}`,
+  products: "dydalo_products",
+  orders: "dydalo_orders",
+  users: "dydalo_users",
+  blog: "dydalo_blog",
+  config: "dydalo_config",
+  categories: "dydalo_categories",
+  images: "dydalo_images",
 } as const;
+
+function hashKey(key: string): string {
+  return `${key}_hash`;
+}
+
+export function getSeedHash(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(hashKey(key));
+}
+
+export function setSeedHash(key: string, hash: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(hashKey(key), hash);
+}
 
 export function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
