@@ -4,3 +4,10 @@ packages:
 allowBuilds:
   sharp: true
   unrs-resolver: true
+overrides:
+  next: ^16.2.12
+  eslint-config-next: ^16.2.12
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  "@types/react": ^19.2.17
+  "@types/react-dom": ^19.2.3
