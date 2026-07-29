@@ -8,23 +8,17 @@ import type { AdminProduct } from "@/lib/stores/data-store.types";
 
 type SortKey =
   | "relevantes"
-  | "vendidos"
   | "az"
   | "za"
   | "precio-asc"
-  | "precio-desc"
-  | "fecha-asc"
-  | "fecha-desc";
+  | "precio-desc";
 
 const sortOptions: { key: SortKey; label: string }[] = [
   { key: "relevantes", label: "Más relevantes" },
-  { key: "vendidos", label: "Más vendidos" },
   { key: "az", label: "Alfabéticamente, A-Z" },
   { key: "za", label: "Alfabéticamente, Z-A" },
   { key: "precio-asc", label: "Precio, menor a mayor" },
   { key: "precio-desc", label: "Precio, mayor a menor" },
-  { key: "fecha-asc", label: "Fecha: antiguo(a) a reciente" },
-  { key: "fecha-desc", label: "Fecha: reciente a antiguo(a)" },
 ];
 
 function sortProducts(products: AdminProduct[], sort: SortKey): AdminProduct[] {

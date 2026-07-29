@@ -1,16 +1,19 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
-import { formatPrice } from "@/lib/utils/format";
+import { formatPrice, getDisplayPrice } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/utils/routes";
 import { ignoreToastClicks } from "@/lib/utils/toast-guard";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -21,8 +24,10 @@ import {
 interface CartProduct {
   id: number;
   name: string;
+  slug: string;
   category: string;
   price: number;
+  discount: number | null | undefined;
   image: string;
 }
 
@@ -42,6 +47,7 @@ export function CartSheet({
   updateQuantity,
 }: CartSheetProps) {
   const router = useRouter();
+  const mounted = useMounted();
   const [open, setOpen] = useState(false);
 
   function handleGoToCart() {
@@ -55,7 +61,7 @@ export function CartSheet({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={`Abrir carrito con ${cartCount} productos`}
+          aria-label={mounted ? `Abrir carrito con ${cartCount} productos` : "Abrir carrito"}
           className="relative"
         >
           <ShoppingCart />
@@ -94,19 +100,27 @@ export function CartSheet({
           <div className="flex-1 overflow-y-auto px-6">
             {cartProducts.map((product) => {
               const quantity = cart[product.id] ?? 0;
+              const priceData = getDisplayPrice(product);
               return (
                 <article
                   key={product.id}
                   className="flex gap-4 border-b border-border py-5"
                 >
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={112}
-                    height={112}
-                    sizes="112px"
-                    className="size-24 object-cover"
-                  />
+                  <SheetClose asChild>
+                    <Link
+                      href={ROUTES.producto(product.slug)}
+                      className="shrink-0"
+                    >
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        width={112}
+                        height={112}
+                        sizes="112px"
+                        className="size-24 object-cover"
+                      />
+                    </Link>
+                  </SheetClose>
                   <div className="flex min-w-0 flex-1 flex-col justify-between">
                     <div>
                       <p className="micro-label">
@@ -115,8 +129,15 @@ export function CartSheet({
                       <h3 className="mt-1 truncate text-sm font-bold uppercase">
                         {product.name}
                       </h3>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatPrice(product.price)}
+                      <p className="mt-1 text-xs">
+                        {priceData.hasDiscount ? (
+                          <span>
+                            <span className="text-accent font-semibold">{formatPrice(priceData.final)}</span>{" "}
+                            <span className="text-muted-foreground line-through">{formatPrice(priceData.original)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">{formatPrice(priceData.original)}</span>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
@@ -144,7 +165,7 @@ export function CartSheet({
                         </Button>
                       </div>
                       <p className="text-sm font-bold">
-                        {formatPrice(product.price * quantity)}
+                        {formatPrice(priceData.final * quantity)}
                       </p>
                     </div>
                   </div>

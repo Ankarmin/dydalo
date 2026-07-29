@@ -251,9 +251,16 @@ export function CartClient() {
                         </button>
                       </div>
 
-                      <span className="text-sm font-bold">
-                        {formatPrice(priceData.final * quantity)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold">
+                          {formatPrice(priceData.final * quantity)}
+                        </span>
+                        {priceData.hasDiscount && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            {formatPrice(priceData.original * quantity)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </li>

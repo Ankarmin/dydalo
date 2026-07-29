@@ -22,8 +22,8 @@ import { CartSheet } from "@/components/cart/cart-sheet";
 import { CommandSearch } from "@/components/search/command-search";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
-import { catalogCategories, getProductCount } from "@/config/products";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { catalogCategories, getProductCount } from "@/config/products";
 import { socialLinks } from "@/config/social-links";
 import { socialPresentation } from "@/config/social-presentation";
 import { LOGO_DARK, LOGO_LIGHT } from "@/config/constants";
@@ -203,7 +203,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label={`Ver favoritos con ${favoritesCount} productos`}
+                aria-label={mounted ? `Ver favoritos con ${favoritesCount} productos` : "Ver favoritos"}
                 className="relative hidden xl:inline-flex"
               >
                 <Heart />

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice } from "@/lib/utils/format";
+import { formatPrice, getDisplayPrice } from "@/lib/utils/format";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { ROUTES } from "@/lib/utils/routes";
@@ -13,6 +13,7 @@ interface ProductCardData {
   slug?: string;
   category: string;
   price: number;
+  discount: number | null | undefined;
   image: string;
 }
 
@@ -34,6 +35,7 @@ interface ProductCardProps {
 export function ProductCard({ product, priority }: ProductCardProps) {
   const categoryName =
     categoriesStore.getBySlug(product.category)?.name ?? product.category;
+  const { final, hasDiscount } = getDisplayPrice(product);
 
   return (
     <article className="group relative">
@@ -66,9 +68,22 @@ export function ProductCard({ product, priority }: ProductCardProps) {
             {product.name}
           </h3>
         </div>
-        <p className="shrink-0 text-sm font-semibold tabular-nums">
-          {formatPrice(product.price)}
-        </p>
+        <div className="shrink-0 text-right">
+          {hasDiscount ? (
+            <>
+              <p className="text-sm font-semibold tabular-nums text-accent">
+                {formatPrice(final)}
+              </p>
+              <p className="text-xs text-muted-foreground line-through tabular-nums">
+                {formatPrice(product.price)}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm font-semibold tabular-nums">
+              {formatPrice(product.price)}
+            </p>
+          )}
+        </div>
       </div>
     </article>
   );

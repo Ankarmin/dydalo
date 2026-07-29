@@ -2,14 +2,16 @@
 
 import { createContext, useContext, useState, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
-import { products } from "@/config/products";
+import { productsStore } from "@/lib/stores/data-store.products";
+import { getDisplayPrice } from "@/lib/utils/format";
+import type { AdminProduct } from "@/lib/stores/data-store.types";
 
 type CartState = Record<number, number>;
 
 type CartContextValue = {
   cart: CartState;
   cartCount: number;
-  cartProducts: typeof products;
+  cartProducts: AdminProduct[];
   subtotal: number;
   updateQuantity: (productId: number, change: number) => void;
 };
@@ -37,13 +39,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const cartProducts = useMemo(
-    () => products.filter((p) => cart[p.id]),
+    () => productsStore.getAll().filter((p) => cart[p.id]),
     [cart],
   );
 
   const subtotal = useMemo(
     () =>
-      cartProducts.reduce((t, p) => t + p.price * (cart[p.id] ?? 0), 0),
+      cartProducts.reduce((t, p) => {
+        const { final } = getDisplayPrice(p);
+        return t + final * (cart[p.id] ?? 0);
+      }, 0),
     [cartProducts, cart],
   );
 
