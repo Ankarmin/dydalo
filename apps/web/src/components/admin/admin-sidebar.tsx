@@ -128,7 +128,9 @@ export function AdminSidebar() {
           {!collapsed && <span>Volver a la tienda</span>}
         </Link>
         <button
+          type="button"
           onClick={() => { layoutActions.setMobileSidebarOpen(false); handleLogout(); }}
+          aria-label="Cerrar sesión"
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive w-full",
             collapsed && "justify-center px-2"
@@ -150,7 +152,7 @@ export function AdminSidebar() {
           collapsed ? "w-[60px]" : "w-[240px]"
         )}
       >
-        <div className={cn("flex items-center justify-center gap-2 px-3 py-4 shrink-0", collapsed ? "justify-center" : "px-4")}>
+        <div className={cn("flex h-16 items-center justify-center gap-2 px-4 shrink-0 border-b-2 border-favorite", collapsed && "px-3")}>
           {!collapsed && (
             <Link href={ROUTES.home} className="flex items-center gap-2">
               <Image src={LOGO_DARK} alt="DYDALO" width={100} height={23} className="h-5 w-auto logo-dark" />
@@ -161,13 +163,12 @@ export function AdminSidebar() {
             </Link>
           )}
           {collapsed && (
-            <Link href={ROUTES.home} className="flex items-center justify-center py-3">
+            <Link href={ROUTES.home} className="flex items-center justify-center">
               <Image src={LOGO_DARK} alt="DYDALO" width={36} height={9} className="h-2.5 w-auto logo-dark" />
               <Image src={LOGO_LIGHT} alt="DYDALO" width={36} height={9} className="h-2.5 w-auto logo-light" />
             </Link>
           )}
         </div>
-        <Separator />
         {sidebarContent}
       </aside>
 
@@ -191,6 +192,7 @@ export function AdminSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => layoutActions.setMobileSidebarOpen(false)}
+                aria-label="Cerrar menú"
               >
                 <X className="size-5" />
               </Button>

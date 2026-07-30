@@ -136,7 +136,6 @@ export type ActionResult<T = void> =
 export type CatalogCategory = {
   slug: string;
   name: string;
-  image: string;
   active: boolean;
   order: number;
 };

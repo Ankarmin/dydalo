@@ -101,14 +101,14 @@ export const products: AdminProduct[] = [
 ];
 
 export const catalogCategories: CatalogCategory[] = [
-  { slug: "polos", name: "Polos", image: "/images/dydalo-white-basics.jpg", active: true, order: 1 },
-  { slug: "casacas", name: "Casacas", image: "/images/dydalo-tracksuit.jpg", active: true, order: 2 },
-  { slug: "hoodies", name: "Hoodies", image: "/images/dydalo-tracksuit.jpg", active: true, order: 3 },
-  { slug: "pantalones", name: "Pantalones", image: "/images/dydalo-satin-set.jpg", active: true, order: 4 },
-  { slug: "jeans", name: "Jeans", image: "/images/dydalo-sneakers.jpg", active: true, order: 5 },
-  { slug: "camisas", name: "Camisas", image: "/images/dydalo-white-basics.jpg", active: true, order: 6 },
-  { slug: "tanks", name: "Tanks", image: "/images/dydalo-white-basics.jpg", active: true, order: 7 },
-  { slug: "accesorios", name: "Accesorios", image: "/images/dydalo-caps.jpg", active: true, order: 8 },
+  { slug: "polos", name: "Polos", active: true, order: 1 },
+  { slug: "casacas", name: "Casacas", active: true, order: 2 },
+  { slug: "hoodies", name: "Hoodies", active: true, order: 3 },
+  { slug: "pantalones", name: "Pantalones", active: true, order: 4 },
+  { slug: "jeans", name: "Jeans", active: true, order: 5 },
+  { slug: "camisas", name: "Camisas", active: true, order: 6 },
+  { slug: "tanks", name: "Tanks", active: true, order: 7 },
+  { slug: "accesorios", name: "Accesorios", active: true, order: 8 },
 ];
 
 export function getProductCount(slug: string): number {

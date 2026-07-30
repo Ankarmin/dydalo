@@ -50,6 +50,7 @@ export function ImageUploader({ value, onChange, disabled }: ImageUploaderProps)
             className="absolute top-2 right-2 size-7"
             onClick={handleClear}
             disabled={disabled}
+            aria-label="Eliminar imagen"
           >
             <X className="size-3.5" />
           </Button>

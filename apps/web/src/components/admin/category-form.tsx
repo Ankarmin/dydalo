@@ -14,7 +14,6 @@ import { ADMIN_FORM_SIMULATED_DELAY_MS } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ImageUploader } from "@/components/admin/image-uploader";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
@@ -22,7 +21,6 @@ import { notifyAdmin } from "@/components/admin/admin-toast";
 
 const schema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
-  image: z.string(),
   active: z.boolean(),
 });
 
@@ -35,18 +33,18 @@ interface CategoryFormProps {
 export function CategoryForm({ slug }: CategoryFormProps) {
   const router = useRouter();
   const isEdit = slug !== undefined;
-  const category = useStoreData(() => isEdit ? categoriesStore.getBySlug(slug) : undefined, undefined);
+  const category = useStoreData(() => isEdit ? categoriesStore.getBySlug(slug) : undefined);
   const notFound = isEdit && !category;
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", image: "", active: true },
+    defaultValues: { name: "", active: true },
   });
 
   useEffect(() => {
     if (!category) return;
-    form.reset({ name: category.name, image: category.image, active: category.active });
+    form.reset({ name: category.name, active: category.active });
   }, [category, form]);
 
   function onSubmit(values: FormValues) {
@@ -101,15 +99,6 @@ export function CategoryForm({ slug }: CategoryFormProps) {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} placeholder="NOMBRE CATEGORÍA" disabled={isPending} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="image" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imagen</FormLabel>
-                <FormControl>
-                  <ImageUploader value={field.value} onChange={field.onChange} disabled={isPending} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
             )} />
           </div>
 

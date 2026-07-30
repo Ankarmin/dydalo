@@ -11,19 +11,15 @@ export const metadata: Metadata = {
 export default function CarritoPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
-        <div className="container-page">
+      <section className="section-px page-top pb-20">
+        <div className="container-page mb-6">
           <PageBreadcrumbs
-            className="mb-4"
             items={[
               { label: "Home", href: ROUTES.home },
               { label: "Carrito" },
             ]}
           />
-          <h1 className="page-hero-heading">Tu selección.</h1>
         </div>
-      </section>
-      <section className="section-px pb-20 pt-8">
         <div className="mx-auto max-w-6xl">
           <CartClient />
         </div>

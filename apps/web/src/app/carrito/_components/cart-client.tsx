@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -85,6 +85,11 @@ export function CartClient() {
   const { cart, cartCount, subtotal, updateQuantity } = useCart();
 
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   const [department, setDepartment] = useState("Lima");
   const [paymentMethod, setPaymentMethod] = useState("yape-plin");
   const [name, setName] = useState("");
