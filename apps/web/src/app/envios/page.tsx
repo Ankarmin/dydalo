@@ -29,7 +29,7 @@ const steps = [
     step: 3,
     icon: Truck,
     title: "En Ruta",
-    description: `Recibirás tu número de tracking por email. Envíos a provincia vía ${SHIPPING_PROVINCIA_COURIER}.`,
+    description: `Envíos GRATIS en Lima Metropolitana. Entrega en 2-3 días hábiles.`,
   },
   {
     step: 4,
@@ -52,7 +52,7 @@ const rates = [
     name: "Provincia",
     price: `S/ ${SHIPPING_PROVINCIA_PRICE} — S/ 25`,
     time: "5-12 días hábiles",
-    detail: `Envíos a todo el Perú vía ${SHIPPING_PROVINCIA_COURIER}. El costo varía según peso y destino y es asumido por el cliente. Recibirás el tracking de ${SHIPPING_PROVINCIA_COURIER} por email.`,
+    detail: `Envíos a todo el Perú vía ${SHIPPING_PROVINCIA_COURIER}. El costo varía según peso y destino y es asumido por el cliente. Te confirmaremos el envío por email.`,
   },
 ];
 

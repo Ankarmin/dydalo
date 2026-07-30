@@ -21,7 +21,6 @@ export default function TerminosPage() {
               { label: "Términos y condiciones" },
             ]}
           />
-          <p className="section-tag">Legal</p>
           <h1 className="page-hero-heading lg:text-6xl">
             TÉRMINOS Y CONDICIONES
           </h1>

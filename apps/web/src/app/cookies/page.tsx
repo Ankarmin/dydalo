@@ -21,7 +21,6 @@ export default function CookiesPage() {
               { label: "Política de cookies" },
             ]}
           />
-          <p className="section-tag">Legal</p>
           <h1 className="page-hero-heading lg:text-6xl">
             POLÍTICA DE COOKIES
           </h1>

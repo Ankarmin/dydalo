@@ -23,14 +23,14 @@ export function HomeHero() {
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--hero-overlay-top)] via-[var(--hero-overlay-mid)] to-background" />
       <div className="relative z-10 flex w-full max-w-7xl flex-col items-center">
         <p className="mb-4 text-xs font-bold tracking-[0.25em] text-foreground/75 sm:tracking-[0.42em]">
-          THE REAL CREAM — STREETWEAR & LIFESTYLE
+          EDICIONES LIMITADAS — FLOW URBANO
         </p>
         <h1 className="w-full flex justify-center">
           <Image src={LOGO_DARK} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-dark" />
           <Image src={LOGO_LIGHT} alt="DYDALO" width={700} height={163} className="w-full max-w-[700px] logo-light" />
         </h1>
         <p className="mt-8 text-sm font-semibold tracking-[0.48em] sm:text-lg">
-          STREETWEAR & LIFESTYLE — THE REAL CREAM
+          HECHO PARA QUIEN NO PIDE PERMISO
         </p>
         <Button
           asChild

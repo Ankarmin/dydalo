@@ -22,7 +22,6 @@ export default function LibroDeReclamacionesPage() {
               { label: "Libro de reclamaciones" },
             ]}
           />
-          <p className="section-tag">Legal</p>
           <h1 className="page-hero-heading lg:text-6xl">
             LIBRO DE RECLAMACIONES
           </h1>

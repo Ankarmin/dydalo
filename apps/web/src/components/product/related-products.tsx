@@ -15,6 +15,15 @@ function seededRandom(seed: number, index: number): number {
   return x - Math.floor(x);
 }
 
+function shuffleProducts(products: AdminProduct[], seed: number): AdminProduct[] {
+  const shuffled = [...products];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom(seed, i) * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export function RelatedProducts({ product }: RelatedProductsProps) {
   const mounted = useMounted();
 
@@ -28,13 +37,13 @@ export function RelatedProducts({ product }: RelatedProductsProps) {
         p.id !== product.id,
     );
 
-    const shuffled = [...sameCategory];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(seededRandom(product.id, i) * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
+    const discounted = sameCategory.filter((p) => (p.discount ?? 0) > 0);
+    const regular = sameCategory.filter((p) => !p.discount || p.discount <= 0);
 
-    return shuffled.slice(0, 4);
+    return [
+      ...shuffleProducts(discounted, product.id),
+      ...shuffleProducts(regular, product.id + 1),
+    ].slice(0, 4);
   }, [mounted, product.id, product.category]);
 
   if (!mounted || related.length === 0) return null;

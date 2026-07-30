@@ -10,9 +10,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ignoreToastClicks } from "@/lib/utils/toast-guard";
+import { getEmailError, normalizeEmail } from "@/lib/validations/forms";
 
 export function HomeNewsletter() {
   const [newsletterEmail, setNewsletterEmail] = useState<string | null>(null);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
   const newsletterRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -28,13 +30,18 @@ export function HomeNewsletter() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const value = newsletterRef.current?.value;
-              if (value) {
-                setNewsletterEmail(value);
-                if (newsletterRef.current) newsletterRef.current.value = "";
+              const value = newsletterRef.current?.value ?? "";
+              const error = getEmailError(value);
+              setNewsletterError(error);
+              if (error) return;
+
+              setNewsletterEmail(normalizeEmail(value));
+              if (newsletterRef.current) {
+                newsletterRef.current.value = "";
               }
             }}
             className="flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:gap-0"
+            noValidate
           >
             <label htmlFor="newsletter-email" className="sr-only">
               Correo electrónico
@@ -43,13 +50,19 @@ export function HomeNewsletter() {
               id="newsletter-email"
               ref={newsletterRef}
               type="email"
-              required
               placeholder="tu@email.com"
+              aria-invalid={Boolean(newsletterError)}
+              aria-describedby={newsletterError ? "home-newsletter-error" : undefined}
               className="form-input flex-1"
             />
             <button type="submit" className="newsletter-btn">
               Suscribir
             </button>
+            {newsletterError && (
+              <p id="home-newsletter-error" className="text-sm text-destructive sm:mt-2 sm:basis-full">
+                {newsletterError}
+              </p>
+            )}
           </form>
         </div>
       </section>

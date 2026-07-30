@@ -56,9 +56,9 @@ const faqs = [
   },
   {
     category: "Envíos",
-    question: "¿Cómo rastreo mi pedido?",
+    question: "¿Cómo sé el estado de mi pedido?",
     answer:
-      "Recibirás el número de tracking de Olva por email cuando tu pedido salga de nuestro almacén. Úsalo en la web de Olva Courier para seguir el estado.",
+      "Te notificaremos por email cada vez que tu pedido cambie de estado (confirmado, enviado, entregado). También puedes contactarnos por WhatsApp para consultar.",
   },
   {
     category: "Envíos",

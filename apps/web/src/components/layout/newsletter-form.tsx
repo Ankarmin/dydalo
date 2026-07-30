@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { getEmailError, normalizeEmail } from "@/lib/validations/forms";
 
 export function NewsletterForm({
   id = "newsletter-email",
@@ -14,6 +15,7 @@ export function NewsletterForm({
   buttonText?: string;
 }) {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (submitted) {
@@ -39,26 +41,40 @@ export function NewsletterForm({
         onSubmit={(e) => {
           e.preventDefault();
           const email = inputRef.current?.value ?? "";
-          if (email) {
-            setSubmitted(true);
-            if (inputRef.current) inputRef.current.value = "";
+          const emailError = getEmailError(email);
+          setError(emailError);
+          if (emailError) return;
+
+          setSubmitted(true);
+          if (inputRef.current) {
+            inputRef.current.value = normalizeEmail(email);
           }
         }}
-        className="flex w-full max-w-sm"
+        className="w-full max-w-sm"
+        noValidate
       >
-        <label htmlFor={id} className="sr-only">
-          Correo electronico
-        </label>
-        <input
-          id={id}
-          type="email"
-          placeholder="tu@email.com"
-          ref={inputRef}
-          className="form-input flex-1"
-        />
-        <button type="submit" className="newsletter-btn">
-          {buttonText}
-        </button>
+        <div className="flex">
+          <label htmlFor={id} className="sr-only">
+            Correo electrónico
+          </label>
+          <input
+            id={id}
+            type="email"
+            placeholder="tu@email.com"
+            ref={inputRef}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? `${id}-error` : undefined}
+            className="form-input flex-1"
+          />
+          <button type="submit" className="newsletter-btn">
+            {buttonText}
+          </button>
+        </div>
+        {error && (
+          <p id={`${id}-error`} className="mt-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   );
