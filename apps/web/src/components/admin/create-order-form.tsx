@@ -742,6 +742,7 @@ function ProductSearch({
               size="icon"
               className="size-7"
               onClick={handleCancel}
+              aria-label="Cancelar selección"
             >
               <X className="size-3.5" />
             </Button>

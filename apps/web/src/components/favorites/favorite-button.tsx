@@ -26,25 +26,14 @@ export function FavoriteButton({
     showFavoriteToast(productName, !favorited);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.stopPropagation();
-      toggleFavorite(productId);
-      showFavoriteToast(productName, !favorited);
-    }
-  }
-
   const cardStyles =
     "absolute right-3 top-3 z-10 size-9 rounded-full chip-label shadow-sm";
   const inlineStyles = "";
 
   return (
-    <span
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       onClick={handleClick}
-      onKeyDown={handleKeyDown}
       aria-label={
         favorited
           ? `Quitar ${productName} de favoritos`
@@ -62,6 +51,6 @@ export function FavoriteButton({
           favorited && "fill-favorite text-favorite",
         )}
       />
-    </span>
+    </button>
   );
 }
