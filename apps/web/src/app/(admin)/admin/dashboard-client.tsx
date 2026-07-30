@@ -23,15 +23,17 @@ import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
 import {
   getMoMChange,
-  getMonthlyRevenue,
   getStatusDistribution,
-  getTopProducts,
+  getInventoryValue,
+  getStockDistribution,
+  getVariantsWithoutSales,
 } from "@/lib/utils/analytics";
-import { RevenueChart } from "@/components/admin/charts/revenue-chart";
 import { StatusDonutChart } from "@/components/admin/charts/status-donut-chart";
-import { TopProductsChart } from "@/components/admin/charts/top-products-chart";
+import { getLowStockVariants, getOutOfStockVariants } from "@/lib/utils/inventory";
 
 seedIfEmpty();
+
+const INVENTORY_ALERTS_LIMIT = 10;
 
 function ClockDisplay() {
   const [clock, setClock] = useState(new Date());
@@ -124,7 +126,9 @@ export function DashboardClient() {
   const now = useMemo(() => new Date(), []);
 
   const activeProducts = products.filter((p) => p.active).length;
-  const lowStock = products.filter((p) => p.stock <= LOW_STOCK_THRESHOLD && p.active).length;
+  const lowStockVariants = useMemo(() => getLowStockVariants(products), [products]);
+  const outOfStockVariants = useMemo(() => getOutOfStockVariants(products), [products]);
+  const lowStock = new Set(lowStockVariants.map((item) => item.product.id)).size;
   const customerUsers = usersStore.getAll().filter((u) => u.role === "customer").length;
 
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -155,9 +159,17 @@ export function DashboardClient() {
     .slice(0, RECENT_ORDERS_LIMIT);
 
   const userMap = useMemo(() => new Map(usersStore.getAll().map((u) => [u.id, u])), []);
-  const revenueData = useMemo(() => getMonthlyRevenue(orders, 6), [orders]);
   const statusData = useMemo(() => getStatusDistribution(orders), [orders]);
-  const topProductsData = useMemo(() => getTopProducts(orders, products, 5), [orders, products]);
+
+  const inventoryValue = useMemo(() => getInventoryValue(products), [products]);
+  const stockDist = useMemo(() => getStockDistribution(products), [products]);
+  const withoutSales = useMemo(() => getVariantsWithoutSales(products, orders, 30), [products, orders]);
+  const visibleOutOfStockVariants = outOfStockVariants.slice(0, INVENTORY_ALERTS_LIMIT);
+  const visibleLowStockVariants = lowStockVariants.slice(
+    0,
+    Math.max(0, INVENTORY_ALERTS_LIMIT - visibleOutOfStockVariants.length)
+  );
+  const totalInventoryAlerts = outOfStockVariants.length + lowStockVariants.length;
 
   return (
     <div className="space-y-6">
@@ -166,7 +178,7 @@ export function DashboardClient() {
         <ClockDisplay />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Productos Activos"
           value={activeProducts}
@@ -203,72 +215,11 @@ export function DashboardClient() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold mb-4">Ingresos — Últimos 6 Meses</h2>
-          <RevenueChart data={revenueData} />
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-5">
           <h2 className="text-sm font-semibold mb-4">Pedidos por Estado</h2>
           <StatusDonutChart data={statusData} />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold">Top 5 Productos</h2>
-            <Link href={ROUTES.adminAnaliticas} className="text-xs text-accent hover:underline">
-              Ver analíticas
-            </Link>
-          </div>
-          {topProductsData.length > 0 ? (
-            <TopProductsChart data={topProductsData} />
-          ) : (
-            <div className="flex items-center justify-center h-[300px] text-sm text-muted-foreground">
-              Sin datos de ventas aún
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold mb-4">Productos Destacados</h2>
-          <div className="space-y-2">
-            {products
-              .filter((p) => p.featured && p.active)
-              .slice(0, 5)
-              .map((p) => (
-                <Link
-                  key={p.id}
-                  href={ROUTES.adminProductoEditar(p.id)}
-                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent/5 transition-colors"
-                >
-                  <div className="size-10 rounded-md border bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                    {p.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.image} alt="" className="size-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-bold text-muted-foreground">
-                        {p.name.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.sku}</p>
-                  </div>
-                  <span className="text-sm font-semibold">{formatPrice(p.price)}</span>
-                </Link>
-              ))}
-            {products.filter((p) => p.featured && p.active).length === 0 && (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                Sin productos destacados
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card">
+        <div className="rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between p-5 pb-3">
           <h2 className="text-sm font-semibold">Últimos Pedidos</h2>
           <Link
@@ -330,6 +281,113 @@ export function DashboardClient() {
             </tbody>
           </table>
         </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">
+        <div className="h-full rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-4">Productos Destacados</h2>
+          <div className="space-y-2">
+            {products
+              .filter((p) => p.featured && p.active)
+              .slice(0, 6)
+              .map((p) => (
+                <Link
+                  key={p.id}
+                  href={ROUTES.adminProductoEditar(p.id)}
+                  className="flex items-center gap-3 rounded-lg p-2 hover:bg-accent/5 transition-colors"
+                >
+                  <div className="size-10 rounded-md border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {p.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.image} alt="" className="size-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-muted-foreground">
+                        {p.name.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">{p.sku}</p>
+                  </div>
+                  <span className="text-sm font-semibold">{formatPrice(p.price)}</span>
+                </Link>
+              ))}
+            {products.filter((p) => p.featured && p.active).length === 0 && (
+              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+                Sin productos destacados
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex h-full flex-col rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-4">Inventario</h2>
+          <div className="grid grid-cols-2 gap-3 mb-3 sm:grid-cols-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Valor Total</p>
+              <p className="text-xl font-bold text-accent">{formatPrice(inventoryValue)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Agotados</p>
+              <p className={cn("text-xl font-bold", stockDist.outOfStock > 0 ? "text-danger" : "text-foreground")}>
+                {stockDist.outOfStock}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Stock Bajo</p>
+              <p className={cn("text-xl font-bold", stockDist.low > 0 ? "text-warning" : "text-foreground")}>
+                {stockDist.low}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Sin Ventas (30d)</p>
+              <p className={cn("text-xl font-bold", withoutSales > 0 ? "text-muted-foreground" : "text-foreground")}>
+                {withoutSales}
+              </p>
+            </div>
+          </div>
+          {(outOfStockVariants.length > 0 || lowStockVariants.length > 0) && (
+            <>
+              <div className="mb-2 border-t border-border" />
+              <div className="space-y-0.5 overflow-hidden">
+                {visibleOutOfStockVariants.map(({ product, variant }) => (
+                  <Link
+                    key={`${product.id}-${variant.id}-out`}
+                    href={ROUTES.adminProductoEditar(product.id)}
+                    className="flex items-center justify-between rounded-lg px-2 py-1 text-xs hover:bg-muted/30 transition-colors"
+                  >
+                    <span className="font-medium truncate">{product.name}</span>
+                    <span className="text-xs text-danger shrink-0 ml-2">
+                      {variant.color} / {variant.size}: 0
+                    </span>
+                  </Link>
+                ))}
+                {visibleLowStockVariants.map(({ product, variant, threshold }) => (
+                  <Link
+                    key={`${product.id}-${variant.id}-low`}
+                    href={ROUTES.adminProductoEditar(product.id)}
+                    className="flex items-center justify-between rounded-lg px-2 py-1 text-xs hover:bg-muted/30 transition-colors"
+                  >
+                    <span className="font-medium truncate">{product.name}</span>
+                    <span className="text-xs text-warning shrink-0 ml-2">
+                      {variant.color} / {variant.size}: {variant.stock} de {threshold}
+                    </span>
+                  </Link>
+                ))}
+                {totalInventoryAlerts > INVENTORY_ALERTS_LIMIT && (
+                  <Link
+                    href={ROUTES.adminProductos}
+                    className="block text-center text-xs text-accent hover:underline py-1"
+                  >
+                    Ver todas las alertas →
+                  </Link>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {lowStock > 0 && (
@@ -338,7 +396,7 @@ export function DashboardClient() {
           <div>
             <p className="text-sm font-semibold text-warning">Atención: Stock Bajo</p>
             <p className="text-sm text-muted-foreground">
-              Hay {lowStock} producto{lowStock > 1 ? "s" : ""} con stock bajo (≤ {LOW_STOCK_THRESHOLD} unidades).
+              Hay {lowStockVariants.length} variante{lowStockVariants.length > 1 ? "s" : ""} con stock bajo.
             </p>
             <Link href={ROUTES.adminProductos} className="text-xs text-accent hover:underline mt-1 inline-block">
               Revisar productos

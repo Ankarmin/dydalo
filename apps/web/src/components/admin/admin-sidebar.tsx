@@ -7,7 +7,9 @@ import { LOGO_DARK, LOGO_LIGHT } from "@/config/constants";
 import {
   LayoutDashboard,
   BarChart3,
+  ClipboardList,
   Package,
+  ShieldCheck,
   Tags,
   FileText,
   ShoppingCart,
@@ -43,6 +45,16 @@ const NAV_ITEMS: NavItem[] = [
     label: "Analíticas",
     href: ROUTES.adminAnaliticas,
     icon: BarChart3,
+  },
+  {
+    label: "Inventario",
+    href: ROUTES.adminInventario,
+    icon: ClipboardList,
+  },
+  {
+    label: "Auditoría",
+    href: ROUTES.adminAuditoria,
+    icon: ShieldCheck,
   },
   {
     label: "Productos",
@@ -179,8 +191,8 @@ export function AdminSidebar() {
             className="fixed inset-0 bg-overlay"
             onClick={() => layoutActions.setMobileSidebarOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[280px] border-r border-border bg-background shadow-xl animate-in slide-in-from-left duration-200">
-            <div className="flex items-center justify-between p-4">
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-background shadow-xl animate-in slide-in-from-left duration-200 sm:w-[320px]">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b-2 border-favorite bg-background/95 px-4 backdrop-blur-xl">
               <div className="flex items-center gap-2">
                 <Image src={LOGO_DARK} alt="DYDALO" width={88} height={20} className="h-5 w-auto logo-dark" />
                 <Image src={LOGO_LIGHT} alt="DYDALO" width={88} height={20} className="h-5 w-auto logo-light" />
@@ -197,8 +209,7 @@ export function AdminSidebar() {
                 <X className="size-5" />
               </Button>
             </div>
-            <Separator />
-            <div className="h-[calc(100%-57px)]">{sidebarContent}</div>
+            <div className="flex-1 min-h-0">{sidebarContent}</div>
           </aside>
         </div>
       )}

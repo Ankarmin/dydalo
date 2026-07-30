@@ -4,8 +4,10 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { User as UserIcon } from "lucide-react";
 import { useStoreData } from "@/hooks/use-store-data";
+import { ADMINS } from "@/config/auth-constants";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { ordersStore } from "@/lib/stores/data-store.orders";
+import type { User } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
 import { Badge } from "@/components/ui/badge";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
@@ -24,7 +26,19 @@ export function UsuariosClient() {
   }, []);
 
   const adminUsers = useMemo(() => {
-    let result = users.filter((u) => u.role === "admin");
+    const storedAdmins = users.filter((u) => u.role === "admin");
+    const adminEmails = new Set(storedAdmins.map((u) => u.email));
+    const configAdmins: User[] = Object.entries(ADMINS)
+      .filter(([email]) => !adminEmails.has(email))
+      .map(([email, name]) => ({
+        id: `admin-${email.split("@")[0]}`,
+        name,
+        email,
+        role: "admin",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        updatedAt: "2025-01-01T00:00:00.000Z",
+      }));
+    let result = [...storedAdmins, ...configAdmins];
     if (adminSort.field) {
       result = [...result].sort((a, b) => {
         const dir = adminSort.direction === "asc" ? 1 : -1;

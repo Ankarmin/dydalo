@@ -6,6 +6,8 @@ export const KEYS = {
   config: "dydalo_config",
   categories: "dydalo_categories",
   images: "dydalo_images",
+  stockMovements: "dydalo_stock_movements",
+  auditLogs: "dydalo_audit_logs",
 } as const;
 
 function hashKey(key: string): string {

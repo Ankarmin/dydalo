@@ -1,6 +1,7 @@
 import { read, write, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
-import type { AdminProduct } from "./data-store.types";
+import type { AdminProduct, OrderItem } from "./data-store.types";
 import { products as seedProducts } from "@/config/products";
+import { getTotalStock, getVariantKey, normalizeProductInventory, summarizeItems } from "@/lib/utils/inventory";
 
 const SEED_HASH = String(JSON.stringify(seedProducts).length);
 
@@ -20,7 +21,12 @@ function getAll(): AdminProduct[] {
     return read<AdminProduct[]>(KEYS.products, []);
   }
 
-  return stored;
+  const normalized = stored.map(normalizeProductInventory);
+  if (JSON.stringify(normalized) !== JSON.stringify(stored)) {
+    write(KEYS.products, normalized);
+  }
+
+  return normalized;
 }
 
 function getById(id: number): AdminProduct | undefined {
@@ -39,13 +45,13 @@ function create(data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt" | "slu
   const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
   const slug = data.slug || generateSlug(data.name);
 
-  const product: AdminProduct = {
+  const product = normalizeProductInventory({
     ...data,
     slug,
     id: maxId + 1,
     createdAt: now,
     updatedAt: now,
-  };
+  });
 
   write(KEYS.products, [...products, product]);
   return product;
@@ -65,13 +71,13 @@ function update(id: number, data: Partial<AdminProduct>): AdminProduct | undefin
   const index = products.findIndex((p) => p.id === id);
   if (index === -1) return undefined;
 
-  const updated: AdminProduct = {
+  const updated = normalizeProductInventory({
     ...products[index],
     ...data,
     id: products[index].id,
     createdAt: products[index].createdAt,
     updatedAt: new Date().toISOString(),
-  };
+  });
 
   const next = [...products];
   next[index] = updated;
@@ -88,7 +94,101 @@ function remove(id: number): boolean {
 }
 
 function seed(items: AdminProduct[]): void {
-  write(KEYS.products, items);
+  write(KEYS.products, items.map(normalizeProductInventory));
 }
 
-export const productsStore = { getAll, getById, getBySlug, create, update, delete: remove, seed };
+function validateStockChange(
+  previousItems: OrderItem[],
+  nextItems: OrderItem[]
+): { success: true } | { success: false; error: string } {
+  const products = getAll();
+  const productMap = new Map(products.map((product) => [product.id, product]));
+  const previous = summarizeItems(previousItems);
+  const next = summarizeItems(nextItems);
+  const keys = new Set([...previous.keys(), ...next.keys()]);
+
+  for (const key of keys) {
+    const nextEntry = next.get(key);
+    const previousEntry = previous.get(key);
+    const item = nextEntry?.item ?? previousEntry?.item;
+    if (!item) continue;
+
+    const delta = (nextEntry?.quantity ?? 0) - (previousEntry?.quantity ?? 0);
+    if (delta <= 0) continue;
+
+    const product = productMap.get(item.productId);
+    if (!product) return { success: false, error: `Producto no encontrado: ${item.name}` };
+
+    const variant = product.variants?.find(
+      (entry) => getVariantKey(entry.size, entry.color) === getVariantKey(item.size, item.color)
+    );
+
+    if (!variant || !variant.active) {
+      return { success: false, error: `${item.name} no está disponible en ${item.color} / ${item.size}` };
+    }
+
+    if (variant.stock < delta) {
+      return {
+        success: false,
+        error: `Solo quedan ${variant.stock} unidades de ${item.name} en ${item.color} / ${item.size}`,
+      };
+    }
+  }
+
+  return { success: true };
+}
+
+function applyStockChange(
+  previousItems: OrderItem[],
+  nextItems: OrderItem[]
+): { success: true } | { success: false; error: string } {
+  const validation = validateStockChange(previousItems, nextItems);
+  if (!validation.success) return validation;
+
+  const products = getAll();
+  const previous = summarizeItems(previousItems);
+  const next = summarizeItems(nextItems);
+  const keys = new Set([...previous.keys(), ...next.keys()]);
+  const now = new Date().toISOString();
+  let changed = false;
+
+  const updatedProducts = products.map((product) => {
+    let updatedProduct = product;
+    const updatedVariants = product.variants?.map((variant) => {
+      const key = `${product.id}|${getVariantKey(variant.size, variant.color)}`;
+      if (!keys.has(key)) return variant;
+
+      const delta = (next.get(key)?.quantity ?? 0) - (previous.get(key)?.quantity ?? 0);
+      if (delta === 0) return variant;
+
+      changed = true;
+      return {
+        ...variant,
+        stock: Math.max(0, variant.stock - delta),
+        updatedAt: now,
+      };
+    });
+
+    if (updatedVariants) {
+      updatedProduct = { ...product, variants: updatedVariants };
+      return { ...updatedProduct, stock: getTotalStock(updatedProduct), updatedAt: now };
+    }
+
+    return product;
+  });
+
+  if (changed) write(KEYS.products, updatedProducts);
+  return { success: true };
+}
+
+export const productsStore = {
+  getAll,
+  getById,
+  getBySlug,
+  create,
+  update,
+  delete: remove,
+  seed,
+  validateStockChange,
+  applyStockChange,
+};

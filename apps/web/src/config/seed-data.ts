@@ -16,11 +16,12 @@ export function seedIfEmpty(): void {
   if (users.length > 0) return;
 
   const sampleUsers: Omit<User, "id" | "createdAt" | "updatedAt">[] = [
-    { name: "Carlos Mendoza", email: "carlos@email.com", role: "customer", phone: "+51 987 654 321" },
-    { name: "Ana Rivera", email: "ana@email.com", role: "customer", phone: "+51 912 345 678" },
-    { name: "Luis Torres", email: "luis@email.com", role: "customer" },
-    { name: "Sofia Vega", email: "sofia@email.com", role: "customer" },
-    { name: "Diego Paz", email: "diego@email.com", role: "customer" },
+    { name: "Carlos Mendoza", firstName: "Carlos", lastName: "Mendoza", email: "carlos@email.com", role: "customer", phone: "+51 987 654 321" },
+    { name: "Ana Rivera", firstName: "Ana", lastName: "Rivera", email: "ana@email.com", role: "customer", phone: "+51 912 345 678" },
+    { name: "Luis Torres", firstName: "Luis", lastName: "Torres", email: "luis@email.com", role: "customer" },
+    { name: "Sofia Vega", firstName: "Sofia", lastName: "Vega", email: "sofia@email.com", role: "customer" },
+    { name: "Diego Paz", firstName: "Diego", lastName: "Paz", email: "diego@email.com", role: "customer" },
+    { name: "Usuario DYDALO", firstName: "Usuario", lastName: "DYDALO", email: "usuario@dydalo.com", role: "customer", phone: "+51 999 999 999" },
   ];
 
   const createdUsers = sampleUsers.map((u) => usersStore.create(u));

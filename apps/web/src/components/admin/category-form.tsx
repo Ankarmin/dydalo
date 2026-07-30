@@ -18,11 +18,21 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { notifyAdmin } from "@/components/admin/admin-toast";
+import { normalizeText } from "@/lib/validations/forms";
 
 const schema = z.object({
-  name: z.string().min(2, "Mínimo 2 caracteres"),
+  name: z.string().trim().min(2, "Mínimo 2 caracteres").max(60, "Máximo 60 caracteres"),
   active: z.boolean(),
 });
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 type FormValues = z.infer<typeof schema>;
 
@@ -48,10 +58,26 @@ export function CategoryForm({ slug }: CategoryFormProps) {
   }, [category, form]);
 
   function onSubmit(values: FormValues) {
+    const normalizedValues = { ...values, name: normalizeText(values.name) };
+    const nextSlug = generateSlug(normalizedValues.name);
+    const duplicate = categoriesStore
+      .getAll()
+      .some(
+        (existingCategory) =>
+          existingCategory.slug !== slug &&
+          (existingCategory.slug === nextSlug ||
+            existingCategory.name.toLowerCase() === normalizedValues.name.toLowerCase())
+      );
+
+    if (duplicate) {
+      form.setError("name", { message: "Ya existe una categoría con este nombre" });
+      return;
+    }
+
     setIsPending(true);
     setTimeout(() => {
       if (isEdit) {
-        const updated = categoriesStore.update(slug!, values);
+        const updated = categoriesStore.update(slug!, normalizedValues);
         if (updated) {
           notifyAdmin("Categoría actualizada", updated.name, "success");
           router.push(ROUTES.adminCategorias);
@@ -61,7 +87,7 @@ export function CategoryForm({ slug }: CategoryFormProps) {
         setIsPending(false);
         return;
       }
-      const created = categoriesStore.create(values);
+      const created = categoriesStore.create(normalizedValues);
       notifyAdmin("Categoría creada", created.name, "success");
       router.push(ROUTES.adminCategorias);
     }, ADMIN_FORM_SIMULATED_DELAY_MS);

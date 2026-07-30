@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useState, useCallback } from "react";
+import { createContext, useState, useCallback, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { use } from "react";
+import { usePathname } from "next/navigation";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminHeader } from "./admin-header";
 
@@ -30,10 +31,20 @@ export function useAdminLayout(): AdminLayoutContextValue {
 }
 
 export function AdminLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const mainRef = useRef<HTMLElement | null>(null);
   const [state, setState] = useState<AdminLayoutState>({
     sidebarCollapsed: false,
     mobileSidebarOpen: false,
   });
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
 
   const toggleSidebar = useCallback(() => {
     setState((s) => ({ ...s, sidebarCollapsed: !s.sidebarCollapsed }));
@@ -49,7 +60,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         <AdminSidebar />
         <div className="flex flex-1 flex-col min-w-0 min-h-0">
           <AdminHeader />
-          <main className="flex-1 min-h-0 overflow-y-auto p-4 lg:p-6 bg-muted/30">
+          <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto p-4 lg:p-6 bg-muted/30">
             {children}
           </main>
         </div>

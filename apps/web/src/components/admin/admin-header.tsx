@@ -69,7 +69,7 @@ export function AdminHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b-2 border-favorite bg-background/85 backdrop-blur-xl px-5 lg:px-10">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b-2 border-favorite bg-background/85 backdrop-blur-xl px-4 lg:px-6">
       
       <Button
         variant="ghost"

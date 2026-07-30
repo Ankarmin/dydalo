@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import { productsStore } from "@/lib/stores/data-store.products";
-import type { ProductSize } from "@/lib/stores/data-store.types";
+import { auditStore } from "@/lib/stores/data-store.audit";
+import type { ProductSize, ProductVariantStock } from "@/lib/stores/data-store.types";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { ROUTES } from "@/lib/utils/routes";
-import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX, FEATURED_PRODUCTS_COUNT } from "@/config/constants";
+import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX, FEATURED_PRODUCTS_COUNT, LOW_STOCK_THRESHOLD } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,19 +32,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { notifyAdmin } from "@/components/admin/admin-toast";
+import { useAuth } from "@/contexts/auth-context";
+import { isValidHexColor, normalizeText } from "@/lib/validations/forms";
+import { cn } from "@/lib/utils/utils";
 import Link from "next/link";
 import { ImageUploader } from "@/components/admin/image-uploader";
+import { MultiImageUploader } from "@/components/admin/multi-image-uploader";
+import {
+  getVariantId,
+  getVariantKey,
+  getVariantLowStockThreshold,
+  isLowStockVariant,
+  isOutOfStockVariant,
+} from "@/lib/utils/inventory";
 
 const VALID_SIZES = ["S", "M", "L", "XL", "28", "30", "32", "34", "36", "Única"] as const;
 
 const formSchema = z.object({
-  name: z.string().min(3, "Mínimo 3 caracteres"),
+  name: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
   category: z.string().min(1, "Selecciona una categoría"),
-  price: z.number().positive("Debe ser mayor a 0"),
-  sku: z.string().min(1, "SKU requerido"),
-  stock: z.number().int().nonnegative("No puede ser negativo"),
-  discount: z.number().min(0).max(100).nullable(),
-  image: z.string(),
+  price: z.number().finite("Precio inválido").positive("Debe ser mayor a 0"),
+  sku: z.string().trim().min(1, "SKU requerido").max(40, "Máximo 40 caracteres"),
+  stock: z.number().finite("Stock inválido").int("Debe ser entero").nonnegative("No puede ser negativo"),
+  variants: z.array(z.object({
+    id: z.string(),
+    size: z.enum(VALID_SIZES),
+    color: z.string(),
+    stock: z.number().finite("Stock inválido").int("Debe ser entero").nonnegative("No puede ser negativo"),
+    active: z.boolean(),
+    lowStockThreshold: z.number().optional(),
+    updatedAt: z.string(),
+  })),
+  discount: z.number().finite("Descuento inválido").min(0).max(100).nullable(),
+  image: z.string().min(1, "Imagen requerida"),
+  images: z.array(z.string()),
   active: z.boolean(),
   featured: z.boolean(),
   sizes: z.array(z.string()).min(1, "Al menos una talla").superRefine((val, ctx) => {
@@ -53,7 +75,14 @@ const formSchema = z.object({
       }
     });
   }),
-  colors: z.array(z.object({ name: z.string().min(1), hex: z.string() })).min(1, "Al menos un color"),
+  colors: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Nombre requerido"),
+        hex: z.string().refine(isValidHexColor, "Color inválido"),
+      })
+    )
+    .min(1, "Al menos un color"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -66,12 +95,14 @@ const defaultValues: FormValues = {
   price: 0,
   sku: "",
   stock: 0,
+  variants: [],
   discount: null,
   image: "",
+  images: [],
   active: true,
   featured: false,
-  sizes: ["M", "L"],
-  colors: [{ name: "Negro", hex: DEFAULT_PRODUCT_COLOR_HEX }],
+  sizes: [],
+  colors: [],
 };
 
 interface ProductFormProps {
@@ -80,8 +111,12 @@ interface ProductFormProps {
 
 export function ProductForm({ productId }: ProductFormProps) {
   const router = useRouter();
+  const { state: authState } = useAuth();
   const isEdit = productId !== undefined;
-  const product = isEdit ? productsStore.getById(productId!) : undefined;
+  const product = useMemo(
+    () => (isEdit ? productsStore.getById(productId!) : undefined),
+    [isEdit, productId],
+  );
   const notFound = isEdit && !product;
   const [isPending, setIsPending] = useState(false);
 
@@ -90,9 +125,7 @@ export function ProductForm({ productId }: ProductFormProps) {
   const featuredCount = productsStore.getAll().filter((p) => p.featured).length;
   const featuredLimitReached = featuredCount >= FEATURED_PRODUCTS_COUNT;
 
-  const isCurrentlyFeatured = isEdit
-    ? productsStore.getById(productId)?.featured ?? false
-    : false;
+  const isCurrentlyFeatured = product?.featured ?? false;
 
   const featuredBlocked = featuredLimitReached && !isCurrentlyFeatured;
 
@@ -109,8 +142,10 @@ export function ProductForm({ productId }: ProductFormProps) {
       price: product.price,
       sku: product.sku,
       stock: product.stock,
+      variants: product.variants ?? [],
       discount: product.discount,
       image: product.image,
+      images: product.images ?? [],
       active: product.active,
       featured: product.featured,
       sizes: product.sizes as unknown as string[],
@@ -120,42 +155,190 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   const sizes = useWatch({ control: form.control, name: "sizes" });
   const colors = useWatch({ control: form.control, name: "colors" });
+  const variants = useWatch({ control: form.control, name: "variants" });
+
+  function syncVariants(
+    nextSizes: string[],
+    nextColors: ColorItem[],
+    currentVariants: ProductVariantStock[] = variants as ProductVariantStock[]
+  ) {
+    const now = new Date().toISOString();
+    const current = new Map(
+      currentVariants.map((variant) => [getVariantKey(variant.size, variant.color), variant])
+    );
+    const nextVariants = nextSizes.flatMap((size) =>
+      nextColors.map((color) => {
+        const key = getVariantKey(size, color.name);
+        const existing = current.get(key);
+        return {
+          id: existing?.id ?? getVariantId(size, color.name),
+          size: size as ProductSize,
+          color: color.name,
+          stock: existing?.stock ?? 0,
+          active: existing?.active ?? true,
+          lowStockThreshold: existing?.lowStockThreshold ?? LOW_STOCK_THRESHOLD,
+          updatedAt: existing?.updatedAt ?? now,
+        } satisfies ProductVariantStock;
+      })
+    );
+
+    form.setValue("variants", nextVariants, { shouldValidate: true, shouldDirty: true });
+    form.setValue("stock", nextVariants.reduce((sum, variant) => sum + (variant.active ? variant.stock : 0), 0), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
+  useEffect(() => {
+    if (variants.length === 0 && sizes.length > 0 && colors.length > 0) {
+      syncVariants(sizes, colors, []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variants.length, sizes.length, colors.length]);
 
   function addSize() {
     if (!newSize.trim()) return;
     if (sizes.includes(newSize.trim())) return;
-    form.setValue("sizes", [...sizes, newSize.trim().toUpperCase()], { shouldValidate: true });
+    const nextSizes = [...sizes, newSize.trim().toUpperCase()];
+    form.setValue("sizes", nextSizes, { shouldValidate: true });
+    syncVariants(nextSizes, colors);
     setNewSize("");
   }
 
   function removeSize(index: number) {
-    form.setValue("sizes", sizes.filter((_, i) => i !== index), { shouldValidate: true });
+    const size = sizes[index];
+    const hasStock = variants.some((variant) => variant.size === size && variant.stock > 0);
+    if (hasStock) {
+      notifyAdmin("Stock activo", "Primero deja esta talla en 0 desde Inventario", "error");
+      return;
+    }
+    const nextSizes = sizes.filter((_, i) => i !== index);
+    form.setValue("sizes", nextSizes, { shouldValidate: true });
+    syncVariants(nextSizes, colors);
   }
 
   function addColor() {
-    form.setValue("colors", [...colors, { name: "", hex: DEFAULT_PRODUCT_COLOR_HEX }], { shouldValidate: true });
+    const nextColors = [...colors, { name: "", hex: DEFAULT_PRODUCT_COLOR_HEX }];
+    form.setValue("colors", nextColors, { shouldValidate: true });
+    syncVariants(sizes, nextColors);
   }
 
   function removeColor(index: number) {
-    form.setValue("colors", colors.filter((_, i) => i !== index), { shouldValidate: true });
+    const color = colors[index];
+    const hasStock = variants.some((variant) => variant.color === color?.name && variant.stock > 0);
+    if (hasStock) {
+      notifyAdmin("Stock activo", "Primero deja este color en 0 desde Inventario", "error");
+      return;
+    }
+    const nextColors = colors.filter((_, i) => i !== index);
+    form.setValue("colors", nextColors, { shouldValidate: true });
+    syncVariants(sizes, nextColors);
+  }
+
+  function toggleVariantActive(index: number, active: boolean) {
+    const variant = variants[index];
+    if (variant?.active && !active && variant.stock > 0) {
+      notifyAdmin("Stock activo", "Primero deja esta variante en 0 desde Inventario", "error");
+      return;
+    }
+    const nextVariants = variants.map((variant, i) =>
+      i === index ? { ...variant, active, updatedAt: new Date().toISOString() } : variant
+    );
+    form.setValue("variants", nextVariants, { shouldValidate: true, shouldDirty: true });
+    form.setValue("stock", nextVariants.reduce((sum, variant) => sum + (variant.active ? variant.stock : 0), 0), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   }
 
   const onSubmit = form.handleSubmit((values) => {
+    const normalizedValues = {
+      ...values,
+      name: normalizeText(values.name),
+      sku: values.sku.trim().toUpperCase(),
+      colors: values.colors.map((color) => ({
+        ...color,
+        name: normalizeText(color.name),
+      })),
+      variants: values.variants.map((variant) => ({
+        ...variant,
+        color: normalizeText(variant.color),
+        stock: Math.max(0, Math.trunc(variant.stock)),
+      })),
+    };
+    normalizedValues.stock = normalizedValues.variants.reduce(
+      (sum, variant) => sum + (variant.active ? variant.stock : 0),
+      0
+    );
+    const skuExists = productsStore
+      .getAll()
+      .some(
+        (existingProduct) =>
+          existingProduct.id !== productId &&
+          existingProduct.sku.toLowerCase() === normalizedValues.sku.toLowerCase()
+      );
+
+    if (skuExists) {
+      form.setError("sku", { message: "Ya existe un producto con este SKU" });
+      return;
+    }
+
+    if (normalizedValues.featured && featuredBlocked) {
+      notifyAdmin("Límite alcanzado", `Máximo ${FEATURED_PRODUCTS_COUNT} productos destacados`, "error");
+      return;
+    }
+
     setIsPending(true);
 
     setTimeout(() => {
+      const actor = {
+        id: authState.user?.id ?? "admin",
+        name: authState.user?.name ?? "Admin",
+      };
+
       if (isEdit) {
+        const before = product;
         const updated = productsStore.update(productId!, {
-          ...values,
-          sizes: values.sizes as unknown as ProductSize[],
+          ...normalizedValues,
+          sizes: normalizedValues.sizes as unknown as ProductSize[],
         });
         if (updated) {
+          const changes = before
+            ? auditStore.diffFields(
+                before as unknown as Record<string, unknown>,
+                updated as unknown as Record<string, unknown>,
+                ["name", "category", "price", "sku", "discount", "active", "featured", "sizes", "colors", "variants"]
+              )
+            : [];
+
+          if (changes.length > 0) {
+            auditStore.create({
+              actor,
+              entityType: "product",
+              entityId: String(updated.id),
+              entityLabel: updated.name,
+              action: changes.some((change) => change.field === "discount") ? "discount_change" : "update",
+              summary: `Editó producto ${updated.name}`,
+              before,
+              after: updated,
+              changes,
+            });
+          }
           notifyAdmin("Producto actualizado", updated.name, "success");
         }
       } else {
         const created = productsStore.create({
-          ...values,
-          sizes: values.sizes as unknown as ProductSize[],
+          ...normalizedValues,
+          sizes: normalizedValues.sizes as unknown as ProductSize[],
+        });
+        auditStore.create({
+          actor,
+          entityType: "product",
+          entityId: String(created.id),
+          entityLabel: created.name,
+          action: "create",
+          summary: `Creó producto ${created.name}`,
+          after: created,
         });
         notifyAdmin("Producto creado", created.name, "success");
       }
@@ -270,25 +453,13 @@ export function ProductForm({ productId }: ProductFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div>
+                <p className="text-sm font-medium">Stock total</p>
+                <div className="mt-2 flex h-9 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-semibold">
+                  {variants.reduce((sum, variant) => sum + (variant.active ? variant.stock : 0), 0)} unidades
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">Se calcula desde las variantes.</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -326,6 +497,23 @@ export function ProductForm({ productId }: ProductFormProps) {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Galería de imágenes</FormLabel>
+                  <FormControl>
+                    <MultiImageUploader value={field.value} onChange={field.onChange} disabled={isPending} />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Estas imágenes aparecerán al pasar el mouse por la card y en el carrusel del detalle.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -342,7 +530,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 ))}
               </div>
             )}
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 placeholder="Escribe una talla (ej: S, M, L, XL)..."
                 value={newSize}
@@ -351,7 +539,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 disabled={isPending}
                 className="flex-1"
               />
-              <Button type="button" variant="outline" size="sm" onClick={addSize} disabled={isPending}>
+              <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={addSize} disabled={isPending}>
                 <Plus className="size-3.5" /> Añadir
               </Button>
             </div>
@@ -361,15 +549,15 @@ export function ProductForm({ productId }: ProductFormProps) {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-sm font-semibold">Colores</h2>
-              <Button type="button" variant="outline" size="sm" onClick={addColor} disabled={isPending}>
+              <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={addColor} disabled={isPending}>
                 <Plus className="size-3.5" /> Añadir color
               </Button>
             </div>
             <div className="space-y-3">
               {colors.map((color: ColorItem, index: number) => (
-                <div key={index} className="flex items-center gap-3">
+                <div key={index} className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
                   <Input
                     type="color"
                     value={color.hex}
@@ -377,19 +565,26 @@ export function ProductForm({ productId }: ProductFormProps) {
                       const updated = [...colors];
                       updated[index] = { ...color, hex: e.target.value };
                       form.setValue("colors", updated, { shouldValidate: true });
+                      syncVariants(sizes, updated);
                     }}
-                    className="w-12 h-9 p-1"
+                    className="h-9 w-12 p-1"
                     disabled={isPending}
                   />
                   <Input
                     placeholder="Nombre del color"
                     value={color.name}
                     onChange={(e) => {
+                      const hasStock = variants.some((variant) => variant.color === color.name && variant.stock > 0);
+                      if (hasStock && e.target.value !== color.name) {
+                        notifyAdmin("Stock activo", "Primero deja este color en 0 desde Inventario", "error");
+                        return;
+                      }
                       const updated = [...colors];
                       updated[index] = { ...color, name: e.target.value };
                       form.setValue("colors", updated, { shouldValidate: true });
+                      syncVariants(sizes, updated);
                     }}
-                    className="flex-1"
+                    className="min-w-0"
                     disabled={isPending}
                   />
                   {colors.length > 1 && (
@@ -409,6 +604,87 @@ export function ProductForm({ productId }: ProductFormProps) {
             {form.formState.errors.colors && (
               <p className="text-sm text-destructive">{form.formState.errors.colors.message}</p>
             )}
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold">Inventario por variante</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  El stock es de solo lectura. Las entradas y ajustes se registran desde Inventario.
+                </p>
+              </div>
+              {isEdit && (
+                <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" asChild>
+                  <Link href={ROUTES.adminInventario}>Gestionar stock</Link>
+                </Button>
+              )}
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full min-w-[620px] text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                    <th className="px-3 py-2 font-medium">Talla</th>
+                    <th className="px-3 py-2 font-medium">Color</th>
+                    <th className="px-3 py-2 font-medium">Stock</th>
+                    <th className="px-3 py-2 font-medium">Estado</th>
+                    <th className="px-3 py-2 font-medium text-right">Activo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {variants.map((variant, index) => {
+                    const status = isOutOfStockVariant(variant)
+                      ? "Agotado"
+                      : isLowStockVariant(variant)
+                        ? "Bajo"
+                        : variant.active
+                          ? "OK"
+                          : "Inactivo";
+                    return (
+                    <tr key={`${variant.id}-${index}`} className="border-b border-border last:border-0">
+                      <td className="px-3 py-2 font-medium">{variant.size}</td>
+                      <td className="px-3 py-2">{variant.color || "Sin nombre"}</td>
+                      <td className="px-3 py-2">
+                        <span className="font-semibold tabular-nums">{variant.stock}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            "text-[10px]",
+                            status === "Agotado" && "text-danger",
+                            status === "Bajo" && "text-warning",
+                            status === "OK" && "text-success"
+                          )}
+                        >
+                          {status}
+                        </Badge>
+                        {status === "Bajo" && (
+                          <p className="mt-1 text-[10px] text-muted-foreground">
+                            Límite: {getVariantLowStockThreshold(variant)}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Switch
+                          checked={variant.active}
+                          onCheckedChange={(checked) => toggleVariantActive(index, checked)}
+                          disabled={isPending}
+                        />
+                      </td>
+                    </tr>
+                    );
+                  })}
+                  {variants.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-3 py-8 text-center text-sm text-muted-foreground">
+                        Agrega al menos una talla y un color para generar inventario.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -450,11 +726,11 @@ export function ProductForm({ productId }: ProductFormProps) {
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end">
-            <Button variant="outline" type="button" asChild>
+          <div className="grid gap-3 sm:flex sm:justify-end">
+            <Button variant="outline" type="button" className="w-full sm:w-auto" asChild>
               <Link href={ROUTES.adminProductos}>Cancelar</Link>
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" className="w-full sm:w-auto" disabled={isPending}>
               {isPending && <Loader2 className="size-4 animate-spin" />}
               {isEdit ? "Guardar Cambios" : "Crear Producto"}
             </Button>

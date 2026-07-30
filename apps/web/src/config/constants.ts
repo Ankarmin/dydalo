@@ -35,7 +35,7 @@ export const ADMIN_FORM_SIMULATED_DELAY_MS = 400;
 
 export const AUTH_SIMULATED_DELAY_MS = 800;
 
-export const LOW_STOCK_THRESHOLD = 5;
+export const LOW_STOCK_THRESHOLD = 3;
 
 export const RECENT_ORDERS_LIMIT = 5;
 

@@ -1,6 +1,9 @@
 import { read, write, generateId, KEYS } from "./data-store.utils";
 import type { Order, OrderStatus, CreateOrderInput } from "./data-store.types";
 import { VALID_TRANSITIONS } from "./data-store.types";
+import { productsStore } from "./data-store.products";
+import { stockMovementsStore } from "./data-store.stock-movements";
+import { auditStore } from "./data-store.audit";
 
 let ordersByUserCache: Map<string, Order[]> | null = null;
 
@@ -41,9 +44,7 @@ function create(data: CreateOrderInput): Order {
     ...data,
     id,
     status: "pendiente",
-    trackingNumber: data.trackingNumber ?? null,
-    notes: data.notes ?? null,
-    statusHistory: [{ from: "pendiente", to: "pendiente", at: now, by: data.userId }],
+    statusHistory: [{ from: "pendiente", to: "pendiente", at: now, by: data.createdBy ?? data.userId }],
     createdAt: now,
     updatedAt: now,
   };
@@ -75,7 +76,8 @@ function update(id: string, data: Partial<Order>): Order | undefined {
 function transitionStatus(
   id: string,
   newStatus: OrderStatus,
-  userId: string
+  userId: string,
+  userName?: string
 ): { success: true; data: Order } | { success: false; error: string } {
   invalidateCache();
   const order = getById(id);
@@ -90,8 +92,16 @@ function transitionStatus(
   }
 
   const now = new Date().toISOString();
+  const actor = { id: userId, name: userName ?? userId };
+  const shouldRestoreStock = order.stockReserved && (newStatus === "cancelado" || newStatus === "devuelto");
+  if (shouldRestoreStock) {
+    const stockUpdate = productsStore.applyStockChange(order.items, []);
+    if (!stockUpdate.success) return stockUpdate;
+  }
+
   const updated = update(id, {
     status: newStatus,
+    stockReserved: shouldRestoreStock ? false : order.stockReserved,
     statusHistory: [
       ...order.statusHistory,
       { from: order.status, to: newStatus, at: now, by: userId },
@@ -99,6 +109,32 @@ function transitionStatus(
   });
 
   if (!updated) return { success: false, error: "Error al actualizar pedido" };
+  if (shouldRestoreStock) {
+    stockMovementsStore.createFromOrderDiff({
+      previousItems: order.items,
+      nextItems: [],
+      type: newStatus === "cancelado" ? "cancellation" : "return",
+      orderId: order.id,
+      actor,
+      reason: newStatus === "cancelado" ? "Pedido cancelado" : "Pedido devuelto",
+    });
+  }
+  auditStore.create({
+    actor,
+    entityType: "order",
+    entityId: order.id,
+    entityLabel: `#${order.id.slice(0, 8)}`,
+    action: "status_change",
+    summary: `Cambió el estado del pedido de ${order.status} a ${newStatus}`,
+    before: { status: order.status, stockReserved: order.stockReserved },
+    after: { status: updated.status, stockReserved: updated.stockReserved },
+    changes: [
+      { field: "status", before: order.status, after: newStatus },
+      ...(order.stockReserved !== updated.stockReserved
+        ? [{ field: "stockReserved", before: order.stockReserved, after: updated.stockReserved }]
+        : []),
+    ],
+  });
   return { success: true, data: updated };
 }
 

@@ -3,9 +3,10 @@
 import { useState, useMemo, useDeferredValue, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Pencil, Trash2, Download, Upload } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Download, Upload, Percent } from "lucide-react";
 import { productsStore } from "@/lib/stores/data-store.products";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import { seedIfEmpty } from "@/config/seed-data";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
@@ -13,7 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { exportProductsCSV, importProductsFromCSV } from "@/lib/utils/csv";
+import { getCsvFileError } from "@/lib/validations/forms";
 import { FEATURED_PRODUCTS_COUNT } from "@/config/constants";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import {
@@ -28,11 +31,15 @@ import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import { AdminPagination } from "@/components/admin/admin-pagination";
+import { BulkDiscountDialog } from "@/components/admin/bulk-discount-dialog";
+import { getInventorySummary } from "@/lib/utils/inventory";
+import { useAuth } from "@/contexts/auth-context";
 
 const PAGE_SIZE = 15;
 
 export function ProductosClient() {
   const router = useRouter();
+  const { state: authState } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [products, setProducts] = useState<AdminProduct[]>(() => {
     seedIfEmpty();
@@ -43,6 +50,8 @@ export function ProductosClient() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortState>(defaultSort);
+  const [bulkDiscountOpen, setBulkDiscountOpen] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const deferredQuery = useDeferredValue(query);
 
@@ -89,6 +98,17 @@ export function ProductosClient() {
     const updated = productsStore.update(product.id, { active: !product.active });
     if (updated) {
       setProducts((prev) => prev.map((p) => (p.id === product.id ? updated : p)));
+      auditStore.create({
+        actor,
+        entityType: "product",
+        entityId: String(product.id),
+        entityLabel: product.name,
+        action: updated.active ? "activate" : "deactivate",
+        summary: `${updated.active ? "Activó" : "Desactivó"} producto ${product.name}`,
+        before: { active: product.active },
+        after: { active: updated.active },
+        changes: [{ field: "active", before: product.active, after: updated.active }],
+      });
       notifyAdmin(updated.active ? "Producto activado" : "Producto desactivado");
     }
   }
@@ -101,27 +121,112 @@ export function ProductosClient() {
     const updated = productsStore.update(product.id, { featured: !product.featured });
     if (updated) {
       setProducts((prev) => prev.map((p) => (p.id === product.id ? updated : p)));
+      auditStore.create({
+        actor,
+        entityType: "product",
+        entityId: String(product.id),
+        entityLabel: product.name,
+        action: "update",
+        summary: `${updated.featured ? "Marcó" : "Quitó"} destacado en ${product.name}`,
+        before: { featured: product.featured },
+        after: { featured: updated.featured },
+        changes: [{ field: "featured", before: product.featured, after: updated.featured }],
+      });
     }
   }
 
   function handleDelete() {
     if (deleteId === null) return;
+    const product = productsStore.getById(deleteId);
+    if (product && product.stock > 0) {
+      notifyAdmin("Stock activo", "Primero deja el stock del producto en 0 desde Inventario", "error");
+      setDeleteId(null);
+      return;
+    }
     const ok = productsStore.delete(deleteId);
     if (ok) {
       setProducts((prev) => prev.filter((p) => p.id !== deleteId));
+      if (product) {
+        auditStore.create({
+          actor,
+          entityType: "product",
+          entityId: String(product.id),
+          entityLabel: product.name,
+          action: "delete",
+          summary: `Eliminó producto ${product.name}`,
+          before: product,
+        });
+      }
       notifyAdmin("Producto eliminado");
     }
     setDeleteId(null);
   }
 
+  function toggleSelect(productId: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    const pageIds = paginated.map((p) => p.id);
+    const allSelected = pageIds.every((id) => selected.has(id));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        for (const id of pageIds) next.delete(id);
+      } else {
+        for (const id of pageIds) next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  const pageSelectedIds = useMemo(
+    () => paginated.map((p) => p.id).filter((id) => selected.has(id)),
+    [paginated, selected]
+  );
+
+  const allPageSelected = paginated.length > 0 && pageSelectedIds.length === paginated.length;
+
+  const selectedCount = selected.size;
+  const selectedIds = useMemo(() => Array.from(selected), [selected]);
+  const actor = { id: authState.user?.id ?? "admin", name: authState.user?.name ?? "Admin" };
+
   function handleExport() {
     exportProductsCSV(filtered);
+    auditStore.create({
+      actor,
+      entityType: "product",
+      entityId: "products-export",
+      entityLabel: "Productos",
+      action: "export",
+      summary: `Exportó ${filtered.length} productos a CSV`,
+    });
     notifyAdmin("CSV exportado", `${filtered.length} productos`, "success");
   }
 
   function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const fileError = getCsvFileError(file);
+    if (fileError) {
+      notifyAdmin("CSV inválido", fileError, "error");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -133,6 +238,15 @@ export function ProductosClient() {
       );
 
       setProducts(productsStore.getAll());
+      auditStore.create({
+        actor,
+        entityType: "product",
+        entityId: "products-import",
+        entityLabel: "Productos",
+        action: "import",
+        summary: `Importó productos desde CSV: ${result.created} creados, ${result.errors.length} errores`,
+        after: result,
+      });
 
       if (result.errors.length > 0) {
         notifyAdmin(
@@ -224,6 +338,13 @@ export function ProductosClient() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <th className="px-3 py-2 font-medium w-10">
+                  <Checkbox
+                    checked={allPageSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Seleccionar todos"
+                  />
+                </th>
                 <SortableHeader label="Producto" field="name" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="SKU" field="sku" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Categoría" field="category" currentSort={sort} onSortChange={setSort} />
@@ -235,8 +356,17 @@ export function ProductosClient() {
               </tr>
             </thead>
             <tbody>
-              {paginated.map((product) => (
+              {paginated.map((product) => {
+                const inventory = getInventorySummary(product);
+                return (
                 <tr key={product.id} className="border-b border-border text-sm hover:bg-muted/30">
+                  <td className="px-3 py-2">
+                    <Checkbox
+                      checked={selected.has(product.id)}
+                      onCheckedChange={() => toggleSelect(product.id)}
+                      aria-label={`Seleccionar ${product.name}`}
+                    />
+                  </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-md border bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
@@ -271,14 +401,32 @@ export function ProductosClient() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "font-medium",
-                        product.stock === 0 ? "text-danger" : product.stock <= 5 ? "text-warning" : ""
-                      )}
-                    >
-                      {product.stock}
-                    </span>
+                    <div className="space-y-1">
+                      <span
+                        className={cn(
+                          "font-medium",
+                          inventory.total === 0
+                            ? "text-danger"
+                            : inventory.lowStockVariants.length > 0
+                              ? "text-warning"
+                              : ""
+                        )}
+                      >
+                        {inventory.total}
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {inventory.lowStockVariants.length > 0 && (
+                          <Badge variant="secondary" className="text-[10px] text-warning">
+                            {inventory.lowStockVariants.length} baja{inventory.lowStockVariants.length > 1 ? "s" : ""}
+                          </Badge>
+                        )}
+                        {inventory.outOfStockVariants.length > 0 && (
+                          <Badge variant="secondary" className="text-[10px] text-danger">
+                            {inventory.outOfStockVariants.length} agotada{inventory.outOfStockVariants.length > 1 ? "s" : ""}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <Switch
@@ -324,10 +472,11 @@ export function ProductosClient() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">
+                  <td colSpan={9} className="px-5 py-12 text-center text-sm text-muted-foreground">
                     {query || categoryFilter !== "todas"
                       ? "No se encontraron productos con los filtros actuales"
                       : "No hay productos. ¡Crea el primero!"}
@@ -349,6 +498,42 @@ export function ProductosClient() {
         description="¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer."
         variant="destructive"
       />
+
+      <BulkDiscountDialog
+        open={bulkDiscountOpen}
+        onOpenChange={setBulkDiscountOpen}
+        productIds={selectedIds}
+        actor={actor}
+        onApplied={() => {
+          setProducts(productsStore.getAll());
+          clearSelection();
+        }}
+      />
+
+      {selectedCount > 0 && (
+        <div className="sticky bottom-0 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded-t-xl border border-border bg-card px-5 py-3 shadow-lg">
+          <span className="text-sm font-medium">
+            {selectedCount} producto{selectedCount !== 1 ? "s" : ""} seleccionado
+            {selectedCount !== 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearSelection}
+            >
+              Limpiar
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setBulkDiscountOpen(true)}
+            >
+              <Percent className="size-3.5" />
+              Aplicar descuento
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

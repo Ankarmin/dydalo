@@ -1,8 +1,43 @@
-import type { AdminProduct, CatalogCategory } from "@/lib/stores/data-store.types";
+import type { AdminProduct, CatalogCategory, ProductVariantStock } from "@/lib/stores/data-store.types";
+import { LOW_STOCK_THRESHOLD } from "@/config/constants";
+import { getVariantId } from "@/lib/utils/inventory";
 
 export type ProductCategory = (typeof catalogCategories)[number]["slug"];
 
-export const products: AdminProduct[] = [
+const PRODUCT_IMAGE_GALLERIES: Record<string, string[]> = {
+  "/images/dydalo-white-basics.jpg": [
+    "/images/dydalo-tracksuit.jpg",
+    "/images/dydalo-satin-set.jpg",
+    "/images/dydalo-sneakers.jpg",
+  ],
+  "/images/dydalo-tracksuit.jpg": [
+    "/images/dydalo-white-basics.jpg",
+    "/images/dydalo-satin-set.jpg",
+    "/images/dydalo-sneakers.jpg",
+  ],
+  "/images/dydalo-satin-set.jpg": [
+    "/images/dydalo-white-basics.jpg",
+    "/images/dydalo-tracksuit.jpg",
+    "/images/dydalo-sneakers.jpg",
+  ],
+  "/images/dydalo-sneakers.jpg": [
+    "/images/dydalo-white-basics.jpg",
+    "/images/dydalo-tracksuit.jpg",
+    "/images/dydalo-satin-set.jpg",
+  ],
+  "/images/dydalo-caps.jpg": [
+    "/images/dydalo-bling.jpg",
+    "/images/dydalo-white-basics.jpg",
+    "/images/dydalo-tracksuit.jpg",
+  ],
+  "/images/dydalo-bling.jpg": [
+    "/images/dydalo-caps.jpg",
+    "/images/dydalo-white-basics.jpg",
+    "/images/dydalo-satin-set.jpg",
+  ],
+};
+
+const seedProducts: AdminProduct[] = [
   // ── POLOS (1-10) ──
   { id: 1, name: "Heavy Cotton Polo", slug: "1-heavy-cotton-polo", category: "polos", price: 89, image: "/images/dydalo-white-basics.jpg", sizes: ["S","M","L","XL"], colors: [{ name: "Negro", hex: "#1a1a1a" },{ name: "Blanco", hex: "#f0ece4" }], stock: 42, active: true, featured: true, discount: null, sku: "DYD-POL-0001", createdAt: "2025-03-12T10:00:00Z", updatedAt: "2025-03-12T10:00:00Z" },
   { id: 2, name: "Signature Stripe Polo", slug: "2-signature-stripe-polo", category: "polos", price: 104, image: "/images/dydalo-tracksuit.jpg", sizes: ["S","M","L","XL"], colors: [{ name: "Negro", hex: "#1a1a1a" },{ name: "Vino", hex: "#4a1525" }], stock: 28, active: true, featured: false, discount: null, sku: "DYD-POL-0002", createdAt: "2025-04-01T10:00:00Z", updatedAt: "2025-04-01T10:00:00Z" },
@@ -99,6 +134,40 @@ export const products: AdminProduct[] = [
   { id: 99, name: "Knitted Scarf Black", slug: "99-knitted-scarf-black", category: "accesorios", price: 88, image: "/images/dydalo-caps.jpg", sizes: ["Única"], colors: [{ name: "Negro", hex: "#1a1a1a" }], stock: 12, active: true, featured: false, discount: null, sku: "DYD-ACC-0099", createdAt: "2025-12-15T10:00:00Z", updatedAt: "2025-12-15T10:00:00Z" },
   { id: 100, name: "Rope Chain Silver", slug: "100-rope-chain-silver", category: "accesorios", price: 165, image: "/images/dydalo-bling.jpg", sizes: ["Única"], colors: [{ name: "Plata", hex: "#c0c0c0" }], stock: 8, active: true, featured: false, discount: null, sku: "DYD-ACC-0100", createdAt: "2026-02-14T10:00:00Z", updatedAt: "2026-02-14T10:00:00Z" },
 ];
+
+function buildSeedVariants(product: AdminProduct): ProductVariantStock[] {
+  const combinations = product.sizes.flatMap((size) =>
+    product.colors.map((color) => ({ size, color: color.name }))
+  );
+  const totalStock = Math.max(0, Math.trunc(product.stock));
+  const now = product.updatedAt;
+
+  if (combinations.length === 0) return [];
+
+  const base = Math.floor(totalStock / combinations.length);
+  let remainder = totalStock % combinations.length;
+
+  return combinations.map((combination) => {
+    const stock = base + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder -= 1;
+
+    return {
+      id: getVariantId(combination.size, combination.color),
+      size: combination.size,
+      color: combination.color,
+      stock,
+      active: true,
+      lowStockThreshold: LOW_STOCK_THRESHOLD,
+      updatedAt: now,
+    };
+  });
+}
+
+export const products: AdminProduct[] = seedProducts.map((product) => ({
+  ...product,
+  images: product.images ?? PRODUCT_IMAGE_GALLERIES[product.image] ?? [],
+  variants: product.variants ?? buildSeedVariants(product),
+}));
 
 export const catalogCategories: CatalogCategory[] = [
   { slug: "polos", name: "Polos", active: true, order: 1 },

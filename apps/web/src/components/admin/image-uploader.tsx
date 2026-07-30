@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
+import { getImageFileError } from "@/lib/validations/forms";
 
 type ImageUploaderProps = {
   value: string;
@@ -14,9 +15,13 @@ type ImageUploaderProps = {
 export function ImageUploader({ value, onChange, disabled }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleFile(file: File) {
-    if (!file.type.startsWith("image/")) return;
+    const fileError = getImageFileError(file);
+    setError(fileError);
+    if (fileError) return;
+
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
@@ -29,11 +34,13 @@ export function ImageUploader({ value, onChange, disabled }: ImageUploaderProps)
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setDragging(false);
+    if (disabled) return;
     const file = e.dataTransfer.files?.[0];
     if (file) handleFile(file);
   }
 
   function handleClear() {
+    setError(null);
     onChange("");
   }
 
@@ -65,7 +72,9 @@ export function ImageUploader({ value, onChange, disabled }: ImageUploaderProps)
             dragging ? "border-accent bg-accent/5" : "border-border hover:border-accent/50",
             disabled && "opacity-50 cursor-not-allowed"
           )}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            if (!disabled) inputRef.current?.click();
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -90,10 +99,12 @@ export function ImageUploader({ value, onChange, disabled }: ImageUploaderProps)
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) handleFile(file);
+          e.target.value = "";
         }}
         className="hidden"
         disabled={disabled}
       />
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

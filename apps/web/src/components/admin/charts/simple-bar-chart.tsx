@@ -2,34 +2,37 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { formatPrice } from "@/lib/utils/format";
 
-interface RevenueChartProps {
-  data: { label: string; revenue: number }[];
+interface SimpleBarChartProps {
+  data: { label: string; value: number }[];
+  color?: string;
+  valueLabel?: string;
+  height?: string;
 }
 
 const chartConfig = {
-  revenue: {
-    label: "Ingresos",
-    color: "var(--chart-1)",
+  value: {
+    label: "Cantidad",
+    color: "var(--chart-2)",
   },
-} as const;
+};
 
-const MONTH_FULL: Record<string, string> = {
+const MONTH_FULL_SIMPLE: Record<string, string> = {
   Ene: "Enero", Feb: "Febrero", Mar: "Marzo", Abr: "Abril",
   May: "Mayo", Jun: "Junio", Jul: "Julio", Ago: "Agosto",
   Sep: "Septiembre", Oct: "Octubre", Nov: "Noviembre", Dic: "Diciembre",
 };
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function SimpleBarChart({
+  data,
+  color = "var(--chart-2)",
+  valueLabel = "Cantidad",
+  height = "h-[250px]",
+}: SimpleBarChartProps) {
   return (
-    <ChartContainer config={chartConfig} className="h-[300px] w-full">
+    <ChartContainer config={chartConfig} className={`${height} w-full`}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-        <CartesianGrid
-          strokeDasharray="3 3"
-          vertical={false}
-          className="[&_line]:stroke-border/40"
-        />
+        <CartesianGrid strokeDasharray="3 3" vertical={false} className="[&_line]:stroke-border/40" />
         <XAxis
           dataKey="label"
           tickLine={false}
@@ -42,24 +45,25 @@ export function RevenueChart({ data }: RevenueChartProps) {
           tickLine={false}
           axisLine={false}
           tick={{ fontSize: 11 }}
-          tickFormatter={(v) => formatPrice(v)}
           tickMargin={8}
           className="[&_text]:fill-muted-foreground"
+          allowDecimals={false}
         />
         <Tooltip
           content={
             <ChartTooltipContent
-              formatter={(value) => formatPrice(Number(value))}
-              labelFormatter={(label) => MONTH_FULL[String(label)] || String(label)}
+              labelFormatter={(label) => MONTH_FULL_SIMPLE[String(label)] || String(label)}
+              formatter={(value) => {
+                const n = Number(value);
+                const singular = valueLabel.replace(/s$/, "");
+                const word = n === 1 ? singular : valueLabel;
+                return `${n} ${word.toLowerCase()}`;
+              }}
             />
           }
           cursor={{ fill: "oklch(from var(--muted-foreground) l c h / 0.08)" }}
         />
-        <Bar
-          dataKey="revenue"
-          fill="var(--color-revenue)"
-          radius={[4, 4, 0, 0]}
-        />
+        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ChartContainer>
   );

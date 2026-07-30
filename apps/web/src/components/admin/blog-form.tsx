@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { notifyAdmin } from "@/components/admin/admin-toast";
+import { normalizeText } from "@/lib/validations/forms";
 
 function generateSlug(text: string): string {
   return text
@@ -36,17 +37,26 @@ function generateSlug(text: string): string {
 }
 
 const formSchema = z.object({
-  title: z.string().min(5, "Mínimo 5 caracteres"),
+  title: z.string().trim().min(5, "Mínimo 5 caracteres").max(120, "Máximo 120 caracteres"),
   slug: z
     .string()
+    .trim()
     .min(3, "Mínimo 3 caracteres")
     .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones"),
-  excerpt: z.string().min(10, "Mínimo 10 caracteres"),
-  content: z.string().min(50, "Mínimo 50 caracteres"),
+  excerpt: z.string().trim().min(10, "Mínimo 10 caracteres").max(180, "Máximo 180 caracteres"),
+  content: z.string().trim().min(50, "Mínimo 50 caracteres"),
   coverImage: z.string(),
-  author: z.string().min(2, "Mínimo 2 caracteres"),
-  tags: z.array(z.string().min(1)).min(1, "Al menos un tag"),
+  author: z.string().trim().min(2, "Mínimo 2 caracteres"),
+  tags: z.array(z.string().trim().min(1)).min(1, "Al menos un tag"),
   published: z.boolean(),
+}).superRefine((data, ctx) => {
+  if (data.published && !data.coverImage.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Imagen requerida para publicar",
+      path: ["coverImage"],
+    });
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -120,16 +130,33 @@ export function BlogForm({ postId }: BlogFormProps) {
   }
 
   const onSubmit = form.handleSubmit((values) => {
+    const normalizedValues = {
+      ...values,
+      title: normalizeText(values.title),
+      slug: generateSlug(values.slug),
+      excerpt: normalizeText(values.excerpt),
+      author: normalizeText(values.author),
+      tags: values.tags.map((tag) => normalizeText(tag).toLowerCase()),
+    };
+    const slugExists = blogStore
+      .getAll()
+      .some((existingPost) => existingPost.id !== postId && existingPost.slug === normalizedValues.slug);
+
+    if (slugExists) {
+      form.setError("slug", { message: "Ya existe un post con este slug" });
+      return;
+    }
+
     setIsPending(true);
 
     setTimeout(() => {
       if (isEdit) {
-        const updated = blogStore.update(postId!, values);
+        const updated = blogStore.update(postId!, normalizedValues);
         if (updated) {
           notifyAdmin("Post actualizado", updated.title, "success");
         }
       } else {
-        const created = blogStore.create(values);
+        const created = blogStore.create(normalizedValues);
         notifyAdmin("Post creado", created.title, "success");
       }
       router.push(ROUTES.adminBlog);

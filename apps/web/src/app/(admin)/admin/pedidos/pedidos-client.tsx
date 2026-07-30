@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, Plus, Download } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import { seedIfEmpty } from "@/config/seed-data";
 import { useStoreData } from "@/hooks/use-store-data";
 import type { OrderStatus } from "@/lib/stores";
@@ -19,10 +20,12 @@ import { exportOrdersCSV } from "@/lib/utils/csv";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 import { AdminPagination } from "@/components/admin/admin-pagination";
+import { useAuth } from "@/contexts/auth-context";
 
 const PAGE_SIZE = 15;
 
 export function PedidosClient() {
+  const { state: authState } = useAuth();
   seedIfEmpty();
   const orders = useStoreData(() => ordersStore.getAll().toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   const [query, setQuery] = useState("");
@@ -77,6 +80,17 @@ export function PedidosClient() {
 
   function handleExport() {
     exportOrdersCSV(filtered, usersStore.getAll());
+    auditStore.create({
+      actor: {
+        id: authState.user?.id ?? "admin",
+        name: authState.user?.name ?? "Admin",
+      },
+      entityType: "order",
+      entityId: "orders-export",
+      entityLabel: "Pedidos",
+      action: "export",
+      summary: `Exportó ${filtered.length} pedidos a CSV`,
+    });
     notifyAdmin("CSV exportado", `${filtered.length} pedidos`, "success");
   }
 

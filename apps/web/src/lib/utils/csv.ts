@@ -33,13 +33,16 @@ function todayStamp(): string {
 }
 
 export function exportProductsCSV(products: AdminProduct[]): void {
-  const headers = ["Nombre", "SKU", "Categoria", "Precio", "Stock", "Descuento(%)", "Activo", "Destacado"];
+  const headers = ["Nombre", "SKU", "Categoria", "Precio", "Stock Total", "Variantes", "Descuento(%)", "Activo", "Destacado"];
   const rows = products.map((p) => [
     p.name,
     p.sku,
     p.category,
     p.price,
     p.stock,
+    (p.variants ?? [])
+      .map((variant) => `${variant.color}/${variant.size}:${variant.stock}${variant.active ? "" : " inactiva"}`)
+      .join(" | "),
     p.discount ?? 0,
     p.active ? "Si" : "No",
     p.featured ? "Si" : "No",
@@ -52,7 +55,7 @@ export function exportOrdersCSV(orders: Order[], users: User[]): void {
   const userMap = new Map(users.map((u) => [u.id, u]));
   const headers = [
     "ID", "Cliente", "Email", "Fecha", "Items", "Subtotal", "Envio", "Descuento", "Total", "Estado",
-    "Direccion", "Ciudad", "Departamento", "Telefono",
+    "Direccion", "Distrito", "Provincia", "Departamento", "Telefono",
   ];
   const rows = orders.map((o) => {
     const user = userMap.get(o.userId);
@@ -68,6 +71,7 @@ export function exportOrdersCSV(orders: Order[], users: User[]): void {
       o.total,
       o.status,
       o.shippingAddress.street,
+      o.shippingAddress.district ?? "",
       o.shippingAddress.city,
       o.shippingAddress.state,
       o.shippingAddress.phone,
