@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
@@ -26,6 +26,7 @@ import { ROUTES } from "@/lib/utils/routes";
 export function LoginForm() {
   const { actions } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +44,9 @@ export function LoginForm() {
 
     if (result.success) {
       showLoginSuccessToast();
-      router.push(ROUTES.admin);
+      const next = searchParams.get("next");
+      const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+      router.push(result.user.role === "admin" ? ROUTES.admin : safeNext ?? ROUTES.cuenta);
     } else {
       setError(result.error);
       setIsPending(false);

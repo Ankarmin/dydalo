@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 import { showRegisterSuccessToast, showGoogleComingSoonToast } from "@/components/auth/auth-toast";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,21 +24,39 @@ import { ROUTES } from "@/lib/utils/routes";
 
 export function RegisterForm() {
   const router = useRouter();
+  const { actions } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+    },
   });
 
-  function onSubmit() {
+  async function onSubmit(values: RegisterInput) {
     setIsPending(true);
+    const result = await actions.register(
+      values.firstName,
+      values.lastName,
+      values.email,
+      values.password,
+      values.phone
+    );
+    setIsPending(false);
 
-    setTimeout(() => {
+    if (result.success) {
       showRegisterSuccessToast();
       router.push(ROUTES.cuenta);
-    }, 1200);
+    } else {
+      form.setError("email", { message: result.error });
+    }
   }
 
   return (
@@ -53,24 +72,45 @@ export function RegisterForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre completo</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Tu nombre"
-                    autoComplete="name"
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombres</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Tus nombres"
+                      autoComplete="given-name"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Apellidos</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Tus apellidos"
+                      autoComplete="family-name"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
@@ -145,6 +185,26 @@ export function RegisterForm() {
                     placeholder="Repite tu contraseña"
                     autoComplete="new-password"
                     disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teléfono</FormLabel>
+                <FormControl>
+                  <Input
+                    type="tel"
+                    placeholder="999 999 999"
+                    autoComplete="tel"
+                    disabled={isPending}
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

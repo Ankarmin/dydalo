@@ -20,6 +20,7 @@ import { UserButton } from "@/components/auth/user-button";
 import { FavoritesSheet } from "@/components/favorites/favorites-sheet";
 import { CartSheet } from "@/components/cart/cart-sheet";
 import { CommandSearch } from "@/components/search/command-search";
+import { useAuth } from "@/contexts/auth-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
@@ -32,9 +33,11 @@ import { cn } from "@/lib/utils/utils";
 import { ROUTES } from "@/lib/utils/routes";
 
 export function SiteHeader() {
-  const { cartCount, cartProducts, cart, subtotal, updateQuantity } = useCart();
+  const { cartCount, cartItems, subtotal, updateQuantity } = useCart();
+  const { state: authState, meta: authMeta } = useAuth();
   const { favoritesCount } = useFavorites();
   const mounted = useMounted();
+  const canUseFavorites = authState.status !== "loading" && !authMeta.isAdmin;
   const [searchOpen, setSearchOpen] = useState(false);
   const [catalogExpanded, setCatalogExpanded] = useState(false);
   const [marcaExpanded, setMarcaExpanded] = useState(false);
@@ -148,15 +151,17 @@ export function SiteHeader() {
                     BUSCAR
                   </button>
                 </SheetClose>
-                <SheetClose asChild>
-                  <Link
-                    href={ROUTES.favoritos}
-                    className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-dropdown text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
-                  >
-                    <Heart className="size-4" />
-                    FAVORITOS
-                  </Link>
-                </SheetClose>
+                {canUseFavorites && (
+                  <SheetClose asChild>
+                    <Link
+                      href={ROUTES.favoritos}
+                      className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-xs font-bold uppercase tracking-dropdown text-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                    >
+                      <Heart className="size-4" />
+                      FAVORITOS
+                    </Link>
+                  </SheetClose>
+                )}
                 <SheetClose asChild>
                   <Link
                     href={ROUTES.login}
@@ -198,31 +203,32 @@ export function SiteHeader() {
       right={
         <>
           <CommandSearch open={searchOpen} onOpenChange={setSearchOpen} />
-          <FavoritesSheet
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={mounted ? `Ver favoritos con ${favoritesCount} productos` : "Ver favoritos"}
-                className="relative hidden xl:inline-flex"
-              >
-                <Heart />
-                {mounted && favoritesCount > 0 && (
-                  <span className="absolute -right-1 -top-1 grid size-4 place-items-center bg-accent text-[9px] font-bold text-accent-foreground">
-                    {favoritesCount}
-                  </span>
-                )}
-              </Button>
-            }
-          />
+          {canUseFavorites && (
+            <FavoritesSheet
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={mounted ? `Ver favoritos con ${favoritesCount} productos` : "Ver favoritos"}
+                  className="relative hidden xl:inline-flex"
+                >
+                  <Heart />
+                  {mounted && favoritesCount > 0 && (
+                    <span className="absolute -right-1 -top-1 grid size-4 place-items-center bg-accent text-[9px] font-bold text-accent-foreground">
+                      {favoritesCount}
+                    </span>
+                  )}
+                </Button>
+              }
+            />
+          )}
           <div className="hidden xl:inline-flex">
             <UserButton />
           </div>
           <ThemeToggle />
           <CartSheet
             cartCount={cartCount}
-            cartProducts={cartProducts}
-            cart={cart}
+            cartItems={cartItems}
             subtotal={subtotal}
             updateQuantity={updateQuantity}
           />

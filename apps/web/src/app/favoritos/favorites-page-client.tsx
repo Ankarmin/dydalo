@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, Trash2 } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
@@ -9,10 +12,20 @@ import { ProductCard } from "@/components/product/product-card";
 import { ROUTES } from "@/lib/utils/routes";
 
 export function FavoritesPageClient() {
+  const router = useRouter();
+  const { state: authState, meta: authMeta } = useAuth();
   const { favorites, favoritesCount, clearAll } = useFavorites();
   const mounted = useMounted();
 
+  useEffect(() => {
+    if (authState.status === "authenticated" && authMeta.isAdmin) {
+      router.replace(ROUTES.catalogo);
+    }
+  }, [authMeta.isAdmin, authState.status, router]);
+
   if (!mounted) return null;
+  if (authState.status === "loading") return null;
+  if (authMeta.isAdmin) return null;
 
   if (favorites.length === 0) {
     return (

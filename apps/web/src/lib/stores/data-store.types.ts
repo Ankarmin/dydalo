@@ -3,14 +3,101 @@ export type UserRole = "admin" | "customer";
 export type User = {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: UserRole;
   phone?: string;
+  password?: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "36" | "Única";
+
+export type ProductVariantStock = {
+  id: string;
+  size: ProductSize;
+  color: string;
+  stock: number;
+  active: boolean;
+  lowStockThreshold?: number;
+  updatedAt: string;
+};
+
+export type StockMovementType =
+  | "purchase"
+  | "sale"
+  | "manual_adjustment"
+  | "return"
+  | "cancellation"
+  | "order_edit"
+  | "variant_created"
+  | "variant_deactivated";
+
+export type StockMovement = {
+  id: string;
+  productId: number;
+  productName: string;
+  productImage?: string;
+  sku: string;
+  variantId: string;
+  size: string;
+  color: string;
+  type: StockMovementType;
+  quantityBefore: number;
+  quantityChange: number;
+  quantityAfter: number;
+  orderId?: string;
+  reason?: string;
+  note?: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: string;
+};
+
+export type AuditEntityType =
+  | "product"
+  | "product_variant"
+  | "order"
+  | "category"
+  | "user"
+  | "blog"
+  | "discount"
+  | "inventory";
+
+export type AuditAction =
+  | "create"
+  | "update"
+  | "delete"
+  | "status_change"
+  | "stock_change"
+  | "discount_change"
+  | "activate"
+  | "deactivate"
+  | "export"
+  | "import";
+
+export type AuditChange = {
+  field: string;
+  before: unknown;
+  after: unknown;
+};
+
+export type AuditLog = {
+  id: string;
+  entityType: AuditEntityType;
+  entityId: string;
+  entityLabel: string;
+  action: AuditAction;
+  summary: string;
+  before?: unknown;
+  after?: unknown;
+  changes?: AuditChange[];
+  createdBy: string;
+  createdByName: string;
+  createdAt: string;
+};
 
 export type AdminProduct = {
   id: number;
@@ -19,9 +106,11 @@ export type AdminProduct = {
   category: string;
   price: number;
   image: string;
+  images?: string[];
   sizes: ProductSize[];
   colors: { name: string; hex: string }[];
   stock: number;
+  variants?: ProductVariantStock[];
   active: boolean;
   featured: boolean;
   discount: number | null;
@@ -60,6 +149,7 @@ export type OrderItem = {
 export type ShippingAddress = {
   fullName: string;
   street: string;
+  district?: string;
   city: string;
   state: string;
   zip: string;
@@ -67,9 +157,27 @@ export type ShippingAddress = {
   phone: string;
 };
 
+export type Address = {
+  id: string;
+  userId: string;
+  label: string;
+  street: string;
+  district: string;
+  city: string;
+  state: string;
+  zip?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Order = {
   id: string;
   userId: string;
+  shippingAddressId?: string;
+  source?: "checkout" | "admin";
+  createdBy?: string;
+  stockReserved?: boolean;
   items: OrderItem[];
   status: OrderStatus;
   subtotal: number;
@@ -77,8 +185,6 @@ export type Order = {
   discount: number;
   total: number;
   shippingAddress: ShippingAddress;
-  trackingNumber: string | null;
-  notes: string | null;
   statusHistory: StatusTransition[];
   createdAt: string;
   updatedAt: string;
@@ -142,14 +248,16 @@ export type CatalogCategory = {
 
 export type CreateOrderInput = {
   userId: string;
+  shippingAddressId?: string;
+  source?: "checkout" | "admin";
+  createdBy?: string;
+  stockReserved?: boolean;
   items: OrderItem[];
   subtotal: number;
   shipping: number;
   discount: number;
   total: number;
   shippingAddress: ShippingAddress;
-  trackingNumber?: string | null;
-  notes?: string | null;
 };
 
 export const STATUS_STYLES: Record<string, string> = {

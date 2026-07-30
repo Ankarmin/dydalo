@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { Heart, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Minus, Pencil, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
 import { formatPrice, getDisplayPrice } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/utils/routes";
 import { useCart } from "@/contexts/cart-context";
+import { useAuth } from "@/contexts/auth-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
@@ -15,35 +17,69 @@ import { showCartToast } from "@/components/cart/cart-toast";
 import { RelatedProducts } from "@/components/product/related-products";
 import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import { LOW_STOCK_THRESHOLD } from "@/config/constants";
+import { getAvailableColorsForSize, getAvailableSizes, getVariantStock } from "@/lib/utils/inventory";
 
 interface ProductDetailProps {
   product: AdminProduct;
 }
 
+function getProductImages(product: AdminProduct): string[] {
+  return [product.image, ...(product.images ?? [])].filter(
+    (image, index, images): image is string => Boolean(image) && images.indexOf(image) === index,
+  );
+}
+
 export function ProductDetail({ product }: ProductDetailProps) {
   const { updateQuantity } = useCart();
+  const { state: authState, meta: authMeta } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const categoryName =
     categoriesStore.getBySlug(product.category)?.name ?? product.category;
   const displayCategory =
     categoryName.charAt(0).toUpperCase() + categoryName.slice(1).toLowerCase();
+  const initialAvailableSize = getAvailableSizes(product)[0] ?? product.sizes[0] ?? null;
+  const initialAvailableColorName = initialAvailableSize
+    ? getAvailableColorsForSize(product, initialAvailableSize)[0]
+    : undefined;
 
-  const [selectedColor, setSelectedColor] = useState(
-    product.colors[0] ?? null,
+  const [selectedColor, setSelectedColor] = useState<AdminProduct["colors"][number] | null>(
+    product.colors.find((color) => color.name === initialAvailableColorName) ?? product.colors[0] ?? null,
   );
   const [selectedSize, setSelectedSize] = useState(
-    product.sizes[0] ?? null,
+    initialAvailableSize,
   );
   const [quantity, setQuantity] = useState(1);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const favorited = product ? isFavorite(product.id) : false;
   const { final, original, hasDiscount } = getDisplayPrice(product);
+  const productImages = getProductImages(product);
+  const activeImage = productImages[activeImageIndex] ?? product.image;
+  const hasGallery = productImages.length > 1;
+  const availableSizes = getAvailableSizes(product);
+  const availableColorsForSelectedSize = selectedSize
+    ? getAvailableColorsForSize(product, selectedSize)
+    : [];
 
-  const maxQty = product.stock;
+  const maxQty = selectedSize && selectedColor
+    ? getVariantStock(product, selectedSize, selectedColor.name)
+    : 0;
+  const selectedQuantity = Math.min(quantity, Math.max(1, maxQty));
+
+  const showPreviousImage = () => {
+    setActiveImageIndex((index) => (index === 0 ? productImages.length - 1 : index - 1));
+  };
+
+  const showNextImage = () => {
+    setActiveImageIndex((index) => (index + 1) % productImages.length);
+  };
 
   const handleAddToCart = () => {
+    if (authState.status === "loading") return;
+    if (authMeta.isAdmin) return;
     if (maxQty === 0) return;
-    updateQuantity(product.id, quantity);
+    if (!selectedSize || !selectedColor) return;
+    updateQuantity(product.id, selectedQuantity, { size: selectedSize, color: selectedColor.name });
     showCartToast(
       `${product.name} — ${selectedColor?.name ?? ""} / ${selectedSize ?? ""}`,
       final,
@@ -56,15 +92,65 @@ export function ProductDetail({ product }: ProductDetailProps) {
         <div className="relative">
           <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-border">
             <Image
-              src={product.image}
-              alt={product.name}
+              src={activeImage}
+              alt={`${product.name} — imagen ${activeImageIndex + 1}`}
               width={1024}
               height={1024}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
               className="size-full object-cover"
             />
+            {hasGallery && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPreviousImage}
+                  aria-label="Ver imagen anterior"
+                  className="absolute left-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  aria-label="Ver imagen siguiente"
+                  className="absolute right-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+                <span className="absolute bottom-3 right-3 rounded-full bg-background/80 px-2.5 py-1 text-xs font-bold tabular-nums text-foreground backdrop-blur md:bottom-auto md:top-3">
+                  {activeImageIndex + 1}/{productImages.length}
+                </span>
+              </>
+            )}
           </div>
+          {hasGallery && (
+            <div className="mt-3 overflow-x-auto pb-1 md:absolute md:inset-x-0 md:bottom-0 md:z-10 md:mt-0 md:overflow-visible md:px-3 md:pb-3 md:pt-24 md:opacity-0 md:transition-opacity md:duration-200 md:hover:opacity-100 md:focus-within:opacity-100">
+              <div className="flex gap-2 md:rounded-lg md:bg-background/70 md:p-2 md:backdrop-blur">
+                {productImages.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setActiveImageIndex(index)}
+                    aria-label={`Ver imagen ${index + 1}`}
+                    aria-pressed={activeImageIndex === index}
+                    className={cn(
+                      "relative size-16 shrink-0 overflow-hidden rounded-md border transition-colors sm:size-20 md:size-14",
+                      activeImageIndex === index ? "border-accent" : "border-border hover:border-muted-foreground",
+                    )}
+                  >
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 flex flex-col md:mt-0">
@@ -83,23 +169,41 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <h1 className="text-3xl font-bold uppercase tracking-tight">
                 {product.name}
               </h1>
-              <button
-                type="button"
-                onClick={() => toggleFavorite(product.id)}
-                aria-label={
-                  favorited
-                    ? `Quitar ${product.name} de favoritos`
-                    : `Añadir ${product.name} a favoritos`
-                }
-                className="shrink-0 rounded-lg p-1 transition-colors hover:bg-accent/10"
-              >
-                <Heart
-                  className={cn(
-                    "size-7",
-                    favorited && "fill-favorite text-favorite",
-                  )}
-                />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                {authState.status === "loading" ? null : authMeta.isAdmin ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-lg border border-border bg-background/80"
+                    asChild
+                  >
+                    <Link
+                      href={ROUTES.adminProductoEditar(product.id)}
+                      aria-label="Editar producto"
+                    >
+                      <Pencil className="size-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggleFavorite(product.id)}
+                    aria-label={
+                      favorited
+                        ? `Quitar ${product.name} de favoritos`
+                        : `Añadir ${product.name} a favoritos`
+                    }
+                    className="rounded-lg p-1 transition-colors hover:bg-accent/10"
+                  >
+                    <Heart
+                      className={cn(
+                        "size-7",
+                        favorited && "fill-favorite text-favorite",
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-4 flex items-baseline gap-3">
@@ -123,15 +227,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
             </div>
 
             <div className="mt-3">
-              {product.stock > LOW_STOCK_THRESHOLD ? (
+              {maxQty > LOW_STOCK_THRESHOLD ? (
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
                   <span className="size-2 rounded-full bg-success" />
                   En stock
                 </span>
-              ) : product.stock > 0 ? (
+              ) : maxQty > 0 ? (
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-warning">
                   <span className="size-2 rounded-full bg-warning" />
-                  Quedan {product.stock}
+                  Quedan {maxQty}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-danger">
@@ -147,11 +251,20 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   Color — {selectedColor?.name}
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {product.colors.map((color) => (
+                  {product.colors.map((color) => {
+                    const available = selectedSize
+                      ? availableColorsForSelectedSize.includes(color.name)
+                      : getVariantStock(product, product.sizes[0] ?? "Única", color.name) > 0;
+                    return (
                     <button
                       key={color.name}
                       type="button"
-                      onClick={() => setSelectedColor(color)}
+                      onClick={() => {
+                        if (!available) return;
+                        setSelectedColor(color);
+                        setQuantity(1);
+                      }}
+                      disabled={!available}
                       aria-label={`Color ${color.name}`}
                       aria-pressed={selectedColor?.name === color.name}
                       className={cn(
@@ -159,10 +272,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
                         selectedColor?.name === color.name
                           ? "border-accent ring-1 ring-accent ring-offset-1 ring-offset-background"
                           : "border-border hover:border-muted-foreground",
+                        !available && "cursor-not-allowed opacity-30",
                       )}
                       style={{ backgroundColor: color.hex }}
                     />
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -173,11 +288,23 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   Talla
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
+                  {product.sizes.map((size) => {
+                    const available = availableSizes.includes(size);
+                    return (
                     <button
                       key={size}
                       type="button"
-                      onClick={() => setSelectedSize(size)}
+                      onClick={() => {
+                        if (!available) return;
+                        setSelectedSize(size);
+                        const colorsForSize = getAvailableColorsForSize(product, size);
+                        if (selectedColor && !colorsForSize.includes(selectedColor.name)) {
+                          const nextColor = product.colors.find((color) => colorsForSize.includes(color.name));
+                          setSelectedColor(nextColor ?? null);
+                        }
+                        setQuantity(1);
+                      }}
+                      disabled={!available}
                       aria-pressed={selectedSize === size}
                       aria-label={`Talla ${size}`}
                       className={cn(
@@ -185,11 +312,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
                         selectedSize === size
                           ? "border-accent bg-accent text-accent-foreground"
                           : "border-border hover:border-muted-foreground",
+                        !available && "cursor-not-allowed opacity-30",
                       )}
                     >
                       {size}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -211,11 +340,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   <Minus className="size-4" />
                 </button>
                 <span className="w-10 text-center text-sm font-bold tabular-nums">
-                  {quantity}
+                  {selectedQuantity}
                 </span>
                 <button
                   type="button"
-                  disabled={quantity >= maxQty}
+                  disabled={selectedQuantity >= maxQty}
                   onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
                   aria-label="Aumentar cantidad"
                   className={cn(
@@ -232,11 +361,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <Button
               variant="hero"
               size="hero"
-              disabled={maxQty === 0}
+              disabled={authState.status === "loading" || authMeta.isAdmin || maxQty === 0}
               onClick={handleAddToCart}
             >
               <ShoppingCart className="mr-2 size-4" />
-              AÑADIR AL CARRITO
+              {authMeta.isAdmin
+                ? "COMPRA DESACTIVADA"
+                : "AÑADIR AL CARRITO"}
             </Button>
           </div>
         </div>

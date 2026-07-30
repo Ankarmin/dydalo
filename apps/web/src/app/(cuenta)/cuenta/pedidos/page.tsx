@@ -27,7 +27,7 @@ export default function PedidosPage() {
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center rounded-lg border border-border py-16 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 text-center">
         <Package
           className="mb-4 size-12 text-muted-foreground"
           strokeWidth={1.25}

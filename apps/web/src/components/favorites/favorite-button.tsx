@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { showFavoriteToast } from "@/components/favorites/favorite-toast";
 import { cn } from "@/lib/utils/utils";
@@ -16,8 +17,11 @@ export function FavoriteButton({
   productName,
   variant = "card",
 }: FavoriteButtonProps) {
+  const { state: authState, meta: authMeta } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorited = isFavorite(productId);
+
+  if (authState.status === "loading" || authMeta.isAdmin) return null;
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();

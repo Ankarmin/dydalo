@@ -9,6 +9,7 @@ import { showOrderConfirmedToast } from "@/components/cart/order-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils/utils";
@@ -18,7 +19,12 @@ import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/auth-context";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { productsStore } from "@/lib/stores/data-store.products";
-import { SHIPPING_PROVINCIA_PRICE, SHIPPING_PROVINCIA_COURIER } from "@/config/constants";
+import { stockMovementsStore } from "@/lib/stores/data-store.stock-movements";
+import { addressesStore } from "@/lib/stores/data-store.addresses";
+import type { Address } from "@/lib/stores";
+import { departments, type Province } from "@/config/ubigeos";
+import { SHIPPING_PROVINCIA_PRICE } from "@/config/constants";
+import { getVariantStock } from "@/lib/utils/inventory";
 
 const STEPS = [
   { num: 1, label: "Carrito", icon: ShoppingCart },
@@ -32,9 +38,12 @@ const PAYMENT_METHODS = [
   { value: "tarjeta", label: "Tarjeta (próximamente)", disabled: true },
 ] as const;
 
+const checkoutLabelClass =
+  "text-[11px] leading-relaxed uppercase tracking-[0.14em] sm:text-xs sm:tracking-wider";
+
 function ProgressSteps({ current }: { current: number }) {
   return (
-    <nav aria-label="Progreso del checkout" className="mb-12">
+    <nav aria-label="Progreso del checkout" className="mb-8 sm:mb-12">
       <ol className="flex items-center justify-center gap-0">
         {STEPS.map((step, i) => {
           const isActive = step.num === current;
@@ -51,7 +60,7 @@ function ProgressSteps({ current }: { current: number }) {
               >
                 <span
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all",
+                    "flex size-9 items-center justify-center rounded-full border-2 text-sm font-bold transition-all sm:size-10",
                     isActive && "border-accent bg-accent text-accent-foreground",
                     isCompleted && "border-accent bg-accent text-accent-foreground",
                     !isActive && !isCompleted && "border-muted-foreground/30",
@@ -59,14 +68,14 @@ function ProgressSteps({ current }: { current: number }) {
                 >
                   {isCompleted ? <Check className="size-4" /> : step.num}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">
+                <span className="w-16 text-center text-[9px] font-bold uppercase leading-tight tracking-[0.12em] sm:text-[10px] sm:tracking-wider">
                   {step.label}
                 </span>
               </div>
               {!isLast && (
                 <div
                   className={cn(
-                    "mx-2 h-0.5 w-8 sm:w-16 rounded-full transition-colors",
+                    "mx-1 h-0.5 w-4 rounded-full transition-colors sm:mx-2 sm:w-16",
                     step.num < current ? "bg-accent" : "bg-border",
                   )}
                 />
@@ -81,8 +90,8 @@ function ProgressSteps({ current }: { current: number }) {
 
 export function CartClient() {
   const router = useRouter();
-  const { state } = useAuth();
-  const { cart, cartCount, subtotal, updateQuantity } = useCart();
+  const { state, meta } = useAuth();
+  const { cartItems, cartCount, subtotal, updateQuantity, clearCart } = useCart();
 
   const [step, setStep] = useState(1);
 
@@ -90,80 +99,179 @@ export function CartClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  const [department, setDepartment] = useState("Lima");
+  useEffect(() => {
+    if (state.status === "loading") return;
+    if (!state.user) {
+      router.replace(`${ROUTES.login}?next=${encodeURIComponent(ROUTES.carrito)}`);
+      return;
+    }
+    if (meta.isAdmin) {
+      router.replace(ROUTES.catalogo);
+    }
+  }, [meta.isAdmin, router, state.status, state.user]);
+
+  const [department, setDepartment] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("yape-plin");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [district, setDistrict] = useState("");
   const [reference, setReference] = useState("");
+  const [addressLabel, setAddressLabel] = useState("");
+  const [addressMode, setAddressMode] = useState<"saved" | "new">(
+    state.user && addressesStore.getByUserId(state.user.id).length > 0 ? "saved" : "new"
+  );
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [saveAddress, setSaveAddress] = useState(false);
+
+  const deptData = useMemo(
+    () => departments.find((d) => d.name === department),
+    [department]
+  );
+  const checkoutProvinces: Province[] = useMemo(
+    () => deptData?.provinces ?? [],
+    [deptData]
+  );
+  const checkoutProvinceData = useMemo(
+    () => checkoutProvinces.find((p) => p.name === selectedProvince),
+    [checkoutProvinces, selectedProvince]
+  );
+  const checkoutDistricts: string[] = checkoutProvinceData?.districts ?? [];
+
+  const savedAddresses = state.user
+    ? addressesStore.getByUserId(state.user.id)
+    : [];
+  const selectedSavedAddress = savedAddresses.find(
+    (savedAddress) => savedAddress.id === selectedAddressId
+  );
+
+  function fillFromAddress(addr: Address) {
+    setAddress(addr.street);
+    setDepartment(addr.state);
+    setSelectedProvince(addr.city);
+    setSelectedDistrict(addr.district);
+    setReference("");
+  }
   const [submitting, setSubmitting] = useState(false);
 
   const shippingCost = department === "Lima" ? 0 : SHIPPING_PROVINCIA_PRICE;
   const total = subtotal + shippingCost;
 
-  const cartItems = useMemo(() => {
-    return Object.entries(cart)
-      .filter(([, qty]) => qty > 0)
-      .map(([idStr, qty]) => {
-        const productId = Number(idStr);
-        const product = productsStore.getById(productId);
-        return { product, quantity: qty };
-      })
-      .filter(
-        (item): item is { product: NonNullable<ReturnType<typeof productsStore.getById>>; quantity: number } =>
-          item.product != null,
-      );
-  }, [cart]);
+  if (state.status === "loading" || !state.user || meta.isAdmin) {
+    return (
+      <div className="py-20 text-center text-sm text-muted-foreground">
+        Preparando tu sesión...
+      </div>
+    );
+  }
 
   const isCartValid = cartCount > 0;
-  const isShippingValid =
-    name.trim().length > 0 &&
-    phone.trim().length > 0 &&
-    address.trim().length > 0 &&
-    district.trim().length > 0;
+  const shippingValidationError =
+    addressMode === "saved"
+      ? selectedSavedAddress
+        ? null
+        : "Selecciona una dirección guardada para continuar."
+      : !department.trim()
+        ? "Selecciona un departamento."
+        : !selectedProvince.trim()
+          ? "Selecciona una provincia."
+          : !selectedDistrict.trim()
+            ? "Selecciona un distrito."
+            : !address.trim()
+              ? "Ingresa una dirección."
+              : null;
+  const isShippingValid = shippingValidationError === null;
   const canGoToStep2 = isCartValid;
   const canGoToStep3 = canGoToStep2 && isShippingValid;
 
-  const handleRemoveItem = (productId: number) => {
-    updateQuantity(productId, -(cart[productId] ?? 0));
+  const handleRemoveItem = (item: (typeof cartItems)[number]) => {
+    updateQuantity(item.productId, -item.quantity, item);
   };
 
   const handleSubmit = () => {
     if (!isShippingValid || submitting) return;
     setSubmitting(true);
 
+    let shippingAddressId: string | undefined;
+
+    if (state.user && addressMode === "saved" && selectedSavedAddress) {
+      shippingAddressId = selectedSavedAddress.id;
+    }
+
+    if (state.user && addressMode === "new" && saveAddress) {
+      const createdAddress = addressesStore.create({
+        userId: state.user.id,
+        label: addressLabel.trim() || "Casa",
+        street: address,
+        district: selectedDistrict,
+        city: selectedProvince,
+        state: department,
+        zip: "",
+        isDefault: false,
+      });
+      shippingAddressId = createdAddress.id;
+    }
+
+    const orderItems = cartItems.map((item) => {
+      const priceData = getDisplayPrice(item.product);
+      return {
+        productId: item.product.id,
+        name: item.product.name,
+        quantity: item.quantity,
+        price: priceData.final,
+        size: item.size,
+        color: item.color,
+      };
+    });
+    const stockValidation = productsStore.validateStockChange([], orderItems);
+    if (!stockValidation.success) {
+      setSubmitting(false);
+      window.alert(stockValidation.error);
+      return;
+    }
+
+    const stockUpdate = productsStore.applyStockChange([], orderItems);
+    if (!stockUpdate.success) {
+      setSubmitting(false);
+      window.alert(stockUpdate.error);
+      return;
+    }
+
     const order = ordersStore.create({
       userId: state.user?.id ?? "guest",
-      items: cartItems.map((item) => {
-        const priceData = getDisplayPrice(item.product);
-        return {
-          productId: item.product.id,
-          name: item.product.name,
-          quantity: item.quantity,
-          price: priceData.final,
-          size: item.product.sizes[0] ?? "M",
-          color: item.product.colors[0]?.name ?? "Negro",
-        };
-      }),
+      shippingAddressId,
+      source: "checkout",
+      createdBy: state.user?.id ?? "guest",
+      stockReserved: true,
+      items: orderItems,
       subtotal,
       shipping: shippingCost,
       discount: 0,
       total,
       shippingAddress: {
-        fullName: name,
-        street: address,
-        city: district,
-        state: department,
-        zip: "",
+        fullName: state.user?.name ?? "Cliente",
+        street: selectedSavedAddress?.street ?? address,
+        district: selectedSavedAddress?.district ?? selectedDistrict,
+        city: selectedSavedAddress?.city ?? selectedProvince,
+        state: selectedSavedAddress?.state ?? department,
+        zip: selectedSavedAddress?.zip ?? "",
         country: "Perú",
-        phone,
+        phone: state.user?.phone ?? "",
       },
     });
 
-    for (const item of cartItems) {
-      updateQuantity(item.product.id, -(cart[item.product.id] ?? 0));
-    }
+    stockMovementsStore.createFromOrderDiff({
+      previousItems: [],
+      nextItems: orderItems,
+      type: "sale",
+      orderId: order.id,
+      actor: {
+        id: state.user!.id,
+        name: state.user!.name,
+      },
+      reason: "Venta por checkout",
+    });
+
+    clearCart();
 
     showOrderConfirmedToast(order.id, total);
     router.push(`${ROUTES.pedidoConfirmado}?orderId=${order.id}`);
@@ -195,13 +303,16 @@ export function CartClient() {
       {step === 1 && (
         <div>
           <ul className="divide-y divide-border border-y border-border">
-            {cartItems.map(({ product, quantity }) => {
+            {cartItems.map((item) => {
+              const product = item.product;
+              const quantity = item.quantity;
+              const maxStock = getVariantStock(product, item.size, item.color);
               const priceData = getDisplayPrice(product);
               return (
-                <li key={product.id} className="flex gap-4 py-6">
+                <li key={item.key} className="flex gap-3 py-5 sm:gap-4 sm:py-6">
                   <Link
                     href={ROUTES.producto(product.slug)}
-                    className="relative block size-24 shrink-0 overflow-hidden rounded-lg border border-border"
+                    className="relative block size-20 shrink-0 overflow-hidden rounded-lg border border-border sm:size-24"
                   >
                     <Image
                       src={product.image}
@@ -215,21 +326,19 @@ export function CartClient() {
 
                   <div className="flex min-w-0 flex-1 flex-col justify-between">
                     <div>
-                      <h3 className="text-sm font-bold uppercase">{product.name}</h3>
+                      <h3 className="break-words text-sm font-bold uppercase">{product.name}</h3>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {product.colors[0]?.name ?? ""}
-                        {" / "}
-                        {product.sizes[0] ?? ""}
+                        {item.color} / {item.size}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center border border-border">
                           <button
                             type="button"
                             disabled={quantity <= 1}
-                            onClick={() => updateQuantity(product.id, -1)}
+                            onClick={() => updateQuantity(product.id, -1, item)}
                             aria-label={`Quitar una unidad de ${product.name}`}
                             className="flex size-10 items-center justify-center text-sm transition-colors hover:bg-accent/10 disabled:opacity-30"
                           >
@@ -238,8 +347,8 @@ export function CartClient() {
                           <span className="w-8 text-center text-xs font-bold tabular-nums">{quantity}</span>
                           <button
                             type="button"
-                            disabled={quantity >= product.stock}
-                            onClick={() => updateQuantity(product.id, 1)}
+                            disabled={quantity >= maxStock}
+                            onClick={() => updateQuantity(product.id, 1, item)}
                             aria-label={`Añadir una unidad de ${product.name}`}
                             className="flex size-10 items-center justify-center text-sm transition-colors hover:bg-accent/10 disabled:opacity-30"
                           >
@@ -248,7 +357,7 @@ export function CartClient() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleRemoveItem(product.id)}
+                          onClick={() => handleRemoveItem(item)}
                           aria-label={`Eliminar ${product.name} del carrito`}
                           className="flex size-10 items-center justify-center text-muted-foreground transition-colors hover:text-danger"
                         >
@@ -256,7 +365,7 @@ export function CartClient() {
                         </button>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 sm:justify-end">
                         <span className="text-sm font-bold">
                           {formatPrice(priceData.final * quantity)}
                         </span>
@@ -282,6 +391,7 @@ export function CartClient() {
             <Button
               variant="hero"
               size="hero"
+              className="w-full sm:w-auto"
               disabled={!canGoToStep2}
               onClick={() => setStep(2)}
             >
@@ -294,60 +404,140 @@ export function CartClient() {
       {step === 2 && (
         <div className="mx-auto max-w-lg">
           <div className="space-y-5">
+            {savedAddresses.length > 0 && (
+              <div className="p-4 rounded-xl border border-border bg-card/50">
+                <RadioGroup
+                  value={addressMode}
+                  onValueChange={(v) => setAddressMode(v as "saved" | "new")}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="saved" id="saved" />
+                    <Label htmlFor="saved" className="cursor-pointer text-sm font-medium leading-snug">
+                      Usar dirección guardada
+                    </Label>
+                  </div>
+                  {addressMode === "saved" && (
+                    <div className="sm:pl-7">
+                      <Select
+                        value={selectedAddressId}
+                        onValueChange={(v) => {
+                          setSelectedAddressId(v);
+                          const addr = savedAddresses.find((a) => a.id === v);
+                          if (addr) fillFromAddress(addr);
+                        }}
+                      >
+                        <SelectTrigger className="h-10 w-full text-sm sm:h-9 sm:text-xs">
+                          <SelectValue placeholder="Seleccionar dirección..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {savedAddresses.map((addr) => (
+                            <SelectItem key={addr.id} value={addr.id}>
+                              {addr.label} — {addr.street}, {addr.district}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="new" id="new" />
+                    <Label htmlFor="new" className="cursor-pointer text-sm font-medium leading-snug">
+                      Ingresar nueva dirección
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+
+            {addressMode === "new" && (
+            <>
             <div>
-              <Label htmlFor="department" className="text-xs uppercase tracking-wider">
-                Departamento
-              </Label>
-              <Select value={department} onValueChange={setDepartment}>
-                <SelectTrigger id="department" className="mt-1.5 w-full">
-                  <SelectValue />
+              <Label className={checkoutLabelClass}>Departamento</Label>
+              <Select value={department} onValueChange={(v) => { setDepartment(v); setSelectedProvince(""); setSelectedDistrict(""); }}>
+                <SelectTrigger className="mt-1.5 h-10 w-full sm:h-9">
+                  <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Lima">Lima (GRATIS)</SelectItem>
-                  <SelectItem value="Provincia">
-                    Provincia (S/ {SHIPPING_PROVINCIA_PRICE} — {SHIPPING_PROVINCIA_COURIER})
-                  </SelectItem>
+                  {departments.map((d) => (
+                    <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="name" className="text-xs uppercase tracking-wider">Nombre</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre completo" className="mt-1.5" />
+              <Label className={checkoutLabelClass}>Provincia</Label>
+              <Select value={selectedProvince} onValueChange={(v) => { setSelectedProvince(v); setSelectedDistrict(""); }} disabled={!department}>
+                <SelectTrigger className="mt-1.5 h-10 w-full sm:h-9">
+                  <SelectValue placeholder={department ? "Seleccionar..." : "Elige departamento"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {checkoutProvinces.map((p) => (
+                    <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-xs uppercase tracking-wider">Teléfono</Label>
-              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="999 999 999" className="mt-1.5" />
+              <Label className={checkoutLabelClass}>Distrito</Label>
+              <Select value={selectedDistrict} onValueChange={setSelectedDistrict} disabled={!selectedProvince}>
+                <SelectTrigger className="mt-1.5 h-10 w-full sm:h-9">
+                  <SelectValue placeholder={selectedProvince ? "Seleccionar..." : "Elige provincia"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {checkoutDistricts.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label htmlFor="address" className="text-xs uppercase tracking-wider">Dirección</Label>
-              <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Av. / Jr. / Calle" className="mt-1.5" />
+              <Label htmlFor="label" className={checkoutLabelClass}>Etiqueta</Label>
+              <Input id="label" value={addressLabel} onChange={(e) => setAddressLabel(e.target.value)} placeholder="Casa, Trabajo..." className="mt-1.5 h-10 sm:h-9" />
             </div>
 
             <div>
-              <Label htmlFor="district" className="text-xs uppercase tracking-wider">Distrito</Label>
-              <Input id="district" value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="Ej. Miraflores" className="mt-1.5" />
+              <Label htmlFor="address" className={checkoutLabelClass}>Dirección</Label>
+              <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Av. / Jr. / Calle" className="mt-1.5 h-10 sm:h-9" />
             </div>
 
             <div>
-              <Label htmlFor="reference" className="text-xs uppercase tracking-wider">Referencia (opcional)</Label>
-              <Input id="reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Cerca a..." className="mt-1.5" />
+              <Label htmlFor="reference" className={checkoutLabelClass}>Referencia (opcional)</Label>
+              <Input id="reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Cerca a..." className="mt-1.5 h-10 sm:h-9" />
             </div>
 
             {!isShippingValid && (
               <p className="text-xs text-muted-foreground">
-                * Completa nombre, teléfono, dirección y distrito para continuar.
+                * {shippingValidationError}
               </p>
             )}
+
+            {state.user && (
+              <div className="flex items-start gap-2 pt-1">
+                <Checkbox
+                  id="saveAddress"
+                  checked={saveAddress}
+                  onCheckedChange={(c) => setSaveAddress(Boolean(c))}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="saveAddress" className="cursor-pointer text-sm leading-snug text-muted-foreground">
+                  Guardar esta dirección para futuros pedidos
+                </Label>
+              </div>
+            )}
+            </>
+          )}
           </div>
 
-          <div className="mt-8 flex justify-between">
-            <Button variant="outline" size="lg" onClick={() => setStep(1)}>
+          <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={() => setStep(1)}>
               <ArrowLeft className="mr-2 size-4" /> Volver
             </Button>
-            <Button variant="hero" size="hero" disabled={!canGoToStep3} onClick={() => setStep(3)}>
+            <Button variant="hero" size="hero" className="w-full sm:w-auto" disabled={!canGoToStep3} onClick={() => setStep(3)}>
               Continuar <ArrowRight className="ml-2 size-4" />
             </Button>
           </div>
@@ -357,19 +547,19 @@ export function CartClient() {
       {step === 3 && (
         <div className="md:grid md:grid-cols-2 md:gap-10">
           <div>
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
               <h3 className="text-base font-bold uppercase tracking-tight">Método de Pago</h3>
               <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-4 gap-3">
                 {PAYMENT_METHODS.map((method) => (
                   <div
                     key={method.value}
                     className={cn(
-                      "flex items-center gap-3 rounded-md border border-border px-4 py-3",
+                      "flex min-h-12 items-center gap-3 rounded-md border border-border px-4 py-3",
                       method.disabled && "opacity-50 cursor-not-allowed",
                     )}
                   >
                     <RadioGroupItem value={method.value} id={`payment-${method.value}`} disabled={method.disabled} />
-                    <Label htmlFor={`payment-${method.value}`} className={cn("text-sm cursor-pointer", method.disabled && "cursor-not-allowed")}>
+                    <Label htmlFor={`payment-${method.value}`} className={cn("cursor-pointer text-sm leading-snug", method.disabled && "cursor-not-allowed")}>
                       {method.label}
                     </Label>
                   </div>
@@ -377,13 +567,13 @@ export function CartClient() {
               </RadioGroup>
             </div>
 
-            <div className="mt-6 rounded-xl border border-border bg-card p-6">
+            <div className="mt-6 rounded-xl border border-border bg-card p-4 sm:p-6">
               <h3 className="text-base font-bold uppercase tracking-tight">Dirección de Envío</h3>
               <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-                <p className="font-medium text-foreground">{name}</p>
+                <p className="font-medium text-foreground">{state.user?.name ?? "Cliente"}</p>
                 <p>{address}</p>
-                <p>{district}, {department}</p>
-                <p>{phone}</p>
+                <p>{selectedDistrict}, {selectedProvince}, {department}</p>
+                <p>{state.user?.phone ?? ""}</p>
                 {reference && <p>Ref: {reference}</p>}
               </div>
               <button
@@ -397,7 +587,7 @@ export function CartClient() {
           </div>
 
           <div className="mt-6 md:mt-0">
-            <div className="sticky top-24 rounded-xl border border-border bg-card p-6">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-6 md:sticky md:top-24">
               <h3 className="text-lg font-bold uppercase tracking-tight">Resumen</h3>
 
               <div className="mt-5 space-y-2 text-sm">

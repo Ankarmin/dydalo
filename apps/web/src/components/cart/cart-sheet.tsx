@@ -11,6 +11,7 @@ import { ignoreToastClicks } from "@/lib/utils/toast-guard";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Sheet,
   SheetClose,
@@ -20,40 +21,41 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-interface CartProduct {
-  id: number;
-  name: string;
-  slug: string;
-  category: string;
-  price: number;
-  discount: number | null | undefined;
-  image: string;
-}
+import type { CartLine } from "@/contexts/cart-context";
+import { getVariantStock } from "@/lib/utils/inventory";
 
 interface CartSheetProps {
   cartCount: number;
-  cartProducts: CartProduct[];
-  cart: Record<number, number>;
+  cartItems: CartLine[];
   subtotal: number;
-  updateQuantity: (productId: number, delta: number) => void;
+  updateQuantity: (productId: number, delta: number, variant?: { size?: string; color?: string }) => void;
 }
 
 export function CartSheet({
   cartCount,
-  cartProducts,
-  cart,
+  cartItems,
   subtotal,
   updateQuantity,
 }: CartSheetProps) {
   const router = useRouter();
   const mounted = useMounted();
+  const { state: authState, meta: authMeta } = useAuth();
   const [open, setOpen] = useState(false);
 
   function handleGoToCart() {
     setOpen(false);
+    if (!authState.user) {
+      router.push(`${ROUTES.login}?next=${encodeURIComponent(ROUTES.carrito)}`);
+      return;
+    }
+    if (authMeta.isAdmin) {
+      router.push(ROUTES.catalogo);
+      return;
+    }
     router.push(ROUTES.carrito);
   }
+
+  if (authState.status === "loading" || authMeta.isAdmin) return null;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -85,7 +87,7 @@ export function CartSheet({
           </SheetDescription>
         </SheetHeader>
 
-        {cartProducts.length === 0 ? (
+        {cartItems.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
             <ShoppingCart
               className="mb-5 size-10 text-muted-foreground"
@@ -98,12 +100,14 @@ export function CartSheet({
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6">
-            {cartProducts.map((product) => {
-              const quantity = cart[product.id] ?? 0;
+            {cartItems.map((item) => {
+              const product = item.product;
+              const quantity = item.quantity;
+              const maxStock = getVariantStock(product, item.size, item.color);
               const priceData = getDisplayPrice(product);
               return (
                 <article
-                  key={product.id}
+                  key={item.key}
                   className="flex gap-4 border-b border-border py-5"
                 >
                   <SheetClose asChild>
@@ -129,6 +133,9 @@ export function CartSheet({
                       <h3 className="mt-1 truncate text-sm font-bold uppercase">
                         {product.name}
                       </h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {item.color} / {item.size}
+                      </p>
                       <p className="mt-1 text-xs">
                         {priceData.hasDiscount ? (
                           <span>
@@ -147,7 +154,7 @@ export function CartSheet({
                           size="icon"
                           className="size-11 rounded-none"
                           aria-label={`Quitar una unidad de ${product.name}`}
-                          onClick={() => updateQuantity(product.id, -1)}
+                          onClick={() => updateQuantity(product.id, -1, item)}
                         >
                           −
                         </Button>
@@ -159,7 +166,8 @@ export function CartSheet({
                           size="icon"
                           className="size-11 rounded-none"
                           aria-label={`Añadir una unidad de ${product.name}`}
-                          onClick={() => updateQuantity(product.id, 1)}
+                          onClick={() => updateQuantity(product.id, 1, item)}
+                          disabled={quantity >= maxStock}
                         >
                           +
                         </Button>
