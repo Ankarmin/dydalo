@@ -7,7 +7,7 @@ import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { seedIfEmpty } from "@/config/seed-data";
 import { useStoreData } from "@/hooks/use-store-data";
-import type { Order, OrderStatus } from "@/lib/stores";
+import type { OrderStatus } from "@/lib/stores";
 import { ORDER_STATUSES, STATUS_STYLES } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -18,20 +18,13 @@ import { formatPrice } from "@/lib/utils/format";
 import { exportOrdersCSV } from "@/lib/utils/csv";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { AdminPagination } from "@/components/admin/admin-pagination";
 
 const PAGE_SIZE = 15;
 
 export function PedidosClient() {
   seedIfEmpty();
-  const orders = useStoreData(() => ordersStore.getAll().toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [] as Order[]);
+  const orders = useStoreData(() => ordersStore.getAll().toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
   const [page, setPage] = useState(1);
@@ -98,12 +91,12 @@ export function PedidosClient() {
               : `${orders.length} pedidos totales`}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="size-3.5" />
             Exportar CSV
           </Button>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href={ROUTES.adminPedidoNuevo}>
               <Plus className="size-4" />
               Nuevo Pedido
@@ -122,7 +115,7 @@ export function PedidosClient() {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-1 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-1">
           {(["todos", ...ORDER_STATUSES] as const).map((s) => (
             <Button
               key={s}
@@ -181,7 +174,7 @@ export function PedidosClient() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="icon" className="size-8" asChild>
+                      <Button variant="ghost" size="icon" className="size-8" asChild aria-label="Ver pedido">
                         <Link href={ROUTES.adminPedidoDetalle(order.id)}>
                           <Eye className="size-3.5" />
                         </Link>
@@ -202,51 +195,7 @@ export function PedidosClient() {
         </div>
       </div>
 
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent className="overflow-x-auto">
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
-              .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                if (idx > 0) {
-                  const prev = arr[idx - 1] as number;
-                  if (p - prev > 1) acc.push("...");
-                }
-                acc.push(p);
-                return acc;
-              }, [])
-              .map((p, i) =>
-                p === "..." ? (
-                  <PaginationItem key={`e-${i}`}>
-                    <span className="px-2 text-muted-foreground">...</span>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={p}>
-                    <PaginationLink
-                      isActive={p === page}
-                      onClick={() => setPage(p)}
-                      className="cursor-pointer"
-                    >
-                      {p}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              )}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

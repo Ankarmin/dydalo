@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
@@ -81,8 +81,8 @@ interface ProductFormProps {
 export function ProductForm({ productId }: ProductFormProps) {
   const router = useRouter();
   const isEdit = productId !== undefined;
-  const [loading, setLoading] = useState(isEdit);
-  const [notFound, setNotFound] = useState(false);
+  const product = isEdit ? productsStore.getById(productId!) : undefined;
+  const notFound = isEdit && !product;
   const [isPending, setIsPending] = useState(false);
 
   const [categories] = useState(categoriesStore.getActive());
@@ -102,12 +102,7 @@ export function ProductForm({ productId }: ProductFormProps) {
   });
 
   useEffect(() => {
-    if (!isEdit) return;
-    const product = productsStore.getById(productId);
-    if (!product) {
-      setNotFound(true);
-      return;
-    }
+    if (!product) return;
     form.reset({
       name: product.name,
       category: product.category,
@@ -121,11 +116,10 @@ export function ProductForm({ productId }: ProductFormProps) {
       sizes: product.sizes as unknown as string[],
       colors: product.colors,
     });
-    setLoading(false);
-  }, [productId, form, isEdit]);
+  }, [product, form]);
 
-  const sizes = form.watch("sizes");
-  const colors = form.watch("colors");
+  const sizes = useWatch({ control: form.control, name: "sizes" });
+  const colors = useWatch({ control: form.control, name: "colors" });
 
   function addSize() {
     if (!newSize.trim()) return;
@@ -176,14 +170,6 @@ export function ProductForm({ productId }: ProductFormProps) {
         <Button variant="outline" className="mt-4" asChild>
           <Link href={ROUTES.adminProductos}>Volver a productos</Link>
         </Button>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -349,7 +335,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 {sizes.map((size, i) => (
                   <Badge key={i} variant="secondary" className="gap-1 pr-1 text-sm">
                     {size}
-                    <button type="button" onClick={() => removeSize(i)} className="ml-0.5 rounded-full hover:bg-muted p-0.5" disabled={isPending}>
+                    <button type="button" onClick={() => removeSize(i)} className="ml-0.5 rounded-full hover:bg-muted p-0.5" disabled={isPending} aria-label={`Eliminar talla ${size}`}>
                       <X className="size-3" />
                     </button>
                   </Badge>

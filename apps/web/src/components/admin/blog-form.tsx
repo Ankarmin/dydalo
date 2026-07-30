@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
@@ -69,8 +69,8 @@ interface BlogFormProps {
 export function BlogForm({ postId }: BlogFormProps) {
   const router = useRouter();
   const isEdit = postId !== undefined;
-  const [loading, setLoading] = useState(isEdit);
-  const [notFound, setNotFound] = useState(false);
+  const post = isEdit ? blogStore.getById(postId) : undefined;
+  const notFound = isEdit && !post;
   const [isPending, setIsPending] = useState(false);
   const [newTag, setNewTag] = useState("");
 
@@ -80,12 +80,7 @@ export function BlogForm({ postId }: BlogFormProps) {
   });
 
   useEffect(() => {
-    if (!isEdit) return;
-    const post = blogStore.getById(postId);
-    if (!post) {
-      setNotFound(true);
-      return;
-    }
+    if (!post) return;
     form.reset({
       title: post.title,
       slug: post.slug,
@@ -96,10 +91,9 @@ export function BlogForm({ postId }: BlogFormProps) {
       tags: post.tags,
       published: post.published,
     });
-    setLoading(false);
-  }, [postId, form, isEdit]);
+  }, [post, form]);
 
-  const tags = form.watch("tags");
+  const tags = useWatch({ control: form.control, name: "tags" }) as string[];
 
   function addTag() {
     if (!newTag.trim()) return;
@@ -158,14 +152,6 @@ export function BlogForm({ postId }: BlogFormProps) {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
@@ -180,7 +166,7 @@ export function BlogForm({ postId }: BlogFormProps) {
           </h1>
           <p className="text-sm text-muted-foreground">
             {isEdit
-              ? `Slug: ${form.watch("slug")}`
+              ? `Slug: ${form.getValues("slug")}`
               : "El slug se generará automáticamente del título"}
           </p>
         </div>
@@ -301,6 +287,7 @@ export function BlogForm({ postId }: BlogFormProps) {
                       onClick={() => removeTag(i)}
                       className="ml-0.5 rounded-full hover:bg-muted p-0.5"
                       disabled={isPending}
+                      aria-label={`Eliminar tag ${tag}`}
                     >
                       <X className="size-3" />
                     </button>

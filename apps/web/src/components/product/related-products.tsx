@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { ProductCard } from "@/components/product/product-card";
 import { productsStore } from "@/lib/stores/data-store.products";
 import { useMounted } from "@/hooks/use-mounted";
@@ -17,10 +17,9 @@ function seededRandom(seed: number, index: number): number {
 
 export function RelatedProducts({ product }: RelatedProductsProps) {
   const mounted = useMounted();
-  const [related, setRelated] = useState<AdminProduct[]>([]);
 
-  useEffect(() => {
-    if (!mounted) return;
+  const related = useMemo(() => {
+    if (!mounted) return [] as AdminProduct[];
     const all = productsStore.getAll();
     const sameCategory = all.filter(
       (p) =>
@@ -35,7 +34,7 @@ export function RelatedProducts({ product }: RelatedProductsProps) {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    setRelated(shuffled.slice(0, 4));
+    return shuffled.slice(0, 4);
   }, [mounted, product.id, product.category]);
 
   if (!mounted || related.length === 0) return null;

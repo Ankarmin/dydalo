@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, Package, MapPin, CreditCard, ArrowRight, Home, ShoppingCart } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { formatPrice } from "@/lib/utils/format";
@@ -14,26 +14,9 @@ import type { Order } from "@/lib/stores/data-store.types";
 export default function PedidoConfirmadoPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (orderId) {
-      const found = ordersStore.getById(orderId);
-      setOrder(found ?? null);
-    }
-    setLoading(false);
-  }, [orderId]);
-
-  if (loading) {
-    return (
-      <main className="page-root">
-        <section className="flex min-h-[60vh] items-center justify-center">
-          <div className="size-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        </section>
-      </main>
-    );
-  }
+  const [order] = useState<Order | null>(
+    () => orderId ? (ordersStore.getById(orderId) ?? null) : null
+  );
 
   if (!orderId || !order) {
     return (

@@ -1,12 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export function useStoreData<T>(getData: () => T, fallback: T): T {
-  const [data, setData] = useState<T>(fallback);
-
-  useEffect(() => {
-    setData(getData());
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-  }, []);
-
+export function useStoreData<T>(getData: () => T): T {
+  const [data] = useState<T>(getData);
   return data;
 }

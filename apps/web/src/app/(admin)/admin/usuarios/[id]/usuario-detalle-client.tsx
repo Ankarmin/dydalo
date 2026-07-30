@@ -5,7 +5,6 @@ import { ArrowLeft, Mail, Phone, Calendar, ShoppingCart, DollarSign } from "luci
 import { useStoreData } from "@/hooks/use-store-data";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { ordersStore } from "@/lib/stores/data-store.orders";
-import type { User as UserType, Order } from "@/lib/stores/data-store.types";
 import { STATUS_STYLES } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,8 @@ import { cn } from "@/lib/utils/utils";
 import { formatPrice } from "@/lib/utils/format";
 
 export function UsuarioDetalleClient({ id }: { id: string }) {
-  const user = useStoreData(() => usersStore.getById(id), undefined as UserType | undefined);
-  const orders = useStoreData(() => ordersStore.getByUserId(id).toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [] as Order[]);
+  const user = useStoreData(() => usersStore.getById(id));
+  const orders = useStoreData(() => ordersStore.getByUserId(id).toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
 
   if (!user) {
     return (

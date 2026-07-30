@@ -1,13 +1,15 @@
-"use client";
-
-import { use } from "react";
+import type { Metadata } from "next";
 import { BlogForm } from "@/components/admin/blog-form";
 
-export default function BlogEditarPage({
+export const metadata: Metadata = {
+  title: "Editar Post",
+};
+
+export default async function BlogEditarPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
+  const { id } = await params;
   return <BlogForm postId={id} />;
 }

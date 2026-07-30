@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
@@ -34,9 +34,10 @@ export function CommandSearch({ open: externalOpen, onOpenChange: externalOnOpen
 
   const isControlled = externalOpen !== undefined;
   const open = isControlled ? externalOpen : internalOpen;
-  const setOpen = isControlled
-    ? (externalOnOpenChange ?? (() => {}))
-    : setInternalOpen;
+  const setOpen = useMemo(
+    () => (isControlled ? (externalOnOpenChange ?? (() => {})) : setInternalOpen),
+    [isControlled, externalOnOpenChange],
+  );
 
   const results = searchProducts(query);
   const grouped = groupResultsByCategory(results);

@@ -6,13 +6,12 @@ import { User as UserIcon } from "lucide-react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { ordersStore } from "@/lib/stores/data-store.orders";
-import type { User } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { Badge } from "@/components/ui/badge";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 
 export function UsuariosClient() {
-  const users = useStoreData(() => usersStore.getAll(), [] as User[]);
+  const users = useStoreData(() => usersStore.getAll());
   const [adminSort, setAdminSort] = useState<SortState>(defaultSort);
   const [customerSort, setCustomerSort] = useState<SortState>(defaultSort);
 
@@ -104,6 +103,13 @@ export function UsuariosClient() {
                   </td>
                 </tr>
               ))}
+              {adminUsers.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                    No hay administradores registrados
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
