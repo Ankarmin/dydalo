@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { User as UserIcon } from "lucide-react";
+import { User as UserIcon, Search } from "lucide-react";
 import { useStoreData } from "@/hooks/use-store-data";
 import { ADMINS } from "@/config/auth-constants";
 import { usersStore } from "@/lib/stores/data-store.users";
@@ -10,10 +10,12 @@ import { ordersStore } from "@/lib/stores/data-store.orders";
 import type { User } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
 
 export function UsuariosClient() {
   const users = useStoreData(() => usersStore.getAll());
+  const [query, setQuery] = useState("");
   const [adminSort, setAdminSort] = useState<SortState>(defaultSort);
   const [customerSort, setCustomerSort] = useState<SortState>(defaultSort);
 
@@ -56,6 +58,14 @@ export function UsuariosClient() {
 
   const customerUsers = useMemo(() => {
     let result = users.filter((u) => u.role === "customer");
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q)
+      );
+    }
     if (customerSort.field) {
       result = [...result].sort((a, b) => {
         const dir = customerSort.direction === "asc" ? 1 : -1;
@@ -73,13 +83,27 @@ export function UsuariosClient() {
       });
     }
     return result;
-  }, [users, customerSort, orderCountMap]);
+  }, [users, customerSort, orderCountMap, query]);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-heading">Clientes</h1>
-        <p className="text-sm text-muted-foreground">{users.length} clientes registrados</p>
+        <p className="text-sm text-muted-foreground">
+          {query
+            ? `${customerUsers.length} de ${users.filter((u) => u.role === "customer").length} clientes`
+            : `${users.length} clientes registrados`}
+        </p>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Buscar por nombre o email..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="pl-9"
+        />
       </div>
 
       
