@@ -8,9 +8,11 @@ import { z } from "zod";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import { useStoreData } from "@/hooks/use-store-data";
 import { ROUTES } from "@/lib/utils/routes";
 import { ADMIN_FORM_SIMULATED_DELAY_MS } from "@/config/constants";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -42,6 +44,7 @@ interface CategoryFormProps {
 
 export function CategoryForm({ slug }: CategoryFormProps) {
   const router = useRouter();
+  const { state: authState } = useAuth();
   const isEdit = slug !== undefined;
   const category = useStoreData(() => isEdit ? categoriesStore.getBySlug(slug) : undefined);
   const notFound = isEdit && !category;
@@ -76,9 +79,36 @@ export function CategoryForm({ slug }: CategoryFormProps) {
 
     setIsPending(true);
     setTimeout(() => {
+      const actor = {
+        id: authState.user?.id ?? "admin",
+        name: authState.user?.name ?? "Admin",
+      };
+
       if (isEdit) {
+        const before = category;
         const updated = categoriesStore.update(slug!, normalizedValues);
         if (updated) {
+          const changes = before
+            ? auditStore.diffFields(
+                before as unknown as Record<string, unknown>,
+                updated as unknown as Record<string, unknown>,
+                ["name", "active"]
+              )
+            : [];
+
+          if (changes.length > 0) {
+            auditStore.create({
+              actor,
+              entityType: "category",
+              entityId: updated.slug,
+              entityLabel: updated.name,
+              action: "update",
+              summary: `Editó categoría ${updated.name}`,
+              before,
+              after: updated,
+              changes,
+            });
+          }
           notifyAdmin("Categoría actualizada", updated.name, "success");
           router.push(ROUTES.adminCategorias);
           return;
@@ -88,6 +118,15 @@ export function CategoryForm({ slug }: CategoryFormProps) {
         return;
       }
       const created = categoriesStore.create(normalizedValues);
+      auditStore.create({
+        actor,
+        entityType: "category",
+        entityId: created.slug,
+        entityLabel: created.name,
+        action: "create",
+        summary: `Creó categoría ${created.name}`,
+        after: created,
+      });
       notifyAdmin("Categoría creada", created.name, "success");
       router.push(ROUTES.adminCategorias);
     }, ADMIN_FORM_SIMULATED_DELAY_MS);

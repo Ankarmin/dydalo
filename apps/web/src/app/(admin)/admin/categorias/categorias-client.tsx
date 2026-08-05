@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import type { CatalogCategory } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
@@ -14,6 +16,8 @@ import { notifyAdmin } from "@/components/admin/admin-toast";
 
 export function CategoriasClient() {
   const router = useRouter();
+  const { state: authState } = useAuth();
+  const actor = { id: authState.user?.id ?? "admin", name: authState.user?.name ?? "Admin" };
   const [categories, setCategories] = useState<CatalogCategory[]>(() => categoriesStore.getAll());
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null);
 
@@ -21,14 +25,37 @@ export function CategoriasClient() {
     const updated = categoriesStore.update(cat.slug, { active: !cat.active });
     if (updated) {
       setCategories((prev) => prev.map((c) => (c.slug === cat.slug ? updated : c)));
+      auditStore.create({
+        actor,
+        entityType: "category",
+        entityId: cat.slug,
+        entityLabel: cat.name,
+        action: updated.active ? "activate" : "deactivate",
+        summary: `${updated.active ? "Activó" : "Desactivó"} categoría ${cat.name}`,
+        before: { active: cat.active },
+        after: { active: updated.active },
+        changes: [{ field: "active", before: cat.active, after: updated.active }],
+      });
       notifyAdmin(updated.active ? "Categoría activada" : "Categoría desactivada");
     }
   }
 
   function handleDelete() {
     if (!deleteSlug) return;
+    const cat = categoriesStore.getBySlug(deleteSlug);
     categoriesStore.delete(deleteSlug);
     setCategories((prev) => prev.filter((c) => c.slug !== deleteSlug));
+    if (cat) {
+      auditStore.create({
+        actor,
+        entityType: "category",
+        entityId: cat.slug,
+        entityLabel: cat.name,
+        action: "delete",
+        summary: `Eliminó categoría ${cat.name}`,
+        before: cat,
+      });
+    }
     notifyAdmin("Categoría eliminada");
     setDeleteSlug(null);
   }
@@ -40,6 +67,16 @@ export function CategoriasClient() {
     const slugs = reordered.map((c) => c.slug);
     categoriesStore.reorder(slugs);
     setCategories(reordered.map((c, i) => ({ ...c, order: i + 1 })));
+    const cat = reordered[index - 1];
+    auditStore.create({
+      actor,
+      entityType: "category",
+      entityId: cat.slug,
+      entityLabel: cat.name,
+      action: "update",
+      summary: `Reordenó categorías (subió ${cat.name})`,
+      changes: [{ field: "order", before: index + 1, after: index }],
+    });
     notifyAdmin("Orden actualizado");
   }
 
@@ -50,6 +87,16 @@ export function CategoriasClient() {
     const slugs = reordered.map((c) => c.slug);
     categoriesStore.reorder(slugs);
     setCategories(reordered.map((c, i) => ({ ...c, order: i + 1 })));
+    const cat = reordered[index + 1];
+    auditStore.create({
+      actor,
+      entityType: "category",
+      entityId: cat.slug,
+      entityLabel: cat.name,
+      action: "update",
+      summary: `Reordenó categorías (bajó ${cat.name})`,
+      changes: [{ field: "order", before: index + 1, after: index + 2 }],
+    });
     notifyAdmin("Orden actualizado");
   }
 

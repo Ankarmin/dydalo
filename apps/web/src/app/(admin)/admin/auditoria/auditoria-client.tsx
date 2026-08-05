@@ -4,7 +4,6 @@ import { Fragment, useMemo, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { auditStore } from "@/lib/stores/data-store.audit";
 import type { AuditAction, AuditEntityType } from "@/lib/stores/data-store.types";
-import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +62,6 @@ function formatAuditValue(value: unknown): string {
 }
 
 export function AuditoriaClient() {
-  const { state: authState } = useAuth();
   const [query, setQuery] = useState("");
   const [entityType, setEntityType] = useState<AuditEntityType | "todos">("todos");
   const [action, setAction] = useState<AuditAction | "todos">("todos");
@@ -121,18 +119,6 @@ export function AuditoriaClient() {
         log.summary,
       ]),
     ]);
-
-    auditStore.create({
-      actor: {
-        id: authState.user?.id ?? "admin",
-        name: authState.user?.name ?? "Admin",
-      },
-      entityType: "inventory",
-      entityId: "audit-export",
-      entityLabel: "Auditoría",
-      action: "export",
-      summary: `Exportó ${filtered.length} registros de auditoría`,
-    });
   }
 
   return (

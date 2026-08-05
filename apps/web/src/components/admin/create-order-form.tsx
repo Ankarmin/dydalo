@@ -484,6 +484,19 @@ export function CreateOrderForm() {
         customerFullName = created.name;
         customerPhone = created.phone ?? "";
 
+        auditStore.create({
+          actor: {
+            id: authState.user?.id ?? "admin",
+            name: authState.user?.name ?? "Admin",
+          },
+          entityType: "user",
+          entityId: created.id,
+          entityLabel: created.name,
+          action: "create",
+          summary: `Creó cliente ${created.name}`,
+          after: { name: created.name, email: created.email, phone: created.phone ?? "" },
+        });
+
         const matchingAddress = findMatchingAddress(
           userId,
           values.street,

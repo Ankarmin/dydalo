@@ -4,9 +4,11 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { blogStore } from "@/lib/stores/data-store.blog";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import { seedIfEmpty } from "@/config/seed-data";
 import type { BlogPost } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +22,8 @@ const PAGE_SIZE = 15;
 
 export function BlogClient() {
   seedIfEmpty();
+  const { state: authState } = useAuth();
+  const actor = { id: authState.user?.id ?? "admin", name: authState.user?.name ?? "Admin" };
   const [posts, setPosts] = useState<BlogPost[]>(() => blogStore.getAll());
   const [query, setQuery] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -65,6 +69,17 @@ export function BlogClient() {
     const updated = blogStore.update(post.id, { published: !post.published });
     if (updated) {
       setPosts((prev) => prev.map((p) => (p.id === post.id ? updated : p)));
+      auditStore.create({
+        actor,
+        entityType: "blog",
+        entityId: post.id,
+        entityLabel: post.title,
+        action: updated.published ? "activate" : "deactivate",
+        summary: `${updated.published ? "Publicó" : "Ocultó"} post ${post.title}`,
+        before: { published: post.published },
+        after: { published: updated.published },
+        changes: [{ field: "published", before: post.published, after: updated.published }],
+      });
       notifyAdmin(
         updated.published ? "Post publicado" : "Post ocultado",
         post.title
@@ -74,9 +89,21 @@ export function BlogClient() {
 
   function handleDelete() {
     if (deleteId === null) return;
+    const post = blogStore.getById(deleteId);
     const ok = blogStore.delete(deleteId);
     if (ok) {
       setPosts((prev) => prev.filter((p) => p.id !== deleteId));
+      if (post) {
+        auditStore.create({
+          actor,
+          entityType: "blog",
+          entityId: post.id,
+          entityLabel: post.title,
+          action: "delete",
+          summary: `Eliminó post ${post.title}`,
+          before: post,
+        });
+      }
       notifyAdmin("Post eliminado");
     }
     setDeleteId(null);

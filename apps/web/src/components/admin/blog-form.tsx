@@ -8,8 +8,10 @@ import { z } from "zod";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { blogStore } from "@/lib/stores/data-store.blog";
+import { auditStore } from "@/lib/stores/data-store.audit";
 import { ROUTES } from "@/lib/utils/routes";
 import { ADMIN_FORM_SIMULATED_DELAY_MS } from "@/config/constants";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,6 +80,7 @@ interface BlogFormProps {
 
 export function BlogForm({ postId }: BlogFormProps) {
   const router = useRouter();
+  const { state: authState } = useAuth();
   const isEdit = postId !== undefined;
   const post = isEdit ? blogStore.getById(postId) : undefined;
   const notFound = isEdit && !post;
@@ -150,13 +153,49 @@ export function BlogForm({ postId }: BlogFormProps) {
     setIsPending(true);
 
     setTimeout(() => {
+      const actor = {
+        id: authState.user?.id ?? "admin",
+        name: authState.user?.name ?? "Admin",
+      };
+
       if (isEdit) {
+        const before = post;
         const updated = blogStore.update(postId!, normalizedValues);
         if (updated) {
+          const changes = before
+            ? auditStore.diffFields(
+                before as unknown as Record<string, unknown>,
+                updated as unknown as Record<string, unknown>,
+                ["title", "slug", "excerpt", "content", "coverImage", "author", "tags", "published"]
+              )
+            : [];
+
+          if (changes.length > 0) {
+            auditStore.create({
+              actor,
+              entityType: "blog",
+              entityId: updated.id,
+              entityLabel: updated.title,
+              action: "update",
+              summary: `Editó post ${updated.title}`,
+              before,
+              after: updated,
+              changes,
+            });
+          }
           notifyAdmin("Post actualizado", updated.title, "success");
         }
       } else {
         const created = blogStore.create(normalizedValues);
+        auditStore.create({
+          actor,
+          entityType: "blog",
+          entityId: created.id,
+          entityLabel: created.title,
+          action: "create",
+          summary: `Creó post ${created.title}`,
+          after: created,
+        });
         notifyAdmin("Post creado", created.title, "success");
       }
       router.push(ROUTES.adminBlog);
