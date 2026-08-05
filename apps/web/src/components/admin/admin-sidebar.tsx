@@ -52,11 +52,6 @@ const NAV_ITEMS: NavItem[] = [
     icon: ClipboardList,
   },
   {
-    label: "Auditoría",
-    href: ROUTES.adminAuditoria,
-    icon: ShieldCheck,
-  },
-  {
     label: "Productos",
     href: ROUTES.adminProductos,
     icon: Package,
@@ -75,6 +70,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Clientes",
     href: ROUTES.adminUsuarios,
     icon: Users,
+  },
+  {
+    label: "Auditoría",
+    href: ROUTES.adminAuditoria,
+    icon: ShieldCheck,
   },
   {
     label: "Blog",

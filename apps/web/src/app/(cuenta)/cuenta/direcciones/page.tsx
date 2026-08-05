@@ -124,7 +124,7 @@ export default function DireccionesPage() {
         city: normalizeText(city),
         state: normalizeText(state),
         zip: d.zip ?? "",
-        isDefault: addresses.length <= 1 ? true : Boolean(d.isDefault),
+        isDefault: addresses.length === 0 ? true : Boolean(d.isDefault),
       };
       if ("id" in saveData && typeof saveData.id === "string") {
         addressesStore.update(saveData.id, saveData);
@@ -158,7 +158,7 @@ export default function DireccionesPage() {
   }
 
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-8 pt-4">
       <PageBreadcrumbs
         className="mb-0"
         items={[
@@ -183,12 +183,12 @@ export default function DireccionesPage() {
 
       {addresses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border border-border bg-card">
-          <Home className="size-10 text-muted-foreground mb-3" />
-          <p className="text-sm font-medium">No tienes direcciones</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <Home className="mb-4 size-12 text-muted-foreground" strokeWidth={1.25} />
+          <p className="text-lg font-bold">NO TIENES DIRECCIONES</p>
+          <p className="mt-2 max-w-xs text-sm text-muted-foreground">
             Agrega una dirección para agilizar tus compras.
           </p>
-          <Button size="sm" className="mt-4" onClick={openNew}>
+          <Button variant="outline" className="mt-6" onClick={openNew}>
             <Plus className="size-3.5" />
             Agregar dirección
           </Button>
