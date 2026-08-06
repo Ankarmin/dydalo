@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Heart, Menu, Search, User, X } from "lucide-react";
+import { ChevronDown, Heart, Menu, Search, User } from "lucide-react";
 import { ignoreToastClicks } from "@/lib/utils/toast-guard";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,16 +57,11 @@ export function SiteHeader() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="flex w-[280px] flex-col border-border bg-background p-0 sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
-            <SheetHeader className="flex h-16 shrink-0 items-center justify-between border-b-2 border-favorite bg-background/85 px-4 backdrop-blur-xl text-left">
+            <SheetHeader className="flex h-16 shrink-0 items-center justify-center border-b-2 border-favorite bg-background/85 px-4 backdrop-blur-xl">
               <div className="flex items-center gap-2">
                 <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
                 <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
               </div>
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" aria-label="Cerrar menú">
-                  <X className="size-5" />
-                </Button>
-              </SheetClose>
               <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
             </SheetHeader>
             <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Menú móvil">
