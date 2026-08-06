@@ -107,7 +107,7 @@ export function CatalogGrid({ products }: { products: AdminProduct[] }) {
         </div>
       </div>
 
-      <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
         {sortedProducts.map((product, index) => (
           <ProductCard
             key={product.id}
