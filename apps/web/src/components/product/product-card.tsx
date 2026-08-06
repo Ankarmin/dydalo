@@ -18,6 +18,7 @@ interface ProductCardData {
   discount: number | null | undefined;
   image: string;
   images?: string[];
+  colors?: { name: string; hex: string }[];
 }
 
 function getProductImages(product: ProductCardData): string[] {
@@ -157,6 +158,19 @@ export function ProductCard({ product, priority }: ProductCardProps) {
           </span>
         )}
       </Link>
+
+      {product.colors && product.colors.length > 0 && (
+        <div className="mt-3 flex items-center gap-1">
+          {product.colors.map((color) => (
+            <span
+              key={color.name}
+              className="size-3 rounded-full border border-border"
+              style={{ backgroundColor: color.hex }}
+              title={color.name}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
