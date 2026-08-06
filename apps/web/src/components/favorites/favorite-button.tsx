@@ -31,7 +31,7 @@ export function FavoriteButton({
   }
 
   const cardStyles =
-    "absolute right-3 top-3 z-10 size-9 rounded-full chip-label shadow-sm";
+    "absolute right-2 top-2 md:right-3 md:top-3 z-10 size-7 md:size-9 rounded-full chip-label shadow-sm";
   const inlineStyles = "";
 
   return (

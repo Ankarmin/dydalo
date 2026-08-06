@@ -120,7 +120,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
         onBlur={stopImageCycle}
         className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
       >
-        <span className="absolute left-4 top-4 z-10 product-label">
+        <span className="absolute left-2 top-2 md:left-4 md:top-4 z-10 product-label max-md:text-[7px] max-md:px-1.5 max-md:py-1 max-md:tracking-[0.12em]">
           {categoryName}
         </span>
         <FavoriteButton
@@ -153,18 +153,18 @@ export function ProductCard({ product, priority }: ProductCardProps) {
           />
         </div>
         {product.discount != null && product.discount > 0 && (
-          <span className="absolute bottom-4 right-4 z-10 rounded-full bg-accent px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-accent-foreground">
+          <span className="absolute bottom-2 right-2 md:bottom-4 md:right-4 z-10 rounded-full bg-accent px-2 py-0.5 md:px-2.5 md:py-1 text-[8px] md:text-[10px] font-black uppercase tracking-[0.14em] text-accent-foreground">
             -{product.discount}%
           </span>
         )}
       </Link>
 
       {product.colors && product.colors.length > 0 && (
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-2 md:mt-3 flex items-center gap-1.5 md:gap-2">
           {product.colors.map((color) => (
             <span
               key={color.name}
-              className="size-5 rounded-full border border-border"
+              className="size-4 md:size-5 rounded-full border border-border"
               style={{ backgroundColor: color.hex }}
               title={color.name}
             />
@@ -172,24 +172,24 @@ export function ProductCard({ product, priority }: ProductCardProps) {
         </div>
       )}
 
-      <div className="mt-4 flex items-start justify-between gap-4">
+      <div className="mt-2 md:mt-4 flex items-start justify-between gap-2 md:gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="font-bold uppercase tracking-tight">
+          <h3 className="text-xs md:text-sm font-bold uppercase tracking-tight">
             {product.name}
           </h3>
         </div>
         <div className="shrink-0 text-right">
           {hasDiscount ? (
             <>
-              <p className="text-sm font-semibold tabular-nums text-accent">
+              <p className="text-xs md:text-sm font-semibold tabular-nums text-accent">
                 {formatPrice(final)}
               </p>
-              <p className="text-xs text-muted-foreground line-through tabular-nums">
+              <p className="text-[10px] md:text-xs text-muted-foreground line-through tabular-nums">
                 {formatPrice(product.price)}
               </p>
             </>
           ) : (
-            <p className="text-sm font-semibold tabular-nums">
+            <p className="text-xs md:text-sm font-semibold tabular-nums">
               {formatPrice(product.price)}
             </p>
           )}
