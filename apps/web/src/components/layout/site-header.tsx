@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Heart, Menu, Search, User } from "lucide-react";
+import { ChevronDown, Heart, Menu, Search, User, X } from "lucide-react";
 import { ignoreToastClicks } from "@/lib/utils/toast-guard";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,26 +57,31 @@ export function SiteHeader() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="flex w-full flex-col border-border bg-background p-0 sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
-            <SheetHeader className="border-b border-border px-6 py-6 text-left">
-              <SheetTitle>
+            <SheetHeader className="flex h-16 shrink-0 items-center justify-between border-b-2 border-favorite bg-background/85 px-4 backdrop-blur-xl text-left">
+              <SheetTitle className="flex items-center gap-2">
                 <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
                 <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
               </SheetTitle>
+              <SheetClose asChild>
+                <Button variant="ghost" size="icon" aria-label="Cerrar menú">
+                  <X className="size-5" />
+                </Button>
+              </SheetClose>
             </SheetHeader>
-            <nav className="flex-1 overflow-y-auto px-4 py-4" aria-label="Menú móvil">
+            <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Menú móvil">
+              <div className="flex flex-col gap-1">
               <SheetClose asChild>
                 <Link
                   href={ROUTES.loUltimo}
-                  className="flex items-center py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
+                  className="flex items-center rounded-lg px-3 py-3 text-sm font-bold uppercase tracking-nav text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                 >
                   LO ÚLTIMO
                 </Link>
               </SheetClose>
-              <div className="border-t border-border">
                 <button
                   type="button"
                   onClick={() => setCatalogExpanded(!catalogExpanded)}
-                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm font-bold uppercase tracking-nav text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                 >
                   CATÁLOGO DYDALO
                   <ChevronDown
@@ -109,12 +114,10 @@ export function SiteHeader() {
                     })}
                   </div>
                 )}
-              </div>
-              <div className="border-t border-border">
                 <button
                   type="button"
                   onClick={() => setMarcaExpanded(!marcaExpanded)}
-                  className="flex w-full items-center justify-between py-4 text-sm font-bold uppercase tracking-nav text-foreground transition-colors hover:text-accent"
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm font-bold uppercase tracking-nav text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                 >
                   LA MARCA
                   <ChevronDown
