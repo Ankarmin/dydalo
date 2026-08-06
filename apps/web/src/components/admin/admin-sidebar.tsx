@@ -164,11 +164,11 @@ export function AdminSidebar() {
           collapsed ? "w-[60px]" : "w-[240px]"
         )}
       >
-        <div className={cn("flex h-16 items-center justify-center gap-2 px-4 shrink-0 border-b-2 border-favorite", collapsed && "px-3")}>
+        <div className={cn("flex h-16 items-center justify-center gap-2 px-4 shrink-0 border-b-2 border-favorite bg-background/85 backdrop-blur-xl", collapsed && "px-3")}>
           {!collapsed && (
             <Link href={ROUTES.home} className="flex items-center gap-2">
-              <Image src={LOGO_DARK} alt="DYDALO" width={100} height={23} className="h-5 w-auto logo-dark" />
-              <Image src={LOGO_LIGHT} alt="DYDALO" width={100} height={23} className="h-5 w-auto logo-light" />
+              <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
+              <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
               <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent">
                 ADMIN
               </span>
@@ -192,10 +192,10 @@ export function AdminSidebar() {
             onClick={() => layoutActions.setMobileSidebarOpen(false)}
           />
           <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-background shadow-xl animate-in slide-in-from-left duration-200 sm:w-[320px]">
-            <div className="flex h-16 shrink-0 items-center justify-between border-b-2 border-favorite bg-background/95 px-4 backdrop-blur-xl">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b-2 border-favorite bg-background/85 px-4 backdrop-blur-xl">
               <div className="flex items-center gap-2">
-                <Image src={LOGO_DARK} alt="DYDALO" width={88} height={20} className="h-5 w-auto logo-dark" />
-                <Image src={LOGO_LIGHT} alt="DYDALO" width={88} height={20} className="h-5 w-auto logo-light" />
+                <Image src={LOGO_DARK} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-dark" />
+                <Image src={LOGO_LIGHT} alt="DYDALO" width={120} height={28} className="h-7 w-auto logo-light" />
                 <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent">
                   ADMIN
                 </span>
