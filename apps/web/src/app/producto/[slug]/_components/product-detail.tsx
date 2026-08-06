@@ -228,15 +228,20 @@ export function ProductDetail({ product }: ProductDetailProps) {
             </div>
 
             <div className="mt-3">
-              {maxQty > LOW_STOCK_THRESHOLD ? (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
-                  <span className="size-2 rounded-full bg-success" />
-                  En stock
-                </span>
-              ) : maxQty > 0 ? (
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-warning">
-                  <span className="size-2 rounded-full bg-warning" />
-                  Quedan {maxQty}
+              {maxQty > 0 ? (
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-sm font-medium",
+                    maxQty > LOW_STOCK_THRESHOLD ? "text-success" : "text-warning"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "size-2 rounded-full",
+                      maxQty > LOW_STOCK_THRESHOLD ? "bg-success" : "bg-warning"
+                    )}
+                  />
+                  {maxQty} disponible{maxQty !== 1 ? "s" : ""}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-danger">
