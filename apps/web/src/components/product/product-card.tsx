@@ -160,11 +160,11 @@ export function ProductCard({ product, priority }: ProductCardProps) {
       </Link>
 
       {product.colors && product.colors.length > 0 && (
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 flex items-center gap-2">
           {product.colors.map((color) => (
             <span
               key={color.name}
-              className="size-4 rounded-full border border-border"
+              className="size-5 rounded-full border border-border"
               style={{ backgroundColor: color.hex }}
               title={color.name}
             />
