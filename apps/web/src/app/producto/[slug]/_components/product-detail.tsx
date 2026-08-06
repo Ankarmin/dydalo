@@ -15,6 +15,7 @@ import { categoriesStore } from "@/lib/stores/data-store.categories";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
 import { showCartToast } from "@/components/cart/cart-toast";
 import { RelatedProducts } from "@/components/product/related-products";
+import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import { LOW_STOCK_THRESHOLD } from "@/config/constants";
 import { getAvailableColorsForSize, getAvailableSizes, getVariantStock } from "@/lib/utils/inventory";
@@ -284,9 +285,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             {product.sizes.length > 0 && (
               <div className="mt-6">
-                <p className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Talla
-                </p>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Talla
+                  </p>
+                  <SizeGuideModal product={product} />
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => {
                     const available = availableSizes.includes(size);

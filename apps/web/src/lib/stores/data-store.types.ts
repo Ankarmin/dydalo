@@ -25,6 +25,17 @@ export type ProductVariantStock = {
   updatedAt: string;
 };
 
+export type SizeGuideRow = {
+  size: string;
+  values: string[];
+};
+
+export type SizeGuideData = {
+  columns: string[];
+  unit: string;
+  rows: SizeGuideRow[];
+};
+
 export type StockMovementType =
   | "purchase"
   | "sale"
@@ -244,6 +255,7 @@ export type CatalogCategory = {
   name: string;
   active: boolean;
   order: number;
+  sizeGuide?: SizeGuideData;
 };
 
 export type CreateOrderInput = {

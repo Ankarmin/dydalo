@@ -1,4 +1,4 @@
-import type { AdminProduct, CatalogCategory, ProductVariantStock } from "@/lib/stores/data-store.types";
+import type { AdminProduct, CatalogCategory, ProductVariantStock, SizeGuideData } from "@/lib/stores/data-store.types";
 import { LOW_STOCK_THRESHOLD } from "@/config/constants";
 import { getVariantId } from "@/lib/utils/inventory";
 
@@ -169,14 +169,25 @@ export const products: AdminProduct[] = seedProducts.map((product) => ({
   variants: product.variants ?? buildSeedVariants(product),
 }));
 
+const ropaSizeGuide: SizeGuideData = {
+  columns: ["Pecho", "Cintura", "Cadera"],
+  unit: "cm",
+  rows: [
+    { size: "S", values: ["86-91", "71-76", "86-91"] },
+    { size: "M", values: ["91-99", "76-81", "91-99"] },
+    { size: "L", values: ["99-107", "81-89", "99-107"] },
+    { size: "XL", values: ["107-117", "89-99", "107-117"] },
+  ],
+};
+
 export const catalogCategories: CatalogCategory[] = [
-  { slug: "polos", name: "Polos", active: true, order: 1 },
-  { slug: "casacas", name: "Casacas", active: true, order: 2 },
-  { slug: "hoodies", name: "Hoodies", active: true, order: 3 },
-  { slug: "pantalones", name: "Pantalones", active: true, order: 4 },
-  { slug: "jeans", name: "Jeans", active: true, order: 5 },
-  { slug: "camisas", name: "Camisas", active: true, order: 6 },
-  { slug: "tanks", name: "Tanks", active: true, order: 7 },
+  { slug: "polos", name: "Polos", active: true, order: 1, sizeGuide: ropaSizeGuide },
+  { slug: "casacas", name: "Casacas", active: true, order: 2, sizeGuide: ropaSizeGuide },
+  { slug: "hoodies", name: "Hoodies", active: true, order: 3, sizeGuide: ropaSizeGuide },
+  { slug: "pantalones", name: "Pantalones", active: true, order: 4, sizeGuide: ropaSizeGuide },
+  { slug: "jeans", name: "Jeans", active: true, order: 5, sizeGuide: ropaSizeGuide },
+  { slug: "camisas", name: "Camisas", active: true, order: 6, sizeGuide: ropaSizeGuide },
+  { slug: "tanks", name: "Tanks", active: true, order: 7, sizeGuide: ropaSizeGuide },
   { slug: "accesorios", name: "Accesorios", active: true, order: 8 },
 ];
 

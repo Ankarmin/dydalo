@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import type { AdminProduct, SizeGuideData } from "@/lib/stores/data-store.types";
 import { categoriesStore } from "@/lib/stores/data-store.categories";
-import type { SizeGuideData } from "@/lib/stores/data-store.types";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils/utils";
 
 type SizeGuideMap = Record<string, Record<string, string>>;
@@ -24,7 +32,17 @@ const calzadoGuia: SizeGuideMap = {
   "43": { US: "9", UK: "8", CM: "27.0" },
 };
 
-const FALLBACK_TABS = ["Ropa", "Calzado"] as const;
+const CLOTHING_CATEGORIES = ["ropa", "polos", "casacas", "pantalones", "shorts", "hoodies", "jeans", "camisas", "tanks"];
+const tabs = ["Ropa", "Calzado"] as const;
+
+function isClothingCategory(category: string): boolean {
+  return CLOTHING_CATEGORIES.some((c) => category.toLowerCase().includes(c));
+}
+
+interface SizeGuideModalProps {
+  product: AdminProduct;
+  className?: string;
+}
 
 function SizeTable({ guia }: { guia: SizeGuideMap }) {
   const tallas = Object.keys(guia);
@@ -124,48 +142,62 @@ function SizeTableFromData({ data }: { data: SizeGuideData }) {
   );
 }
 
-export function GuiaTabs() {
-  const categories = categoriesStore.getActive();
-  const withGuides = categories.filter(
-    (c) => c.sizeGuide?.columns?.length && c.sizeGuide?.rows?.length
-  );
+export function SizeGuideModal({ product, className }: SizeGuideModalProps) {
+  const [open, setOpen] = useState(false);
 
-  const tabLabels = withGuides.length > 0
-    ? withGuides.map((c) => c.name)
-    : [...FALLBACK_TABS];
+  const category = categoriesStore.getBySlug(product.category);
+  const hasCustomGuide = Boolean(category?.sizeGuide?.columns?.length && category?.sizeGuide?.rows?.length);
 
-  const [activeTab, setActiveTab] = useState<string>(tabLabels[0]);
-
-  const useFallback = withGuides.length === 0;
+  const defaultCategory = isClothingCategory(product.category) ? "Ropa" : "Calzado";
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>(defaultCategory);
+  const guia = activeTab === "Ropa" ? ropaGuia : calzadoGuia;
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Categoría de tallas">
-        {tabLabels.map((tab) => (
-          <Button
-            key={tab}
-            variant={activeTab === tab ? "default" : "street"}
-            size="sm"
-            onClick={() => setActiveTab(tab)}
-            role="tab"
-            aria-selected={activeTab === tab}
-            className="uppercase tracking-[0.04em]"
-          >
-            {tab}
-          </Button>
-        ))}
-      </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="link"
+          size="sm"
+          className={cn("h-auto p-0 text-xs underline underline-offset-2", className)}
+        >
+          Guía de tallas
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Guía de tallas</DialogTitle>
+          <DialogDescription>
+            {product.name}
+          </DialogDescription>
+        </DialogHeader>
 
-      <div className="mt-6">
-        {useFallback ? (
-          <SizeTable guia={activeTab === "Ropa" ? ropaGuia : calzadoGuia} />
+        {hasCustomGuide && category?.sizeGuide ? (
+          <div className="mt-2">
+            <SizeTableFromData data={category.sizeGuide} />
+          </div>
         ) : (
-          (() => {
-            const cat = withGuides.find((c) => c.name === activeTab);
-            return cat?.sizeGuide ? <SizeTableFromData data={cat.sizeGuide} /> : null;
-          })()
+          <div className="mt-2">
+            <div className="flex gap-2" role="tablist" aria-label="Categoría de tallas">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab}
+                  variant={activeTab === tab ? "default" : "street"}
+                  size="sm"
+                  onClick={() => setActiveTab(tab)}
+                  role="tab"
+                  aria-selected={activeTab === tab}
+                  className="uppercase tracking-[0.04em]"
+                >
+                  {tab}
+                </Button>
+              ))}
+            </div>
+            <div className="mt-4">
+              <SizeTable guia={guia} />
+            </div>
+          </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
