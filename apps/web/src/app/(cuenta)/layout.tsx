@@ -52,7 +52,7 @@ export default function CuentaLayout({
           className="w-full shrink-0 md:w-56"
           aria-label="Navegación de cuenta"
         >
-          <h2 className="mb-6 text-xl font-bold tracking-heading border-b-2 border-favorite pb-3">
+          <h2 className="mb-6 text-xl font-bold tracking-heading">
             MI CUENTA
           </h2>
           <div className="flex flex-row gap-2 md:flex-col">
