@@ -135,10 +135,14 @@ export function CategoryForm({ slug }: CategoryFormProps) {
   }
 
   function onSubmit(values: FormValues) {
-    const normalizedValues: { name: string; active: boolean; sizeGuide?: SizeGuideData } = {
-      ...values,
+    const now = new Date().toISOString();
+    const normalizedValues = {
+      id: category?.id ?? crypto.randomUUID(),
       name: normalizeText(values.name),
-    };
+      active: values.active,
+      createdAt: category?.createdAt ?? now,
+      updatedAt: now,
+    } as { id: string; name: string; active: boolean; sizeGuide?: SizeGuideData; createdAt: string; updatedAt: string };
 
     if (hasGuide) {
       const validGuide: SizeGuideData = {

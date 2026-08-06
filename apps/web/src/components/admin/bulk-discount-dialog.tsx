@@ -21,7 +21,7 @@ import {
 interface BulkDiscountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  productIds: number[];
+  productIds: string[];
   actor: { id: string; name: string };
   onApplied: () => void;
 }

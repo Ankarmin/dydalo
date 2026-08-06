@@ -46,7 +46,7 @@ import {
   isOutOfStockVariant,
 } from "@/lib/utils/inventory";
 
-const VALID_SIZES = ["S", "M", "L", "XL", "28", "30", "32", "34", "36", "Única"] as const;
+const VALID_SIZES = ["S", "M", "L", "XL", "28", "30", "32", "34", "36", "Unica"] as const;
 
 const formSchema = z.object({
   name: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
@@ -106,7 +106,7 @@ const defaultValues: FormValues = {
 };
 
 interface ProductFormProps {
-  productId?: number;
+  productId?: string;
 }
 
 export function ProductForm({ productId }: ProductFormProps) {

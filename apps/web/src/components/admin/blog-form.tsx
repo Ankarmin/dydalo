@@ -48,7 +48,6 @@ const formSchema = z.object({
   excerpt: z.string().trim().min(10, "Mínimo 10 caracteres").max(180, "Máximo 180 caracteres"),
   content: z.string().trim().min(50, "Mínimo 50 caracteres"),
   coverImage: z.string(),
-  author: z.string().trim().min(2, "Mínimo 2 caracteres"),
   tags: z.array(z.string().trim().min(1)).min(1, "Al menos un tag"),
   published: z.boolean(),
 }).superRefine((data, ctx) => {
@@ -69,7 +68,6 @@ const defaultValues: FormValues = {
   excerpt: "",
   content: "",
   coverImage: "",
-  author: "DYDALO",
   tags: [],
   published: true,
 };
@@ -100,7 +98,6 @@ export function BlogForm({ postId }: BlogFormProps) {
       excerpt: post.excerpt,
       content: post.content,
       coverImage: post.coverImage,
-      author: post.author,
       tags: post.tags,
       published: post.published,
     });
@@ -133,12 +130,18 @@ export function BlogForm({ postId }: BlogFormProps) {
   }
 
   const onSubmit = form.handleSubmit((values) => {
+    const actor = {
+      id: authState.user?.id ?? "admin",
+      name: authState.user?.name ?? "Admin",
+    };
+
     const normalizedValues = {
       ...values,
       title: normalizeText(values.title),
       slug: generateSlug(values.slug),
       excerpt: normalizeText(values.excerpt),
-      author: normalizeText(values.author),
+      authorId: actor.id,
+      authorName: actor.name,
       tags: values.tags.map((tag) => normalizeText(tag).toLowerCase()),
     };
     const slugExists = blogStore
@@ -153,11 +156,6 @@ export function BlogForm({ postId }: BlogFormProps) {
     setIsPending(true);
 
     setTimeout(() => {
-      const actor = {
-        id: authState.user?.id ?? "admin",
-        name: authState.user?.name ?? "Admin",
-      };
-
       if (isEdit) {
         const before = post;
         const updated = blogStore.update(postId!, normalizedValues);
@@ -166,7 +164,7 @@ export function BlogForm({ postId }: BlogFormProps) {
             ? auditStore.diffFields(
                 before as unknown as Record<string, unknown>,
                 updated as unknown as Record<string, unknown>,
-                ["title", "slug", "excerpt", "content", "coverImage", "author", "tags", "published"]
+                ["title", "slug", "excerpt", "content", "coverImage", "authorName", "tags", "published"]
               )
             : [];
 
@@ -281,24 +279,6 @@ export function BlogForm({ postId }: BlogFormProps) {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="author"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Autor</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Nombre del autor"
-                        disabled={isPending}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="excerpt"

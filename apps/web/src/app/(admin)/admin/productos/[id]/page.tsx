@@ -12,8 +12,6 @@ export default async function ProductoEditarPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const numId = parseInt(id, 10);
-  if (isNaN(numId)) notFound();
 
-  return <ProductForm productId={numId} />;
+  return <ProductForm productId={id} />;
 }

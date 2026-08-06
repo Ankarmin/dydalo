@@ -9,7 +9,7 @@ import { productsStore } from "@/lib/stores/data-store.products";
 import { addressesStore } from "@/lib/stores/data-store.addresses";
 import { stockMovementsStore } from "@/lib/stores/data-store.stock-movements";
 import { auditStore } from "@/lib/stores/data-store.audit";
-import type { Address, Order, OrderStatus, OrderItem, ShippingAddress } from "@/lib/stores";
+import type { Address, Order, OrderStatus, OrderItem, ProductVariantStock } from "@/lib/stores";
 import { VALID_TRANSITIONS, STATUS_STYLES } from "@/lib/stores";
 import { useAuth } from "@/contexts/auth-context";
 import { ROUTES } from "@/lib/utils/routes";
@@ -32,10 +32,6 @@ import { departments, type Province } from "@/config/ubigeos";
 import { normalizeText } from "@/lib/validations/forms";
 
 function formatAddressLabel(address: Address): string {
-  return `${address.street}, ${address.district}, ${address.city}, ${address.state}`;
-}
-
-function formatShippingAddress(address: ShippingAddress): string {
   return [address.street, address.district, address.city, address.state]
     .filter(Boolean)
     .join(", ");
@@ -54,9 +50,10 @@ export function PedidoDetalleClient({ id }: { id: string }) {
   const [editedAddressMode, setEditedAddressMode] = useState<"existing" | "new">("new");
   const [editedAddressId, setEditedAddressId] = useState("");
   const [editedAddressLabel, setEditedAddressLabel] = useState("");
-  const [editedAddress, setEditedAddress] = useState<ShippingAddress>({
+  const [editedAddress, setEditedAddress] = useState<Pick<Address, "fullName" | "street" | "district" | "city" | "state" | "zip" | "country" | "phone">>({
     fullName: "",
     street: "",
+    district: "",
     city: "",
     state: "",
     zip: "",
@@ -124,7 +121,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
     setEditedItems([...order.items]);
     setEditedShipping(order.shipping);
     setEditedDiscount(order.discount);
-    setEditedAddress({ ...order.shippingAddress });
+    setEditedAddress({ ...order.shippingAddressSnapshot });
     const linked = order.shippingAddressId
       ? addressesStore.getById(order.shippingAddressId)
       : undefined;
@@ -160,7 +157,9 @@ export function PedidoDetalleClient({ id }: { id: string }) {
     [recalculatedSubtotal, editedShipping, editedDiscount]
   );
 
-  function addItem(product: { id: number; name: string; price: number; sizes: string[]; colors: { name: string; hex: string }[] }, size: string, color: string, quantity: number) {
+  function addItem(product: { id: string; name: string; price: number; sizes: string[]; colors: { name: string; hex: string }[]; variants?: ProductVariantStock[] }, size: string, color: string, quantity: number) {
+    const variant = product.variants?.find((v) => v.size === size && v.color === color);
+    const variantId = variant?.id ?? `${product.id}-${size}-${color}`;
     setEditedItems((prev) => {
       const existing = prev.find(
         (i) => i.productId === product.id && i.size === size && i.color === color
@@ -176,6 +175,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         ...prev,
         {
           productId: product.id,
+          variantId,
           name: product.name,
           price: product.price,
           size,
@@ -207,7 +207,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       editedAddressMode !== (order.shippingAddressId ? "existing" : "new") ||
       editedAddressId !== (order.shippingAddressId ?? "") ||
       editedAddressLabel.trim().length > 0 ||
-      JSON.stringify(editedAddress) !== JSON.stringify(order.shippingAddress)
+      JSON.stringify(editedAddress) !== JSON.stringify(order.shippingAddressSnapshot)
     );
   }
 
@@ -226,7 +226,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       return;
     }
     let nextShippingAddressId: string | undefined;
-    let addressSource: Pick<Address, "street" | "district" | "city" | "state" | "zip"> | undefined;
+    let addressSource: Pick<Address, "id" | "street" | "district" | "city" | "state" | "zip" | "createdAt"> | undefined;
 
     if (editedAddressMode === "existing") {
       if (!selectedEditedAddress || selectedEditedAddress.userId !== order.userId) {
@@ -253,11 +253,14 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       const savedAddress = existingAddress ?? addressesStore.create({
         userId: order.userId,
         label: editedAddressLabel.trim() || "Dirección",
+        fullName: order.shippingAddressSnapshot.fullName,
         street,
         district,
         city,
         state,
-        zip: editedAddress.zip.trim(),
+        zip: editedAddress.zip?.trim() ?? "",
+        country: "Perú",
+        phone: order.shippingAddressSnapshot.phone || "",
         isDefault: customerAddresses.length === 0,
       });
 
@@ -270,16 +273,21 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       return;
     }
 
-    const normalizedAddress: ShippingAddress = {
-      ...editedAddress,
-      fullName: order.shippingAddress.fullName || user?.name || "Cliente",
+    const normalizedAddress: Address = {
+      id: nextShippingAddressId || addressSource.id || "",
+      userId: order.userId,
+      label: editedAddressLabel.trim() || "Dirección",
+      fullName: editedAddress.fullName || user?.name || "Cliente",
       street: addressSource.street,
       district: addressSource.district,
       city: addressSource.city,
       state: addressSource.state,
       zip: addressSource.zip ?? "",
       country: "Perú",
-      phone: order.shippingAddress.phone || user?.phone || "",
+      phone: editedAddress.phone || user?.phone || "",
+      isDefault: false,
+      createdAt: addressSource.createdAt ?? order.createdAt,
+      updatedAt: new Date().toISOString(),
     };
     const previousStockItems = order.stockReserved ? order.items : [];
     const stockValidation = productsStore.validateStockChange(previousStockItems, editedItems);
@@ -304,7 +312,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         shipping: editedShipping,
         discount: editedDiscount,
         shippingAddressId: nextShippingAddressId,
-        shippingAddress: normalizedAddress,
+        shippingAddressSnapshot: normalizedAddress,
         stockReserved: true,
       });
 
@@ -335,15 +343,15 @@ export function PedidoDetalleClient({ id }: { id: string }) {
             total: order.total,
             shipping: order.shipping,
             discount: order.discount,
-            shippingAddress: order.shippingAddress,
-          },
-          after: {
-            items: updated.items,
-            subtotal: updated.subtotal,
-            total: updated.total,
-            shipping: updated.shipping,
-            discount: updated.discount,
-            shippingAddress: updated.shippingAddress,
+              shippingAddress: order.shippingAddressSnapshot,
+            },
+            after: {
+              items: updated.items,
+              subtotal: updated.subtotal,
+              total: updated.total,
+              shipping: updated.shipping,
+              discount: updated.discount,
+              shippingAddress: updated.shippingAddressSnapshot,
           },
         });
         setOrder(updated);
@@ -482,14 +490,14 @@ export function PedidoDetalleClient({ id }: { id: string }) {
           </div>
           <div>
             <p className="text-muted-foreground">Teléfono</p>
-            <p className="font-medium">{order.shippingAddress.phone || user?.phone || "—"}</p>
+            <p className="font-medium">{order.shippingAddressSnapshot.phone || user?.phone || "—"}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Dirección</p>
-            <p className="font-medium">{formatShippingAddress(editMode ? editedAddress : order.shippingAddress) || "—"}</p>
-            {(editMode ? editedAddress.zip : order.shippingAddress.zip) && (
+            <p className="font-medium">{formatAddressLabel(editMode ? editedAddress as Address : order.shippingAddressSnapshot) || "—"}</p>
+            {(editMode ? editedAddress.zip : order.shippingAddressSnapshot.zip) && (
               <p className="text-xs text-muted-foreground">
-                CP: {editMode ? editedAddress.zip : order.shippingAddress.zip}
+                CP: {editMode ? editedAddress.zip : order.shippingAddressSnapshot.zip}
               </p>
             )}
           </div>

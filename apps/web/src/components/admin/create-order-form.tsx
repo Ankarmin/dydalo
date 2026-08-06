@@ -74,7 +74,7 @@ const formSchema = z
     items: z
       .array(
         z.object({
-          productId: z.number(),
+          productId: z.string(),
           name: z.string(),
           price: z.number(),
           size: z.string().min(1, "Selecciona talla"),
@@ -460,11 +460,14 @@ export function CreateOrderForm() {
             const createdAddress = addressesStore.create({
               userId,
               label: values.addressLabel?.trim() || "Dirección",
+              fullName: customerFullName,
               street: values.street,
               district: values.district ?? "",
               city: values.city,
               state: values.state,
               zip: values.zip ?? "",
+              country: "Perú",
+              phone: customerPhone,
               isDefault: existingAddresses.length === 0,
             });
             shippingAddressId = createdAddress.id;
@@ -478,7 +481,7 @@ export function CreateOrderForm() {
           email: values.newCustomerEmail!,
           role: "customer",
           phone: values.newCustomerPhone || undefined,
-          password: "Dydalo123",
+          passwordHash: "Dydalo123",
         });
         userId = created.id;
         customerFullName = created.name;
@@ -507,17 +510,23 @@ export function CreateOrderForm() {
         const createdAddress = matchingAddress ?? addressesStore.create({
           userId,
           label: values.addressLabel?.trim() || "Dirección",
+          fullName: customerFullName,
           street: values.street,
           district: values.district ?? "",
           city: values.city,
           state: values.state,
           zip: values.zip ?? "",
+          country: "Perú",
+          phone: customerPhone,
           isDefault: true,
         });
         shippingAddressId = createdAddress.id;
       }
 
-      const shippingAddress = {
+      const shippingAddressSnapshot: Address = {
+        id: shippingAddressId ?? "",
+        userId,
+        label: values.addressLabel?.trim() || "Dirección",
         fullName: customerFullName,
         street: selectedAddress?.street ?? values.street,
         district: selectedAddress?.district ?? values.district ?? "",
@@ -526,8 +535,18 @@ export function CreateOrderForm() {
         zip: selectedAddress?.zip ?? values.zip ?? "",
         country: "Perú",
         phone: customerPhone,
+        isDefault: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
-      const orderItems = values.items.map((item) => ({ ...item }));
+      const orderItems = values.items.map((item) => {
+        const product = activeProducts.find((p) => p.id === item.productId);
+        const variant = product?.variants?.find((v) => v.size === item.size && v.color === item.color);
+        return {
+          ...item,
+          variantId: variant?.id ?? `${item.productId}-${item.size}-${item.color}`,
+        };
+      });
       const stockValidation = productsStore.validateStockChange([], orderItems);
       if (!stockValidation.success) {
         notifyAdmin("Stock insuficiente", stockValidation.error, "error");
@@ -553,7 +572,7 @@ export function CreateOrderForm() {
         shipping: values.shipping,
         discount: values.discount,
         total,
-        shippingAddress,
+        shippingAddressSnapshot,
       });
 
       const actor = {

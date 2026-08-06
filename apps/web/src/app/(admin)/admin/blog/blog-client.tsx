@@ -46,8 +46,8 @@ export function BlogClient() {
         switch (sort.field) {
           case "title":
             return dir * a.title.localeCompare(b.title);
-          case "author":
-            return dir * a.author.localeCompare(b.author);
+          case "authorName":
+            return dir * a.authorName.localeCompare(b.authorName);
           case "createdAt":
             return (
               dir *
@@ -154,7 +154,7 @@ export function BlogClient() {
                 />
                 <SortableHeader
                   label="Autor"
-                  field="author"
+                  field="authorName"
                   currentSort={sort}
                   onSortChange={setSort}
                 />
@@ -191,7 +191,7 @@ export function BlogClient() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {post.author}
+                    {post.authorName}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">

@@ -47,11 +47,11 @@ export function ProductosClient() {
   });
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("todas");
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<SortState>(defaultSort);
   const [bulkDiscountOpen, setBulkDiscountOpen] = useState(false);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const deferredQuery = useDeferredValue(query);
 
@@ -162,7 +162,7 @@ export function ProductosClient() {
     setDeleteId(null);
   }
 
-  function toggleSelect(productId: number) {
+  function toggleSelect(productId: string) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) {
@@ -200,7 +200,7 @@ export function ProductosClient() {
   const allPageSelected = paginated.length > 0 && pageSelectedIds.length === paginated.length;
 
   const selectedCount = selected.size;
-  const selectedIds = useMemo(() => Array.from(selected), [selected]);
+  const selectedIds = useMemo(() => Array.from(selected) as string[], [selected]);
   const actor = { id: authState.user?.id ?? "admin", name: authState.user?.name ?? "Admin" };
 
   function handleExport() {
