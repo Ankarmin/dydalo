@@ -1,7 +1,8 @@
-import { read, write, KEYS } from "./data-store.utils";
+import { read, write, generateId, KEYS } from "./data-store.utils";
 import type { SiteConfig } from "./data-store.types";
 
 const DEFAULT_CONFIG: SiteConfig = {
+  id: "default",
   siteName: "DYDALO",
   siteDescription: "Streetwear premium y exclusivo para un flow sin límites.",
   brandSubtitle: "The Real Cream",
@@ -27,12 +28,17 @@ const DEFAULT_CONFIG: SiteConfig = {
 };
 
 function get(): SiteConfig {
-  return read<SiteConfig>(KEYS.config, DEFAULT_CONFIG);
+  const stored = read<SiteConfig>(KEYS.config, DEFAULT_CONFIG);
+  return { ...DEFAULT_CONFIG, ...stored, id: stored.id || DEFAULT_CONFIG.id };
 }
 
 function update(data: Partial<SiteConfig>): SiteConfig {
   const current = get();
-  const updated: SiteConfig = { ...current, ...data };
+  const updated: SiteConfig = {
+    ...current,
+    ...data,
+    updatedAt: new Date().toISOString(),
+  };
   write(KEYS.config, updated);
   return updated;
 }

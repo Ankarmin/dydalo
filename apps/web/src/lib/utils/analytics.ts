@@ -14,7 +14,7 @@ export type StatusDistribution = {
 };
 
 export type TopProduct = {
-  productId: number;
+  productId: string;
   name: string;
   units: number;
   revenue: number;
@@ -95,7 +95,7 @@ export function getTopProducts(
   limit: number = 5
 ): TopProduct[] {
   const productMap = new Map(products.map((p) => [p.id, p]));
-  const sales: Record<number, { units: number; revenue: number }> = {};
+  const sales: Record<string, { units: number; revenue: number }> = {};
 
   for (const order of orders) {
     if (order.status === "cancelado") continue;
@@ -110,9 +110,9 @@ export function getTopProducts(
 
   return Object.entries(sales)
     .map(([productId, data]) => {
-      const product = productMap.get(Number(productId));
+      const product = productMap.get(productId);
       return {
-        productId: Number(productId),
+        productId,
         name: product?.name ?? `Producto #${productId}`,
         units: data.units,
         revenue: data.revenue,
@@ -284,7 +284,7 @@ export function getProductsWithoutSales(
   cutoff.setDate(cutoff.getDate() - days);
   const cutoffISO = cutoff.toISOString();
 
-  const orderedProductIds = new Set<number>();
+  const orderedProductIds = new Set<string>();
   for (const order of orders) {
     if (order.createdAt >= cutoffISO && order.status !== "cancelado") {
       for (const item of order.items) {

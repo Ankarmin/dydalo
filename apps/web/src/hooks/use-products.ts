@@ -46,7 +46,7 @@ function getServerSnapshot(): AdminProduct[] {
 export function useProducts() {
   const products = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const getById = useCallback((id: number) => products.find((p) => p.id === id) ?? null, [products]);
+  const getById = useCallback((id: string) => products.find((p) => p.id === id) ?? null, [products]);
 
   return {
     products,

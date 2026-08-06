@@ -1,4 +1,4 @@
-import { read, write, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
+import { read, write, generateId, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
 import type { AdminProduct, OrderItem } from "./data-store.types";
 import { products as seedProducts } from "@/config/products";
 import { getTotalStock, getVariantKey, normalizeProductInventory, summarizeItems } from "@/lib/utils/inventory";
@@ -29,7 +29,7 @@ function getAll(): AdminProduct[] {
   return normalized;
 }
 
-function getById(id: number): AdminProduct | undefined {
+function getById(id: string): AdminProduct | undefined {
   const products = getAll();
   const map = new Map(products.map((p) => [p.id, p]));
   return map.get(id);
@@ -42,13 +42,12 @@ function getBySlug(slug: string): AdminProduct | undefined {
 function create(data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt" | "slug"> & { slug?: string }): AdminProduct {
   const products = getAll();
   const now = new Date().toISOString();
-  const maxId = products.reduce((max, p) => (p.id > max ? p.id : max), 0);
   const slug = data.slug || generateSlug(data.name);
 
   const product = normalizeProductInventory({
     ...data,
     slug,
-    id: maxId + 1,
+    id: generateId(),
     createdAt: now,
     updatedAt: now,
   });
@@ -66,7 +65,7 @@ function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function update(id: number, data: Partial<AdminProduct>): AdminProduct | undefined {
+function update(id: string, data: Partial<AdminProduct>): AdminProduct | undefined {
   const products = getAll();
   const index = products.findIndex((p) => p.id === id);
   if (index === -1) return undefined;
@@ -85,7 +84,7 @@ function update(id: number, data: Partial<AdminProduct>): AdminProduct | undefin
   return updated;
 }
 
-function remove(id: number): boolean {
+function remove(id: string): boolean {
   const products = getAll();
   const filtered = products.filter((p) => p.id !== id);
   if (filtered.length === products.length) return false;

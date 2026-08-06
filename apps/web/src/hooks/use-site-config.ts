@@ -5,6 +5,7 @@ import { configStore } from "@/lib/stores/data-store.config";
 import type { SiteConfig } from "@/lib/stores/data-store.types";
 
 const defaultConfig: SiteConfig = {
+  id: "default",
   siteName: "DYDALO",
   siteDescription: "Streetwear premium y exclusivo para un flow sin límites.",
   brandSubtitle: "The Real Cream",

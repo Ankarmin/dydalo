@@ -202,7 +202,7 @@ function ensureInitialInventorySnapshot(): StockMovement[] {
   return createMany(movements);
 }
 
-function getByProductId(productId: number): StockMovement[] {
+function getByProductId(productId: string): StockMovement[] {
   return getAll().filter((movement) => movement.productId === productId);
 }
 

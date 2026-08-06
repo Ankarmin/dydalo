@@ -22,7 +22,6 @@ export type {
   Order,
   OrderStatus,
   OrderItem,
-  ShippingAddress,
   Address,
   StatusTransition,
   BlogPost,

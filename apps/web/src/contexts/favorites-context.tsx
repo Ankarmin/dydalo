@@ -15,19 +15,19 @@ import { isCookieAllowed } from "@/contexts/cookie-consent-context";
 
 const STORAGE_KEY = "dydalo-favs";
 
-function loadFavorites(): Set<number> {
+function loadFavorites(): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return new Set();
-    const ids: number[] = JSON.parse(raw);
-    return new Set(ids.filter((id) => typeof id === "number"));
+    const ids: string[] = JSON.parse(raw);
+    return new Set(ids.filter((id) => typeof id === "string"));
   } catch {
     return new Set();
   }
 }
 
-function saveFavorites(ids: Set<number>) {
+function saveFavorites(ids: Set<string>) {
   if (!isCookieAllowed("functional")) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
@@ -38,23 +38,23 @@ function saveFavorites(ids: Set<number>) {
 
 type FavoritesContextValue = {
   favorites: AdminProduct[];
-  favoriteIds: Set<number>;
+  favoriteIds: Set<string>;
   favoritesCount: number;
-  isFavorite: (productId: number) => boolean;
-  toggleFavorite: (productId: number) => void;
+  isFavorite: (productId: string) => boolean;
+  toggleFavorite: (productId: string) => void;
   clearAll: () => void;
 };
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(loadFavorites);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(loadFavorites);
 
   useEffect(() => {
     saveFavorites(favoriteIds);
   }, [favoriteIds]);
 
-  const toggleFavorite = useCallback((productId: number) => {
+  const toggleFavorite = useCallback((productId: string) => {
     setFavoriteIds((prev) => {
       const next = new Set(prev);
       if (next.has(productId)) {
@@ -71,7 +71,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isFavorite = useCallback(
-    (productId: number) => favoriteIds.has(productId),
+    (productId: string) => favoriteIds.has(productId),
     [favoriteIds],
   );
 

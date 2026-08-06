@@ -8,12 +8,14 @@ export type User = {
   email: string;
   role: UserRole;
   phone?: string;
-  password?: string;
+  passwordHash?: string;
+  emailVerified?: boolean;
+  lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
 };
 
-export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "36" | "Única";
+export type ProductSize = "S" | "M" | "L" | "XL" | "28" | "30" | "32" | "34" | "36" | "Unica";
 
 export type ProductVariantStock = {
   id: string;
@@ -22,6 +24,8 @@ export type ProductVariantStock = {
   stock: number;
   active: boolean;
   lowStockThreshold?: number;
+  sku?: string;
+  createdAt?: string;
   updatedAt: string;
 };
 
@@ -48,7 +52,7 @@ export type StockMovementType =
 
 export type StockMovement = {
   id: string;
-  productId: number;
+  productId: string;
   productName: string;
   productImage?: string;
   sku: string;
@@ -111,7 +115,7 @@ export type AuditLog = {
 };
 
 export type AdminProduct = {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   category: string;
@@ -126,6 +130,10 @@ export type AdminProduct = {
   featured: boolean;
   discount: number | null;
   sku: string;
+  description?: string;
+  costPrice?: number;
+  metaTitle?: string;
+  metaDescription?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -149,7 +157,8 @@ export type StatusTransition = {
 };
 
 export type OrderItem = {
-  productId: number;
+  productId: string;
+  variantId: string;
   name: string;
   quantity: number;
   price: number;
@@ -157,26 +166,18 @@ export type OrderItem = {
   color: string;
 };
 
-export type ShippingAddress = {
-  fullName: string;
-  street: string;
-  district?: string;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
-  phone: string;
-};
-
 export type Address = {
   id: string;
   userId: string;
   label: string;
+  fullName: string;
   street: string;
   district: string;
   city: string;
   state: string;
   zip?: string;
+  country: string;
+  phone: string;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string;
@@ -195,8 +196,11 @@ export type Order = {
   shipping: number;
   discount: number;
   total: number;
-  shippingAddress: ShippingAddress;
+  shippingAddressSnapshot: Address;
   statusHistory: StatusTransition[];
+  paymentMethod?: string;
+  paymentStatus?: string;
+  trackingNumber?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -217,7 +221,8 @@ export type BlogPost = {
   excerpt: string;
   content: string;
   coverImage: string;
-  author: string;
+  authorId: string;
+  authorName: string;
   tags: string[];
   published: boolean;
   createdAt: string;
@@ -225,6 +230,7 @@ export type BlogPost = {
 };
 
 export type SiteConfig = {
+  id: string;
   siteName: string;
   siteDescription: string;
   brandSubtitle: string;
@@ -244,6 +250,8 @@ export type SiteConfig = {
     backgroundImage: string;
   };
   maintenanceMode: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
 };
 
 export type ActionResult<T = void> =
@@ -251,11 +259,17 @@ export type ActionResult<T = void> =
   | { success: false; error: string };
 
 export type CatalogCategory = {
+  id: string;
   slug: string;
   name: string;
   active: boolean;
   order: number;
+  description?: string;
+  image?: string;
+  parentId?: string;
   sizeGuide?: SizeGuideData;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateOrderInput = {
@@ -269,7 +283,6 @@ export type CreateOrderInput = {
   shipping: number;
   discount: number;
   total: number;
-  shippingAddress: ShippingAddress;
 };
 
 export const STATUS_STYLES: Record<string, string> = {

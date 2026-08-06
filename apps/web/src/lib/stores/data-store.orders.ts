@@ -1,5 +1,5 @@
 import { read, write, generateId, KEYS } from "./data-store.utils";
-import type { Order, OrderStatus, CreateOrderInput } from "./data-store.types";
+import type { Order, OrderStatus, CreateOrderInput, Address } from "./data-store.types";
 import { VALID_TRANSITIONS } from "./data-store.types";
 import { productsStore } from "./data-store.products";
 import { stockMovementsStore } from "./data-store.stock-movements";
@@ -34,7 +34,7 @@ function getByUserId(userId: string): Order[] {
   return ordersByUserCache.get(userId) ?? [];
 }
 
-function create(data: CreateOrderInput): Order {
+function create(data: CreateOrderInput & { shippingAddressSnapshot: Address }): Order {
   invalidateCache();
   const orders = getAll();
   const now = new Date().toISOString();

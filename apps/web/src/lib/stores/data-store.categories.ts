@@ -1,4 +1,4 @@
-import { read, write, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
+import { read, write, generateId, KEYS, getSeedHash, setSeedHash } from "./data-store.utils";
 import type { CatalogCategory } from "./data-store.types";
 import { catalogCategories as seedCategories } from "@/config/products";
 
@@ -31,8 +31,9 @@ function getActive(): CatalogCategory[] {
   return getAll().filter((c) => c.active).toSorted((a, b) => a.order - b.order);
 }
 
-function create(data: Omit<CatalogCategory, "slug" | "order"> & { order?: number }): CatalogCategory {
+function create(data: Omit<CatalogCategory, "id" | "slug" | "order" | "createdAt" | "updatedAt"> & { order?: number }): CatalogCategory {
   const categories = getAll();
+  const now = new Date().toISOString();
   const slug = data.name
     .toLowerCase()
     .normalize("NFD")
@@ -44,8 +45,11 @@ function create(data: Omit<CatalogCategory, "slug" | "order"> & { order?: number
 
   const category: CatalogCategory = {
     ...data,
+    id: generateId(),
     slug,
     order: data.order ?? maxOrder + 1,
+    createdAt: now,
+    updatedAt: now,
   };
 
   write(KEYS.categories, [...categories, category]);
@@ -57,7 +61,12 @@ function update(slug: string, data: Partial<CatalogCategory>): CatalogCategory |
   const index = categories.findIndex((c) => c.slug === slug);
   if (index === -1) return undefined;
 
-  const updated: CatalogCategory = { ...categories[index], ...data, slug };
+  const updated: CatalogCategory = {
+    ...categories[index],
+    ...data,
+    slug,
+    updatedAt: new Date().toISOString(),
+  };
   const next = [...categories];
   next[index] = updated;
   write(KEYS.categories, next);
@@ -86,7 +95,16 @@ function reorder(slugs: string[]): void {
 }
 
 function seed(items: CatalogCategory[]): void {
-  write(KEYS.categories, items);
+  const now = new Date().toISOString();
+  write(
+    KEYS.categories,
+    items.map((item) => ({
+      ...item,
+      id: item.id || generateId(),
+      createdAt: item.createdAt || now,
+      updatedAt: item.updatedAt || now,
+    }))
+  );
 }
 
 export const categoriesStore = { getAll, getBySlug, getActive, create, update, delete: remove, reorder, seed };

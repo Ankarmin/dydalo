@@ -9,7 +9,7 @@ import { getVariantKey, getVariantStock } from "@/lib/utils/inventory";
 
 export type CartItem = {
   key: string;
-  productId: number;
+  productId: string;
   size: string;
   color: string;
   quantity: number;
@@ -32,7 +32,7 @@ type CartContextValue = {
   cartProducts: AdminProduct[];
   cartItems: CartLine[];
   subtotal: number;
-  updateQuantity: (productId: number, change: number, variant?: { size?: string; color?: string }) => void;
+  updateQuantity: (productId: string, change: number, variant?: { size?: string; color?: string }) => void;
   clearCart: () => void;
 };
 
@@ -57,7 +57,7 @@ function sanitizeCartItems(items: unknown[]): CartState {
 
     const { productId, size, color, quantity } = item as Partial<CartItem>;
     if (
-      typeof productId !== "number" ||
+      typeof productId !== "string" ||
       typeof size !== "string" ||
       typeof color !== "string" ||
       typeof quantity !== "number"
@@ -127,7 +127,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     saveCart(cart);
   }, [cart, hydrated]);
 
-  const updateQuantity = useCallback((productId: number, change: number, variant?: { size?: string; color?: string }) => {
+  const updateQuantity = useCallback((productId: string, change: number, variant?: { size?: string; color?: string }) => {
     setCart((current) => {
       const product = productsStore.getById(productId);
       if (!product) return current;

@@ -70,11 +70,11 @@ export function exportOrdersCSV(orders: Order[], users: User[]): void {
       o.discount,
       o.total,
       o.status,
-      o.shippingAddress.street,
-      o.shippingAddress.district ?? "",
-      o.shippingAddress.city,
-      o.shippingAddress.state,
-      o.shippingAddress.phone,
+      o.shippingAddressSnapshot.street,
+      o.shippingAddressSnapshot.district ?? "",
+      o.shippingAddressSnapshot.city,
+      o.shippingAddressSnapshot.state,
+      o.shippingAddressSnapshot.phone,
     ];
   });
   const csv = buildCSV(headers, rows);
@@ -223,7 +223,7 @@ export function importProductsFromCSV(
         active,
         featured,
         image: "",
-        sizes: ["Única"],
+        sizes: ["Unica"],
         colors: [{ name: "Negro", hex: "#1a1a1a" }],
       });
       created++;

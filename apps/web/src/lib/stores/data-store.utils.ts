@@ -6,6 +6,7 @@ export const KEYS = {
   config: "dydalo_config",
   categories: "dydalo_categories",
   images: "dydalo_images",
+  addresses: "dydalo_addresses",
   stockMovements: "dydalo_stock_movements",
   auditLogs: "dydalo_audit_logs",
 } as const;

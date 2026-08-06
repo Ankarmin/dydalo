@@ -3,7 +3,7 @@
 import { createContext, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
 import { use } from "react";
-import { ADMINS, ADMIN_PASSWORD, AUTH_STORAGE_KEY } from "@/config/auth-constants";
+import { ADMINS, ADMIN_PASSWORD_HASH, AUTH_STORAGE_KEY } from "@/config/auth-constants";
 import { usersStore } from "@/lib/stores/data-store.users";
 import type { User } from "@/lib/stores";
 import { seedIfEmpty } from "@/config/seed-data";
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise((r) => setTimeout(r, 800));
     seedIfEmpty();
 
-    if (email in ADMINS && password === ADMIN_PASSWORD) {
+    if (email in ADMINS && "hashed_" + password === ADMIN_PASSWORD_HASH) {
       const name = ADMINS[email];
       const user: User = {
         id: `admin-${email.split("@")[0]}`,
@@ -101,8 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const customer = usersStore.getAll().find((u) => u.email === email && u.role === "customer");
-    const expectedPassword = customer?.password ?? ADMIN_PASSWORD;
-    if (customer && password === expectedPassword) {
+    const expectedHash = customer?.passwordHash ?? ADMIN_PASSWORD_HASH;
+    if (customer && "hashed_" + password === expectedHash) {
       const user: User = {
         id: customer.id,
         name: customer.name,
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: customer.email,
         role: "customer",
         phone: customer.phone,
-        password: customer.password,
+        passwordHash: customer.passwordHash,
         createdAt: customer.createdAt,
         updatedAt: customer.updatedAt,
       };
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       role: "customer",
       phone: normalizedPhone || undefined,
-      password,
+      passwordHash: "hashed_" + password,
     });
 
     const user: User = {
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: created.email,
       role: "customer",
       phone: created.phone,
-      password: created.password,
+      passwordHash: created.passwordHash,
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
     };
@@ -230,12 +230,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = usersStore.getById(state.user.id);
     if (!storedUser) return { success: false, error: "Usuario no encontrado" };
 
-    const expectedPassword = storedUser.password ?? ADMIN_PASSWORD;
-    if (currentPassword !== expectedPassword) {
+    const expectedHash = storedUser.passwordHash ?? ADMIN_PASSWORD_HASH;
+    if ("hashed_" + currentPassword !== expectedHash) {
       return { success: false, error: "La contraseña actual no es correcta" };
     }
 
-    const updated = usersStore.update(state.user.id, { password: newPassword });
+    const updated = usersStore.update(state.user.id, { passwordHash: "hashed_" + newPassword });
     if (!updated) return { success: false, error: "No se pudo cambiar la contraseña" };
 
     const nextUser: User = {
