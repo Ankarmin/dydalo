@@ -7,7 +7,7 @@ import { showFavoriteToast } from "@/components/favorites/favorite-toast";
 import { cn } from "@/lib/utils/utils";
 
 interface FavoriteButtonProps {
-  productId: number;
+  productId: string;
   productName: string;
   variant?: "card" | "detail" | "inline";
 }

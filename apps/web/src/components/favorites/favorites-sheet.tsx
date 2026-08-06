@@ -28,7 +28,7 @@ interface FavoritesSheetProps {
 
 export function FavoritesSheet({ trigger }: FavoritesSheetProps) {
   const { favorites, favoritesCount, clearAll } = useFavorites();
-  const [brokenImages, setBrokenImages] = useState<Set<number>>(new Set());
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
   return (
     <Sheet>

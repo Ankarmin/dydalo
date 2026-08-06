@@ -124,13 +124,13 @@ export default function PedidoConfirmadoPage() {
               </div>
               <div className="mt-4 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
-                  {order.shippingAddress.fullName}
+                  {order.shippingAddressSnapshot.fullName}
                 </p>
-                <p>{order.shippingAddress.street}</p>
+                <p>{order.shippingAddressSnapshot.street}</p>
                 <p>
-                  {order.shippingAddress.city}, {order.shippingAddress.state}
+                  {order.shippingAddressSnapshot.city}, {order.shippingAddressSnapshot.state}
                 </p>
-                <p>{order.shippingAddress.phone}</p>
+                <p>{order.shippingAddressSnapshot.phone}</p>
               </div>
             </div>
 

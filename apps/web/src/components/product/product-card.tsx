@@ -10,7 +10,7 @@ import { ROUTES } from "@/lib/utils/routes";
 import { cn } from "@/lib/utils/utils";
 
 interface ProductCardData {
-  id: number;
+  id: string;
   name: string;
   slug?: string;
   category: string;

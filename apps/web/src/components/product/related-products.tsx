@@ -15,10 +15,14 @@ function seededRandom(seed: number, index: number): number {
   return x - Math.floor(x);
 }
 
-function shuffleProducts(products: AdminProduct[], seed: number): AdminProduct[] {
+function shuffleProducts(products: AdminProduct[], seed: string): AdminProduct[] {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+  }
   const shuffled = [...products];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(seededRandom(seed, i) * (i + 1));
+    const j = Math.floor(seededRandom(hash, i) * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
@@ -42,7 +46,7 @@ export function RelatedProducts({ product }: RelatedProductsProps) {
 
     return [
       ...shuffleProducts(discounted, product.id),
-      ...shuffleProducts(regular, product.id + 1),
+      ...shuffleProducts(regular, product.id + "-alt"),
     ].slice(0, 4);
   }, [mounted, product.id, product.category]);
 

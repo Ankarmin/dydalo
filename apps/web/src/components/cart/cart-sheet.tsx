@@ -28,7 +28,7 @@ interface CartSheetProps {
   cartCount: number;
   cartItems: CartLine[];
   subtotal: number;
-  updateQuantity: (productId: number, delta: number, variant?: { size?: string; color?: string }) => void;
+  updateQuantity: (productId: string, delta: number, variant?: { size?: string; color?: string }) => void;
 }
 
 export function CartSheet({

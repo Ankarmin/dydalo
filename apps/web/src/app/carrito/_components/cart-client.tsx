@@ -201,11 +201,14 @@ export function CartClient() {
       const createdAddress = addressesStore.create({
         userId: state.user.id,
         label: addressLabel.trim() || "Casa",
+        fullName: state.user.name,
         street: address,
         district: selectedDistrict,
         city: selectedProvince,
         state: department,
         zip: "",
+        country: "Perú",
+        phone: state.user.phone ?? "",
         isDefault: false,
       });
       shippingAddressId = createdAddress.id;
@@ -213,8 +216,10 @@ export function CartClient() {
 
     const orderItems = cartItems.map((item) => {
       const priceData = getDisplayPrice(item.product);
+      const variant = item.product.variants?.find((v) => v.size === item.size && v.color === item.color);
       return {
         productId: item.product.id,
+        variantId: variant?.id ?? `${item.product.id}-${item.size}-${item.color}`,
         name: item.product.name,
         quantity: item.quantity,
         price: priceData.final,
@@ -247,7 +252,10 @@ export function CartClient() {
       shipping: shippingCost,
       discount: 0,
       total,
-      shippingAddress: {
+      shippingAddressSnapshot: {
+        id: shippingAddressId ?? "",
+        userId: state.user?.id ?? "guest",
+        label: addressLabel.trim() || "Envío",
         fullName: state.user?.name ?? "Cliente",
         street: selectedSavedAddress?.street ?? address,
         district: selectedSavedAddress?.district ?? selectedDistrict,
@@ -256,6 +264,9 @@ export function CartClient() {
         zip: selectedSavedAddress?.zip ?? "",
         country: "Perú",
         phone: state.user?.phone ?? "",
+        isDefault: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     });
 
