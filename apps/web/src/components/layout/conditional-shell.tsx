@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SocialWidget } from "@/components/layout/SocialWidget";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CookieConsentBanner } from "@/components/cookies/cookie-consent-banner";
 import { useMounted } from "@/hooks/use-mounted";
@@ -21,6 +22,7 @@ function ShellInner() {
       <>
         <SiteHeader />
         <SocialWidget />
+        <WhatsAppButton />
       </>
     );
   }
@@ -31,6 +33,7 @@ function ShellInner() {
     <>
       <SiteHeader />
       <SocialWidget />
+      <WhatsAppButton />
       <CookieConsentBanner />
     </>
   );
