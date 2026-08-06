@@ -53,7 +53,7 @@ export function SiteHeader() {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex w-[280px] flex-col border-border bg-background p-0 sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
+          <SheetContent side="left" className="flex w-[280px] flex-col border-border bg-background p-0 [&>button]:hidden sm:max-w-sm" onInteractOutside={ignoreToastClicks}>
             <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
             <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Menú móvil">
               <div className="flex flex-col gap-1">
