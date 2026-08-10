@@ -54,7 +54,7 @@ export function BlogClient() {
                   <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">{post.tag}</span>
                   <span className="text-[10px] uppercase tracking-[0.04em] text-muted-foreground">{post.date}</span>
                   {meta.isAdmin && postId && (
-                    <Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-accent" asChild>
+                    <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" asChild>
                       <Link href={ROUTES.adminBlogEditar(postId)} aria-label="Editar post">
                         <Pencil className="size-3.5" />
                       </Link>

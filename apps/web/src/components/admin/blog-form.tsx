@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -80,7 +80,10 @@ export function BlogForm({ postId }: BlogFormProps) {
   const router = useRouter();
   const { state: authState } = useAuth();
   const isEdit = postId !== undefined;
-  const post = isEdit ? blogStore.getById(postId) : undefined;
+  const post = useMemo(
+    () => (isEdit ? blogStore.getById(postId!) : undefined),
+    [isEdit, postId],
+  );
   const notFound = isEdit && !post;
   const [isPending, setIsPending] = useState(false);
   const [newTag, setNewTag] = useState("");
