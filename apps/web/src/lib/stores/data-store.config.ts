@@ -14,8 +14,8 @@ const DEFAULT_CONFIG: SiteConfig = {
   returnPolicy: "## Devoluciones\n\nPolítica de devoluciones próximamente.",
   sizeGuide: "## Guía de Tallas\n\nGuía de tallas próximamente.",
   faq: [
-    { question: "¿Cómo realizo un pedido?", answer: "Próximamente disponible." },
-    { question: "¿Cuánto tarda el envío?", answer: "Próximamente disponible." },
+    { id: "1", question: "¿Cómo realizo un pedido?", answer: "Próximamente disponible." },
+    { id: "2", question: "¿Cuánto tarda el envío?", answer: "Próximamente disponible." },
   ],
   heroSettings: {
     title: "THE REAL CREAM",

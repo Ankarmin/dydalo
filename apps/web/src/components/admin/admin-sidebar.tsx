@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   BarChart3,
   ClipboardList,
+  MessageCircle,
   Package,
   ShieldCheck,
   Tags,
@@ -75,6 +76,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Auditoría",
     href: ROUTES.adminAuditoria,
     icon: ShieldCheck,
+  },
+  {
+    label: "FAQ",
+    href: ROUTES.adminFaq,
+    icon: MessageCircle,
   },
   {
     label: "Blog",

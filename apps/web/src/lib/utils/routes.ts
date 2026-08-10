@@ -32,6 +32,8 @@ export const ROUTES = {
   adminInventario: "/admin/inventario",
   adminAuditoria: "/admin/auditoria",
 
+  adminFaq: "/admin/faq",
+
   adminProductos: "/admin/productos",
   adminProductoNuevo: "/admin/productos/nuevo",
   adminProductoEditar: (id: string) => `/admin/productos/${id}`,
