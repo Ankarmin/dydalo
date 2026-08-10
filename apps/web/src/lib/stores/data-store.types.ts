@@ -223,7 +223,6 @@ export type BlogPost = {
   coverImage: string;
   authorId: string;
   authorName: string;
-  tags: string[];
   published: boolean;
   createdAt: string;
   updatedAt: string;

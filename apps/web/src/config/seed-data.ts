@@ -119,7 +119,6 @@ export function seedIfEmpty(): void {
       coverImage: "/images/dydalo-hero-negro.webp",
       authorId: "system",
       authorName: "DYDALO",
-      tags: ["coleccion", "lanzamiento"],
       published: true,
     },
     {
@@ -130,7 +129,6 @@ export function seedIfEmpty(): void {
       coverImage: "/images/dydalo-tracksuit.jpg",
       authorId: "system",
       authorName: "DYDALO",
-      tags: ["estilo", "streetwear", "verano"],
       published: true,
     },
     {
@@ -141,7 +139,6 @@ export function seedIfEmpty(): void {
       coverImage: "/images/dydalo-sneakers.jpg",
       authorId: "system",
       authorName: "DYDALO",
-      tags: ["diseno", "sneakers", "detras-de-camaras"],
       published: true,
     },
   ];

@@ -9,10 +9,10 @@ import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 
 const FALLBACK_POSTS = [
-  { slug: "como-combinar-streetwear", title: "Como combinar streetwear sin perder identidad", excerpt: "Reglas no escritas para dominar el arte de mezclar lo urbano con lo personal sin caer en lo generico.", date: "12 Jun 2026", tag: "Streetwear", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "el-renacer-del-bling", title: "El renacer del bling en la cultura urbana", excerpt: "De simbolo de estatus a declaracion de intenciones. Como las cadenas volvieron a hablar.", date: "10 Jun 2026", tag: "Cultura", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "zapatillas-que-hicieron-historia", title: "Zapatillas que hicieron historia en el underground", excerpt: "Siluetas que marcaron generaciones desde la calle. Del basket al asfalto, un recorrido visual.", date: "08 Jun 2026", tag: "Calzado", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "el-poder-del-mono-color", title: "El poder del mono-color en el streetwear actual", excerpt: "Menos es mas cuando el fit habla solo. La tendencia monocromatica que domina el 2026.", date: "05 Jun 2026", tag: "Tendencias", image: "/images/dydalo-hero-negro.webp" },
+  { slug: "como-combinar-streetwear", title: "Como combinar streetwear sin perder identidad", excerpt: "Reglas no escritas para dominar el arte de mezclar lo urbano con lo personal sin caer en lo generico.", date: "12 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
+  { slug: "el-renacer-del-bling", title: "El renacer del bling en la cultura urbana", excerpt: "De simbolo de estatus a declaracion de intenciones. Como las cadenas volvieron a hablar.", date: "10 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
+  { slug: "zapatillas-que-hicieron-historia", title: "Zapatillas que hicieron historia en el underground", excerpt: "Siluetas que marcaron generaciones desde la calle. Del basket al asfalto, un recorrido visual.", date: "08 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
+  { slug: "el-poder-del-mono-color", title: "El poder del mono-color en el streetwear actual", excerpt: "Menos es mas cuando el fit habla solo. La tendencia monocromatica que domina el 2026.", date: "05 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
 ];
 
 export function BlogClient() {
@@ -21,7 +21,7 @@ export function BlogClient() {
   const { meta } = useAuth();
 
   const posts = publishedPosts.length > 0
-    ? publishedPosts.map((p) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, date: new Date(p.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }), tag: p.tags[0] ?? "Blog", image: p.coverImage, id: p.id }))
+    ? publishedPosts.map((p) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, date: new Date(p.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }), image: p.coverImage, id: p.id }))
     : FALLBACK_POSTS;
 
   return (
@@ -51,7 +51,6 @@ export function BlogClient() {
               </div>
               <div className="flex min-w-0 flex-col justify-center">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">{post.tag}</span>
                   <span className="text-[10px] uppercase tracking-[0.04em] text-muted-foreground">{post.date}</span>
                   {meta.isAdmin && postId && (
                     <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" asChild>

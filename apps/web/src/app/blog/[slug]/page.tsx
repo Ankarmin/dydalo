@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, Tag, Pencil } from "lucide-react";
+import { Calendar, Pencil } from "lucide-react";
 import { useBlogPosts } from "@/hooks/use-blog";
 import { useAuth } from "@/contexts/auth-context";
 import { ROUTES } from "@/lib/utils/routes";
@@ -13,7 +13,6 @@ import { useParams } from "next/navigation";
 interface PostDisplay {
   title: string;
   date: string;
-  tag: string;
   body: string[];
   coverImage: string;
   postId?: string;
@@ -24,7 +23,6 @@ const fallback: Record<string, PostDisplay> = {
   "como-combinar-streetwear": {
     title: "Como combinar streetwear sin perder identidad",
     date: "12 Jun 2026",
-    tag: "Streetwear",
     body: [
       "El streetwear es mas que ropa: es una declaracion de intenciones. Pero en un mundo donde las tendencias se reciclan cada dos semanas, mantener una identidad propia puede ser un desafio.",
       "La clave esta en entender que las reglas son solo sugerencias. El verdadero flow no se compra en una tienda, se construye con criterio y actitud.",
@@ -39,7 +37,6 @@ const fallback: Record<string, PostDisplay> = {
   "el-renacer-del-bling": {
     title: "El renacer del bling en la cultura urbana",
     date: "10 Jun 2026",
-    tag: "Cultura",
     body: [
       "Hubo un tiempo en que las cadenas gruesas y los dijes llamativos eran sinonimo de exceso. Pero el bling ha madurado, y con el, su significado.",
       "Hoy, una pieza de joyeria urbana no grita: susurra. Materiales de calidad, disenos minimalistas con intencion y sobre todo, autenticidad.",
@@ -52,7 +49,6 @@ const fallback: Record<string, PostDisplay> = {
   "zapatillas-que-hicieron-historia": {
     title: "Zapatillas que hicieron historia en el underground",
     date: "08 Jun 2026",
-    tag: "Calzado",
     body: [
       "Antes de que las colaboraciones con marcas de lujo fueran norma, las zapatillas ya eran el lenguaje universal de la calle. Cada silueta cuenta una historia.",
       "Las siluetas clasicas de basketball dominaron los 90, pasando de las canchas al asfalto con una naturalidad que nadie anticipo.",
@@ -65,7 +61,6 @@ const fallback: Record<string, PostDisplay> = {
   "el-poder-del-mono-color": {
     title: "El poder del mono-color en el streetwear actual",
     date: "05 Jun 2026",
-    tag: "Tendencias",
     body: [
       "Hay una razon por la que el all-black nunca muere: funciona. Pero el mono-color en 2026 va mucho mas alla del negro total.",
       "Tonos tierra, blancos rotos, grises frios. La paleta monocromatica permite jugar con texturas y siluetas sin que el ojo se distraiga con combinaciones de color.",
@@ -81,7 +76,6 @@ function storePostToDisplay(storePost: ReturnType<typeof useBlogPosts>[number]):
   return {
     title: storePost.title,
     date: new Date(storePost.createdAt).toLocaleDateString("es-PE", { dateStyle: "medium" }),
-    tag: storePost.tags[0] ?? "Blog",
     body: storePost.content.split("\n").filter(Boolean),
     coverImage: storePost.coverImage,
     postId: storePost.id,
@@ -138,10 +132,6 @@ export default function BlogPostPage() {
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="size-3" />
               {display.date}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Tag className="size-3" />
-              {display.tag}
             </span>
           </div>
 

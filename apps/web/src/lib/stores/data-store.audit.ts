@@ -191,7 +191,7 @@ function ensureInitialAuditSnapshot(): AuditLog[] {
       entityLabel: post.title,
       action: "create",
       summary: `Publicó entrada de blog ${post.title}`,
-      after: { title: post.title, published: post.published, tags: post.tags },
+      after: { title: post.title, published: post.published },
       createdAt: post.createdAt,
     });
   }

@@ -11,7 +11,6 @@ import { ROUTES } from "@/lib/utils/routes";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { SortableHeader, defaultSort, type SortState } from "@/components/admin/sortable-header";
@@ -36,8 +35,7 @@ export function BlogClient() {
       const q = query.toLowerCase();
       result = result.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
+          p.title.toLowerCase().includes(q)
       );
     }
     if (sort.field) {
@@ -131,7 +129,7 @@ export function BlogClient() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Buscar por título o tag..."
+          placeholder="Buscar por titulo..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -158,9 +156,6 @@ export function BlogClient() {
                   currentSort={sort}
                   onSortChange={setSort}
                 />
-                <th className="px-3 py-2 font-medium">
-                  Tags
-                </th>
                 <SortableHeader
                   label="Fecha"
                   field="createdAt"
@@ -192,24 +187,6 @@ export function BlogClient() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {post.authorName}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {post.tags.slice(0, 3).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                      {post.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{post.tags.length - 3}
-                        </Badge>
-                      )}
-                    </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground text-xs">
                     {new Date(post.createdAt).toLocaleDateString("es-PE", {
@@ -253,7 +230,7 @@ export function BlogClient() {
               {paginated.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-5 py-12 text-center text-sm text-muted-foreground"
                   >
                     {query
