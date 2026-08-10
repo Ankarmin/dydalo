@@ -1,14 +1,15 @@
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import Link from "next/link";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'FAQ',
-  description: 'Sin vueltas. Respuestas directas sobre pedidos, envíos, cambios, pagos, productos, cuenta y tallas en DYDALO.',
+  title: "FAQ",
+  description:
+    "Sin vueltas. Respuestas directas sobre pedidos, envios, cambios, pagos, productos, cuenta y tallas en DYDALO.",
 };
-import { ROUTES } from '@/lib/utils/routes';
-import { Button } from '@/components/ui/button';
-import { FaqAccordion } from './faq-accordion';
-import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
+import { ROUTES } from "@/lib/utils/routes";
+import { Button } from "@/components/ui/button";
+import { FaqClient } from "./faq-client";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export default function FaqPage() {
   return (
@@ -22,29 +23,22 @@ export default function FaqPage() {
               { label: "FAQ" },
             ]}
           />
-          <h1 className="page-hero-heading">
-            Sin vueltas.
-          </h1>
+          <h1 className="page-hero-heading">Sin vueltas.</h1>
           <p className="hero-description">
-            Preguntas frecuentes con respuestas directas. Si no encuentras lo
-            que buscas, escríbenos.
+            Preguntas frecuentes con respuestas directas. Si no encuentras lo que buscas, escribenos.
           </p>
         </div>
       </section>
 
-      <section className="section-px section-sm">
-        <div className="mx-auto max-w-3xl">
-          <FaqAccordion />
-        </div>
-      </section>
+      <FaqClient />
 
       <section className="border-t border-border section-px py-20">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-2xl font-bold leading-relaxed tracking-tight md:text-3xl">
-            ¿No encontraste lo que buscabas?
+            No encontraste lo que buscabas?
           </p>
           <p className="mt-3 text-sm text-muted-foreground">
-            Escríbenos y te respondemos en menos de 24h.
+            Escribenos y te respondemos en menos de 24h.
           </p>
           <Button variant="hero" size="hero" className="mt-8" asChild>
             <Link href={ROUTES.contacto}>Contacto</Link>
