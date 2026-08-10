@@ -64,7 +64,7 @@ export default function EnviosPage() {
           <PageBreadcrumbs
             className="mb-4"
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Envíos" },
             ]}
           />

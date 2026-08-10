@@ -52,7 +52,7 @@ export default function PedidoConfirmadoPage() {
           <PageBreadcrumbs
             className="mb-8"
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Carrito", href: ROUTES.carrito },
               { label: "Pedido confirmado" },
             ]}

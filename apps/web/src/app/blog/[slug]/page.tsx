@@ -107,7 +107,7 @@ export default async function BlogPostPage({
           <PageBreadcrumbs
             className="mb-8"
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Blog", href: ROUTES.blog },
               { label: post.title },
             ]}

@@ -19,7 +19,7 @@ export default function GuiaDeTallasPage() {
           <PageBreadcrumbs
             className="mb-4"
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Guía de tallas" },
             ]}
           />

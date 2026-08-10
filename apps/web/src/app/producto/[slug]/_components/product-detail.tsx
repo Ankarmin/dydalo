@@ -159,7 +159,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <PageBreadcrumbs
               className="mb-4"
               items={[
-                { label: "Home", href: ROUTES.home },
+                { label: "Inicio", href: ROUTES.home },
                 { label: "Catálogo", href: ROUTES.catalogo },
                 { label: displayCategory, href: ROUTES.catalogoCategory(product.category) },
                 { label: product.name },

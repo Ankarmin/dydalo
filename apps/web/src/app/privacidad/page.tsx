@@ -17,7 +17,7 @@ export default function PrivacidadPage() {
           <PageBreadcrumbs
             className="mb-4"
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Política de privacidad" },
             ]}
           />

@@ -15,7 +15,7 @@ export default function CarritoPage() {
         <div className="container-page mb-6">
           <PageBreadcrumbs
             items={[
-              { label: "Home", href: ROUTES.home },
+              { label: "Inicio", href: ROUTES.home },
               { label: "Carrito" },
             ]}
           />

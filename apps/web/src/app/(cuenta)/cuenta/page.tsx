@@ -95,7 +95,7 @@ export default function CuentaPage() {
       <PageBreadcrumbs
         className="mb-0"
         items={[
-          { label: "Home", href: ROUTES.home },
+          { label: "Inicio", href: ROUTES.home },
           { label: "Mi cuenta" },
         ]}
       />

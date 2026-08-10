@@ -14,7 +14,7 @@ export default function FavoritosPage() {
         <PageBreadcrumbs
           className="mb-6"
           items={[
-            { label: "Home", href: ROUTES.home },
+            { label: "Inicio", href: ROUTES.home },
             { label: "Favoritos" },
           ]}
         />
