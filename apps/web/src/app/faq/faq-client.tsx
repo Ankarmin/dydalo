@@ -25,12 +25,13 @@ import {
 
 interface FaqForm {
   id?: string;
+  category: string;
   question: string;
   answer: string;
 }
 
 function emptyForm(): FaqForm {
-  return { question: "", answer: "" };
+  return { category: "", question: "", answer: "" };
 }
 
 export function FaqClient() {
@@ -41,6 +42,12 @@ export function FaqClient() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<FaqForm | null>(null);
   const [pending, setPending] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("Todos");
+
+  const categories = ["Todos", ...new Set(faqs.map((f) => f.category))];
+  const filteredFaqs = activeCategory === "Todos"
+    ? faqs
+    : faqs.filter((f) => f.category === activeCategory);
 
   const actor = {
     id: authState.user?.id ?? "admin",
@@ -51,18 +58,19 @@ export function FaqClient() {
     setEditing(emptyForm());
   }
 
-  function openEdit(item: { id: string; question: string; answer: string }) {
-    setEditing({ id: item.id, question: item.question, answer: item.answer });
+  function openEdit(item: { id: string; category: string; question: string; answer: string }) {
+    setEditing({ id: item.id, category: item.category, question: item.question, answer: item.answer });
   }
 
   function handleSave() {
-    if (!editing || !editing.question.trim() || !editing.answer.trim()) return;
+    if (!editing || !editing.category.trim() || !editing.question.trim() || !editing.answer.trim()) return;
 
     setPending(true);
     setTimeout(() => {
       const isNew = !editing.id;
       const item = {
         id: editing.id ?? generateId(),
+        category: editing.category.trim(),
         question: editing.question.trim(),
         answer: editing.answer.trim(),
       };
@@ -97,7 +105,7 @@ export function FaqClient() {
             changes: auditStore.diffFields(
               before as unknown as Record<string, unknown>,
               item as unknown as Record<string, unknown>,
-              ["question", "answer"]
+              ["category", "question", "answer"]
             ),
           });
         }
@@ -152,15 +160,41 @@ export function FaqClient() {
           </p>
         )}
 
+        {!isEmpty && (
+          <div className="mb-12 flex flex-wrap gap-2" role="tablist" aria-label="Categorias de FAQ">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={activeCategory === cat ? "default" : "street"}
+                size="sm"
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setOpenIndex(null);
+                }}
+                role="tab"
+                aria-selected={activeCategory === cat}
+                className="uppercase tracking-[0.04em]"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-col gap-0">
-          {faqs.map((faq, index) => {
+          {filteredFaqs.length === 0 && !isEmpty && (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              No hay preguntas en esta categoria.
+            </p>
+          )}
+          {filteredFaqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <div
                 key={faq.id}
                 className={cn(
                   "border-border transition-colors",
-                  index < faqs.length - 1 && "border-b"
+                  index < filteredFaqs.length - 1 && "border-b"
                 )}
               >
                 <button
@@ -197,9 +231,14 @@ export function FaqClient() {
                         </Button>
                       </div>
                     )}
-                    <span className="text-sm font-bold uppercase tracking-tight">
-                      {faq.question}
-                    </span>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">
+                        {faq.category}
+                      </span>
+                      <h3 className="mt-0.5 text-sm font-bold uppercase tracking-tight">
+                        {faq.question}
+                      </h3>
+                    </div>
                   </div>
                   <ChevronDown
                     className={cn(
@@ -238,6 +277,23 @@ export function FaqClient() {
           {editing && (
             <div className="space-y-4">
               <div>
+                <Label htmlFor="pub-faq-category">Categoria</Label>
+                <Input
+                  id="pub-faq-category"
+                  value={editing.category}
+                  onChange={(e) => setEditing({ ...editing, category: e.target.value })}
+                  placeholder="Ej: Pedidos, Envios..."
+                  disabled={pending}
+                  list="pub-faq-categories"
+                  className="mt-1.5"
+                />
+                <datalist id="pub-faq-categories">
+                  {[...new Set(faqs.map((f) => f.category))].map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              </div>
+              <div>
                 <Label htmlFor="pub-faq-question">Pregunta</Label>
                 <Input
                   id="pub-faq-question"
@@ -267,7 +323,7 @@ export function FaqClient() {
             <Button variant="outline" size="sm" onClick={() => setEditing(null)} disabled={pending}>
               Cancelar
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={pending || !editing?.question.trim() || !editing?.answer.trim()}>
+            <Button size="sm" onClick={handleSave} disabled={pending || !editing?.category.trim() || !editing?.question.trim() || !editing?.answer.trim()}>
               {pending && <Loader2 className="size-4 animate-spin" />}
               {editing?.id ? "Guardar Cambios" : "Crear FAQ"}
             </Button>

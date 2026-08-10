@@ -240,7 +240,7 @@ export type SiteConfig = {
   shippingInfo: string;
   returnPolicy: string;
   sizeGuide: string;
-  faq: Array<{ id: string; question: string; answer: string }>;
+  faq: Array<{ id: string; category: string; question: string; answer: string }>;
   heroSettings: {
     title: string;
     subtitle: string;

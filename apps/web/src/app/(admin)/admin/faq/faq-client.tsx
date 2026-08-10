@@ -24,12 +24,13 @@ import {
 
 interface FaqForm {
   id?: string;
+  category: string;
   question: string;
   answer: string;
 }
 
 function emptyForm(): FaqForm {
-  return { question: "", answer: "" };
+  return { category: "", question: "", answer: "" };
 }
 
 export function FaqClient() {
@@ -49,18 +50,19 @@ export function FaqClient() {
     setEditing(emptyForm());
   }
 
-  function openEdit(item: { id: string; question: string; answer: string }) {
-    setEditing({ id: item.id, question: item.question, answer: item.answer });
+  function openEdit(item: { id: string; category: string; question: string; answer: string }) {
+    setEditing({ id: item.id, category: item.category, question: item.question, answer: item.answer });
   }
 
   function handleSave() {
-    if (!editing || !editing.question.trim() || !editing.answer.trim()) return;
+    if (!editing || !editing.category.trim() || !editing.question.trim() || !editing.answer.trim()) return;
 
     setPending(true);
     setTimeout(() => {
       const isNew = !editing.id;
       const item = {
         id: editing.id ?? generateId(),
+        category: editing.category.trim(),
         question: editing.question.trim(),
         answer: editing.answer.trim(),
       };
@@ -95,7 +97,7 @@ export function FaqClient() {
             changes: auditStore.diffFields(
               before as unknown as Record<string, unknown>,
               item as unknown as Record<string, unknown>,
-              ["question", "answer"]
+              ["category", "question", "answer"]
             ),
           });
         }
@@ -165,6 +167,7 @@ export function FaqClient() {
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
                 <th className="px-3 py-2 font-medium w-10">#</th>
+                <th className="px-3 py-2 font-medium">Categoria</th>
                 <th className="px-3 py-2 font-medium">Pregunta</th>
                 <th className="px-3 py-2 font-medium hidden sm:table-cell">Respuesta</th>
                 <th className="px-3 py-2 font-medium text-right">Acciones</th>
@@ -186,6 +189,9 @@ export function FaqClient() {
                       </div>
                     </div>
                   </td>
+                  <td className="px-3 py-2">
+                    <span className="text-xs font-bold uppercase tracking-[0.06em] text-accent">{faq.category}</span>
+                  </td>
                   <td className="px-3 py-2 font-medium max-w-[200px] truncate">
                     {faq.question}
                   </td>
@@ -206,7 +212,7 @@ export function FaqClient() {
               ))}
               {faqs.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-12 text-center text-sm text-muted-foreground">
+                  <td                     colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">
                     No hay FAQs. Crea la primera.
                   </td>
                 </tr>
@@ -227,6 +233,23 @@ export function FaqClient() {
 
           {editing && (
             <div className="space-y-4">
+              <div>
+                <Label htmlFor="faq-category">Categoria</Label>
+                <Input
+                  id="faq-category"
+                  value={editing.category}
+                  onChange={(e) => setEditing({ ...editing, category: e.target.value })}
+                  placeholder="Ej: Pedidos, Envios..."
+                  disabled={pending}
+                  list="faq-categories"
+                  className="mt-1.5"
+                />
+                <datalist id="faq-categories">
+                  {[...new Set(faqs.map((f) => f.category))].map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              </div>
               <div>
                 <Label htmlFor="faq-question">Pregunta</Label>
                 <Input
@@ -257,7 +280,7 @@ export function FaqClient() {
             <Button variant="outline" size="sm" onClick={() => setEditing(null)} disabled={pending}>
               Cancelar
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={pending || !editing?.question.trim() || !editing?.answer.trim()}>
+            <Button size="sm" onClick={handleSave} disabled={pending || !editing?.category.trim() || !editing?.question.trim() || !editing?.answer.trim()}>
               {pending && <Loader2 className="size-4 animate-spin" />}
               {editing?.id ? "Guardar Cambios" : "Crear FAQ"}
             </Button>
