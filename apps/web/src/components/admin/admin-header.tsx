@@ -29,7 +29,7 @@ function AdminBreadcrumb() {
   if (segments.length === 0) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <span className="font-medium">Dashboard</span>
+        <span className="font-medium">Panel</span>
       </div>
     );
   }

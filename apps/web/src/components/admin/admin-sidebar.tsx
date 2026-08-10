@@ -36,7 +36,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "Panel",
     href: ROUTES.admin,
     icon: LayoutDashboard,
     exact: true,
