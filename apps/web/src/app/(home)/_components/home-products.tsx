@@ -16,7 +16,7 @@ export function HomeProducts() {
     <section className="section-px section-lg">
       <div id="lo-ultimo" className="mb-12 scroll-mt-20">
         <p className="mb-3 text-base font-bold uppercase tracking-subhead text-accent">
-          new drop
+          novedades
         </p>
         <h2 className="text-5xl font-bold tracking-[-0.06em] md:text-7xl">
           LO ÚLTIMO
