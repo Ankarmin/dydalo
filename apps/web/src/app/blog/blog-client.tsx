@@ -53,7 +53,7 @@ export function BlogClient() {
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] uppercase tracking-[0.04em] text-muted-foreground">{post.date}</span>
                   {meta.isAdmin && postId && (
-                    <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" asChild>
+                    <Button variant="ghost" size="icon" className="size-7" asChild>
                       <Link href={ROUTES.adminBlogEditar(postId)} aria-label="Editar post">
                         <Pencil className="size-3.5" />
                       </Link>
