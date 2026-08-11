@@ -47,6 +47,9 @@ export function PedidoDetalleClient({ id }: { id: string }) {
   const [editedItems, setEditedItems] = useState<OrderItem[]>([]);
   const [editedShipping, setEditedShipping] = useState(0);
   const [editedDiscount, setEditedDiscount] = useState(0);
+  const [editedPaymentMethod, setEditedPaymentMethod] = useState("");
+  const [editedPaymentStatus, setEditedPaymentStatus] = useState("");
+  const [editedTrackingNumber, setEditedTrackingNumber] = useState("");
   const [editedAddressMode, setEditedAddressMode] = useState<"existing" | "new">("new");
   const [editedAddressId, setEditedAddressId] = useState("");
   const [editedAddressLabel, setEditedAddressLabel] = useState("");
@@ -121,6 +124,9 @@ export function PedidoDetalleClient({ id }: { id: string }) {
     setEditedItems([...order.items]);
     setEditedShipping(order.shipping);
     setEditedDiscount(order.discount);
+    setEditedPaymentMethod(order.paymentMethod ?? "");
+    setEditedPaymentStatus(order.paymentStatus ?? "");
+    setEditedTrackingNumber(order.trackingNumber ?? "");
     setEditedAddress({ ...order.shippingAddressSnapshot });
     const linked = order.shippingAddressId
       ? addressesStore.getById(order.shippingAddressId)
@@ -204,6 +210,9 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       JSON.stringify(editedItems) !== JSON.stringify(order.items) ||
       editedShipping !== order.shipping ||
       editedDiscount !== order.discount ||
+      editedPaymentMethod !== (order.paymentMethod ?? "") ||
+      editedPaymentStatus !== (order.paymentStatus ?? "") ||
+      editedTrackingNumber !== (order.trackingNumber ?? "") ||
       editedAddressMode !== (order.shippingAddressId ? "existing" : "new") ||
       editedAddressId !== (order.shippingAddressId ?? "") ||
       editedAddressLabel.trim().length > 0 ||
@@ -311,6 +320,9 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         total: recalculatedTotal,
         shipping: editedShipping,
         discount: editedDiscount,
+        paymentMethod: editedPaymentMethod || undefined,
+        paymentStatus: editedPaymentStatus || undefined,
+        trackingNumber: editedTrackingNumber || undefined,
         shippingAddressId: nextShippingAddressId,
         shippingAddressSnapshot: normalizedAddress,
         stockReserved: true,
@@ -504,7 +516,27 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         </div>
       </div>
 
-      {editMode && (
+      {!editMode && (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-3">Pago y Envío</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <div>
+              <p className="text-muted-foreground">Método de pago</p>
+              <p className="font-medium">{order.paymentMethod || "-"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Estado de pago</p>
+              <p className="font-medium">{order.paymentStatus || "-"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">N° de seguimiento</p>
+              <p className="font-medium">{order.trackingNumber || "-"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editMode && (<>
         <div className="rounded-xl border border-border bg-card p-5">
           <h2 className="text-sm font-semibold mb-4">Dirección de Envío</h2>
           <div className="space-y-4">
@@ -694,7 +726,60 @@ export function PedidoDetalleClient({ id }: { id: string }) {
             )}
           </div>
         </div>
-      )}
+
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <h2 className="text-sm font-semibold">Pago y Envío</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Método de pago</label>
+              <Select
+                value={editedPaymentMethod}
+                onValueChange={setEditedPaymentMethod}
+                disabled={isPending}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin registro</SelectItem>
+                  <SelectItem value="Yape">Yape</SelectItem>
+                  <SelectItem value="Plin">Plin</SelectItem>
+                  <SelectItem value="Transferencia">Transferencia</SelectItem>
+                  <SelectItem value="Tarjeta">Tarjeta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Estado de pago</label>
+              <Select
+                value={editedPaymentStatus}
+                onValueChange={setEditedPaymentStatus}
+                disabled={isPending}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Seleccionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin registro</SelectItem>
+                  <SelectItem value="pendiente">Pendiente</SelectItem>
+                  <SelectItem value="pagado">Pagado</SelectItem>
+                  <SelectItem value="reembolsado">Reembolsado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">N° de seguimiento</label>
+              <Input
+                value={editedTrackingNumber}
+                onChange={(e) => setEditedTrackingNumber(e.target.value)}
+                className="mt-1"
+                disabled={isPending}
+                placeholder="Opcional"
+              />
+            </div>
+          </div>
+        </div>
+      </>)}
 
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center justify-between mb-3">

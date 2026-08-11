@@ -77,6 +77,9 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
   function openAddrNew() {
     setAddrEditing({
       userId: id,
+      fullName: user?.name ?? "",
+      country: "Perú",
+      phone: user?.phone ?? "",
       label: "",
       street: "",
       district: "",
@@ -109,6 +112,14 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
   function handleAddrSave() {
     if (!addrEditing) return;
     const d = addrEditing;
+    if (!d.fullName?.trim()) {
+      notifyAdmin("Error", "El nombre completo es obligatorio", "error");
+      return;
+    }
+    if (!d.phone?.trim()) {
+      notifyAdmin("Error", "El teléfono es obligatorio", "error");
+      return;
+    }
     if (!d.label?.trim()) {
       notifyAdmin("Error", "La etiqueta es obligatoria", "error");
       return;
@@ -557,6 +568,37 @@ export function UsuarioDetalleClient({ id }: { id: string }) {
 
           {addrEditing && (
             <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nombre completo</Label>
+                <Input
+                  value={addrEditing.fullName ?? ""}
+                  onChange={(e) => setAddrEditing({ ...addrEditing, fullName: e.target.value })}
+                  placeholder="Nombre y apellidos"
+                  disabled={addrPending}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">País</Label>
+                <Input
+                  value={addrEditing.country ?? "Perú"}
+                  onChange={(e) => setAddrEditing({ ...addrEditing, country: e.target.value })}
+                  placeholder="Perú"
+                  disabled={addrPending}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teléfono</Label>
+                <Input
+                  type="tel"
+                  value={addrEditing.phone ?? ""}
+                  onChange={(e) => setAddrEditing({ ...addrEditing, phone: e.target.value })}
+                  placeholder="+51 999 999 999"
+                  disabled={addrPending}
+                  className="mt-1"
+                />
+              </div>
               <div>
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Etiqueta</Label>
                 <Input

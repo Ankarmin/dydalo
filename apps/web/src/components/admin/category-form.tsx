@@ -18,15 +18,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import { normalizeText } from "@/lib/validations/forms";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Mínimo 2 caracteres").max(60, "Máximo 60 caracteres"),
   active: z.boolean(),
+  description: z.string().optional(),
+  image: z.string().optional(),
+  parentId: z.string().optional(),
+  sizeGuide: z.object({
+    columns: z.array(z.string()),
+    unit: z.string(),
+    rows: z.array(z.object({
+      size: z.string(),
+      values: z.array(z.string()),
+    })),
+  }).optional(),
 });
 
 function generateSlug(name: string): string {
@@ -60,14 +76,26 @@ export function CategoryForm({ slug }: CategoryFormProps) {
   const [guide, setGuide] = useState<SizeGuideData>(emptyGuide());
   const [newColumn, setNewColumn] = useState("");
 
+  const allCategories = useStoreData(() => categoriesStore.getAll());
+  const parentOptions = isEdit && category
+    ? allCategories.filter(c => c.slug !== slug)
+    : allCategories;
+
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", active: true },
+    defaultValues: { name: "", active: true, description: "", image: "", parentId: "", sizeGuide: undefined },
   });
 
   useEffect(() => {
     if (!category) return;
-    form.reset({ name: category.name, active: category.active });
+    form.reset({
+      name: category.name,
+      active: category.active,
+      description: category.description ?? "",
+      image: category.image ?? "",
+      parentId: category.parentId ?? "",
+      sizeGuide: category.sizeGuide,
+    });
     if (category.sizeGuide) {
       setHasGuide(true);
       setGuide(category.sizeGuide);
@@ -142,7 +170,17 @@ export function CategoryForm({ slug }: CategoryFormProps) {
       active: values.active,
       createdAt: category?.createdAt ?? now,
       updatedAt: now,
-    } as { id: string; name: string; active: boolean; sizeGuide?: SizeGuideData; createdAt: string; updatedAt: string };
+    } as { id: string; name: string; active: boolean; sizeGuide?: SizeGuideData; description?: string; image?: string; parentId?: string; createdAt: string; updatedAt: string };
+
+    if (values.description?.trim()) {
+      normalizedValues.description = values.description.trim();
+    }
+    if (values.image?.trim()) {
+      normalizedValues.image = values.image.trim();
+    }
+    if (values.parentId?.trim()) {
+      normalizedValues.parentId = values.parentId.trim();
+    }
 
     if (hasGuide) {
       const validGuide: SizeGuideData = {
@@ -266,6 +304,36 @@ export function CategoryForm({ slug }: CategoryFormProps) {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} placeholder="NOMBRE CATEGORÍA" disabled={isPending} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea {...field} placeholder="Descripción de la categoría" disabled={isPending} rows={3} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="image" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Imagen</FormLabel>
+                <FormControl>
+                  <ImageUploader value={field.value ?? ""} onChange={field.onChange} disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="parentId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Categoría padre</FormLabel>
+                <FormControl>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ninguna (categoría raíz)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {parentOptions.map((c) => (
+                        <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )} />
           </div>
 

@@ -282,6 +282,9 @@ export type CreateOrderInput = {
   shipping: number;
   discount: number;
   total: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  trackingNumber?: string;
 };
 
 export const STATUS_STYLES: Record<string, string> = {

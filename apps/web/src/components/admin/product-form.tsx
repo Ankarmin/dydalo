@@ -14,6 +14,7 @@ import { ROUTES } from "@/lib/utils/routes";
 import { ADMIN_FORM_SIMULATED_DELAY_MS, DEFAULT_PRODUCT_COLOR_HEX, FEATURED_PRODUCTS_COUNT, LOW_STOCK_THRESHOLD } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -83,6 +84,10 @@ const formSchema = z.object({
       })
     )
     .min(1, "Al menos un color"),
+  description: z.string().optional(),
+  costPrice: z.number().nonnegative("No puede ser negativo").optional(),
+  metaTitle: z.string().max(70, "Maximo 70 caracteres para SEO").optional(),
+  metaDescription: z.string().max(160, "Maximo 160 caracteres para SEO").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -101,6 +106,10 @@ const defaultValues: FormValues = {
   images: [],
   active: true,
   featured: false,
+  description: "",
+  costPrice: undefined,
+  metaTitle: "",
+  metaDescription: "",
   sizes: [],
   colors: [],
 };
@@ -148,6 +157,10 @@ export function ProductForm({ productId }: ProductFormProps) {
       images: product.images ?? [],
       active: product.active,
       featured: product.featured,
+      description: product.description ?? "",
+      costPrice: product.costPrice ?? undefined,
+      metaTitle: product.metaTitle ?? "",
+      metaDescription: product.metaDescription ?? "",
       sizes: product.sizes as unknown as string[],
       colors: product.colors,
     });
@@ -307,7 +320,7 @@ export function ProductForm({ productId }: ProductFormProps) {
             ? auditStore.diffFields(
                 before as unknown as Record<string, unknown>,
                 updated as unknown as Record<string, unknown>,
-                ["name", "category", "price", "sku", "discount", "active", "featured", "sizes", "colors", "variants"]
+                ["name", "category", "price", "sku", "discount", "active", "featured", "description", "costPrice", "metaTitle", "metaDescription", "sizes", "colors", "variants"]
               )
             : [];
 
@@ -510,6 +523,71 @@ export function ProductForm({ productId }: ProductFormProps) {
                   <p className="text-xs text-muted-foreground">
                     Estas imágenes aparecerán al pasar el mouse por la card y en el carrusel del detalle.
                   </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold">SEO y Metadatos</h2>
+              <p className="mt-1 text-xs text-muted-foreground">Opcional. Mejora como aparece este producto en Google y redes sociales.</p>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripcion</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Descripcion del producto..." disabled={isPending} rows={3} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="costPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Costo (S/)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} disabled={isPending} />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">Para calculo de margen.</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="metaTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Titulo</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Titulo para SEO (maximo 70 caracteres)" disabled={isPending} maxLength={70} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="metaDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meta Descripcion</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Descripcion para SEO (maximo 160 caracteres)" disabled={isPending} rows={2} maxLength={160} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

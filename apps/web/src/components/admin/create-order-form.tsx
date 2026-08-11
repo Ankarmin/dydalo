@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -86,6 +86,10 @@ const formSchema = z
 
     shipping: z.number().min(0, "No puede ser negativo"),
     discount: z.number().min(0, "No puede ser negativo"),
+
+    paymentMethod: z.string().optional(),
+    paymentStatus: z.string().optional(),
+    trackingNumber: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.customerMode === "existing" && !data.existingUserId) {
@@ -195,6 +199,9 @@ const defaultValues: FormValues = {
   items: [],
   shipping: 0,
   discount: 0,
+  paymentMethod: "",
+  paymentStatus: "",
+  trackingNumber: "",
 };
 
 function formatAddressLabel(address: Address): string {
@@ -230,6 +237,10 @@ export function CreateOrderForm() {
   const items = useWatch({ control: form.control, name: "items" });
   const shipping = useWatch({ control: form.control, name: "shipping" });
   const discount = useWatch({ control: form.control, name: "discount" });
+
+  const newCustomerFirstName = useWatch({ control: form.control, name: "newCustomerFirstName" });
+  const newCustomerLastName = useWatch({ control: form.control, name: "newCustomerLastName" });
+  const newCustomerPhone = useWatch({ control: form.control, name: "newCustomerPhone" });
 
   const customerAddresses = useMemo(() => {
     if (!existingUserId) return [];
@@ -289,12 +300,15 @@ export function CreateOrderForm() {
 
   const fillAddress = useCallback(
     (address: Address) => {
+      form.setValue("fullName", address.fullName ?? "", { shouldValidate: false });
+      form.setValue("country", address.country ?? "Perú", { shouldValidate: false });
+      form.setValue("phone", address.phone ?? "", { shouldValidate: false });
       form.setValue("street", address.street, { shouldValidate: true });
       form.setValue("state", address.state, { shouldValidate: true });
       form.setValue("city", address.city, { shouldValidate: true });
       form.setValue("district", address.district, { shouldValidate: true });
       form.setValue("zip", address.zip ?? "", { shouldValidate: true });
-      form.clearErrors(["street", "state", "city", "district", "zip"]);
+      form.clearErrors(["fullName", "phone", "street", "state", "city", "district", "zip"]);
     },
     [form]
   );
@@ -304,6 +318,7 @@ export function CreateOrderForm() {
       const user = customers.find((u) => u.id === userId);
       if (user) {
         form.setValue("fullName", user.name, { shouldValidate: false });
+        form.setValue("country", "Perú", { shouldValidate: false });
         form.setValue("phone", user.phone ?? "", { shouldValidate: false });
 
         const addresses = addressesStore.getByUserId(userId);
@@ -338,6 +353,25 @@ export function CreateOrderForm() {
     },
     [fillAddress]
   );
+
+  const prevFullName = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (customerMode !== "new") return;
+
+    const firstName = (newCustomerFirstName ?? "").trim();
+    const lastName = (newCustomerLastName ?? "").trim();
+    const composed = firstName || lastName ? normalizeText(`${firstName} ${lastName}`).trim() : "";
+
+    if (composed && composed !== prevFullName.current) {
+      prevFullName.current = composed;
+      form.setValue("fullName", composed, { shouldValidate: false });
+    }
+
+    if (newCustomerPhone && !form.getValues("phone")) {
+      form.setValue("phone", newCustomerPhone, { shouldValidate: false });
+    }
+  }, [customerMode, newCustomerFirstName, newCustomerLastName, newCustomerPhone, form]);
 
   const removeItem = useCallback(
     (index: number) => {
@@ -573,6 +607,9 @@ export function CreateOrderForm() {
         discount: values.discount,
         total,
         shippingAddressSnapshot,
+        paymentMethod: values.paymentMethod || undefined,
+        paymentStatus: values.paymentStatus || undefined,
+        trackingNumber: values.trackingNumber || undefined,
       });
 
       const actor = {
@@ -887,16 +924,86 @@ export function CreateOrderForm() {
             )}
 
             {isUsingSavedAddress && selectedSavedAddress ? (
-              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm">
+              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm space-y-1">
                 <p className="font-medium">{formatAddressLabel(selectedSavedAddress)}</p>
+                {selectedSavedAddress.fullName && (
+                  <p className="text-muted-foreground">
+                    {selectedSavedAddress.fullName}
+                  </p>
+                )}
+                {selectedSavedAddress.country && (
+                  <p className="text-muted-foreground">
+                    {selectedSavedAddress.country}
+                  </p>
+                )}
+                {selectedSavedAddress.phone && (
+                  <p className="text-muted-foreground">
+                    {selectedSavedAddress.phone}
+                  </p>
+                )}
                 {selectedSavedAddress.zip && (
-                  <p className="mt-1 text-muted-foreground">
+                  <p className="text-muted-foreground">
                     Código postal: {selectedSavedAddress.zip}
                   </p>
                 )}
               </div>
             ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Nombre y apellidos"
+                        disabled={isPending || isUsingSavedAddress}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>País</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? "Perú"}
+                        placeholder="Perú"
+                        disabled={isPending || isUsingSavedAddress}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        value={field.value ?? ""}
+                        placeholder="+51 999 999 999"
+                        disabled={isPending || isUsingSavedAddress}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="street"
@@ -1192,6 +1299,86 @@ export function CreateOrderForm() {
               <span className="text-xl font-bold text-accent">
                 {formatPrice(total)}
               </span>
+            </div>
+          </div>
+
+          {/* Pago y Envío */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold">Pago y Envío</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Método de pago</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                      disabled={isPending}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Sin registro</SelectItem>
+                        <SelectItem value="Yape">Yape</SelectItem>
+                        <SelectItem value="Plin">Plin</SelectItem>
+                        <SelectItem value="Transferencia">Transferencia</SelectItem>
+                        <SelectItem value="Tarjeta">Tarjeta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado de pago</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                      disabled={isPending}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Sin registro</SelectItem>
+                        <SelectItem value="pendiente">Pendiente</SelectItem>
+                        <SelectItem value="pagado">Pagado</SelectItem>
+                        <SelectItem value="reembolsado">Reembolsado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="trackingNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>N° de seguimiento</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Opcional"
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
 

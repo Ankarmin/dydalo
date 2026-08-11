@@ -67,6 +67,9 @@ export default function DireccionesPage() {
   function openNew() {
     setEditing({
       userId,
+      fullName: state.user?.name ?? "",
+      country: "Perú",
+      phone: state.user?.phone ?? "",
       label: "",
       street: "",
       district: "",
@@ -99,6 +102,14 @@ export default function DireccionesPage() {
   function handleSave() {
     if (!editing || !userId) return;
     const d = editing;
+    if (!d.fullName?.trim()) {
+      notifyAdmin("Error", "El nombre completo es obligatorio", "error");
+      return;
+    }
+    if (!d.phone?.trim()) {
+      notifyAdmin("Error", "El teléfono es obligatorio", "error");
+      return;
+    }
     if (!d.label?.trim()) {
       notifyAdmin("Error", "La etiqueta es obligatoria", "error");
       return;
@@ -275,6 +286,37 @@ export default function DireccionesPage() {
 
           {editing && (
             <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nombre completo</Label>
+                <Input
+                  value={editing.fullName ?? ""}
+                  onChange={(e) => setEditing({ ...editing, fullName: e.target.value })}
+                  placeholder="Nombre y apellidos"
+                  disabled={isPending}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">País</Label>
+                <Input
+                  value={editing.country ?? "Perú"}
+                  onChange={(e) => setEditing({ ...editing, country: e.target.value })}
+                  placeholder="Perú"
+                  disabled={isPending}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Teléfono</Label>
+                <Input
+                  type="tel"
+                  value={editing.phone ?? ""}
+                  onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                  placeholder="+51 999 999 999"
+                  disabled={isPending}
+                  className="mt-1"
+                />
+              </div>
               <div>
                 <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Etiqueta</Label>
                 <Input

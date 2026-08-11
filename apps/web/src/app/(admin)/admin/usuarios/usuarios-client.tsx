@@ -117,6 +117,7 @@ export function UsuariosClient() {
               <tr className="border-t border-border text-left text-xs text-muted-foreground">
                 <SortableHeader label="Usuario" field="name" currentSort={adminSort} onSortChange={setAdminSort} />
                 <SortableHeader label="Email" field="email" currentSort={adminSort} onSortChange={setAdminSort} />
+                <th className="px-3 py-2 font-medium text-muted-foreground">Telefono</th>
                 <SortableHeader label="Rol" field="role" currentSort={adminSort} onSortChange={setAdminSort} />
                 <SortableHeader label="Registro" field="createdAt" currentSort={adminSort} onSortChange={setAdminSort} />
               </tr>
@@ -133,6 +134,7 @@ export function UsuariosClient() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">{user.email}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{user.phone ?? "-"}</td>
                   <td className="px-3 py-2">
                     <Badge variant="default" className="text-xs">Admin</Badge>
                   </td>
@@ -143,7 +145,7 @@ export function UsuariosClient() {
               ))}
               {adminUsers.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
                     No hay administradores registrados
                   </td>
                 </tr>
@@ -164,6 +166,7 @@ export function UsuariosClient() {
               <tr className="border-t border-border text-left text-xs text-muted-foreground">
                 <SortableHeader label="Usuario" field="name" currentSort={customerSort} onSortChange={setCustomerSort} />
                 <SortableHeader label="Email" field="email" currentSort={customerSort} onSortChange={setCustomerSort} />
+                <th className="px-3 py-2 font-medium text-muted-foreground">Telefono</th>
                 <SortableHeader label="Pedidos" field="pedidos" currentSort={customerSort} onSortChange={setCustomerSort} />
                 <SortableHeader label="Registro" field="createdAt" currentSort={customerSort} onSortChange={setCustomerSort} />
               </tr>
@@ -182,6 +185,7 @@ export function UsuariosClient() {
                     </Link>
                   </td>
                     <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">{user.email}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{user.phone ?? "-"}</td>
                     <td className="px-3 py-2">{userOrderCount}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString("es-PE")}
@@ -191,7 +195,7 @@ export function UsuariosClient() {
               })}
               {customerUsers.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
                     No hay clientes registrados aún
                   </td>
                 </tr>
