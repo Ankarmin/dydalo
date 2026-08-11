@@ -26,7 +26,7 @@ export default function SobreNosotrosPage() {
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-page relative z-10">
           <PageBreadcrumbs
-            className="mb-4 [&_*]:text-white/70"
+            className="mb-4 [&_a]:text-white/70 [&_span]:text-accent"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Sobre nosotros" },
