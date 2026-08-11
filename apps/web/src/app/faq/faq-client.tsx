@@ -22,6 +22,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FaqForm {
   id?: string;
@@ -277,21 +285,31 @@ export function FaqClient() {
           {editing && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="pub-faq-category">Categoria</Label>
-                <Input
-                  id="pub-faq-category"
+                <Label>Categoria</Label>
+                <Select
                   value={editing.category}
-                  onChange={(e) => setEditing({ ...editing, category: e.target.value })}
-                  placeholder="Ej: Pedidos, Envios..."
+                  onValueChange={(v) => setEditing({ ...editing, category: v })}
                   disabled={pending}
-                  list="pub-faq-categories"
-                  className="mt-1.5"
-                />
-                <datalist id="pub-faq-categories">
-                  {[...new Set(faqs.map((f) => f.category))].map((cat) => (
-                    <option key={cat} value={cat} />
-                  ))}
-                </datalist>
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder="Seleccionar categoria..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[...new Set(faqs.map((f) => f.category))].map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                    <SelectSeparator />
+                    <SelectItem value="__new__">+ Nueva categoria</SelectItem>
+                  </SelectContent>
+                </Select>
+                {editing.category === "__new__" && (
+                  <Input
+                    placeholder="Nombre de la nueva categoria..."
+                    onChange={(e) => setEditing({ ...editing, category: e.target.value })}
+                    className="mt-2"
+                    autoFocus
+                  />
+                )}
               </div>
               <div>
                 <Label htmlFor="pub-faq-question">Pregunta</Label>
