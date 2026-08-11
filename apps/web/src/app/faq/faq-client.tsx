@@ -201,52 +201,22 @@ export function FaqClient() {
               <div
                 key={faq.id}
                 className={cn(
-                  "border-border transition-colors",
-                  index < filteredFaqs.length - 1 && "border-b"
+                  index < filteredFaqs.length - 1 && "border-b border-border"
                 )}
               >
+                <div className="flex items-stretch">
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                  className="flex flex-1 items-center justify-between gap-4 py-5 text-left min-w-0"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {meta.isAdmin && (
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEdit(faq);
-                          }}
-                          aria-label="Editar FAQ"
-                        >
-                          <Pencil className="size-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 text-destructive hover:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteId(faq.id);
-                          }}
-                          aria-label="Eliminar FAQ"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">
-                        {faq.category}
-                      </span>
-                      <h3 className="mt-0.5 text-sm font-bold uppercase tracking-tight">
-                        {faq.question}
-                      </h3>
-                    </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">
+                      {faq.category}
+                    </span>
+                    <h3 className="mt-0.5 text-sm font-bold uppercase tracking-tight">
+                      {faq.question}
+                    </h3>
                   </div>
                   <ChevronDown
                     className={cn(
@@ -255,6 +225,35 @@ export function FaqClient() {
                     )}
                   />
                 </button>
+                {meta.isAdmin && (
+                  <div className="flex items-center gap-0.5 py-5 pl-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(faq);
+                      }}
+                      aria-label="Editar FAQ"
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(faq.id);
+                      }}
+                      aria-label="Eliminar FAQ"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                )}
+                </div>
                 <div
                   className={cn(
                     "grid transition-all duration-200",
