@@ -21,7 +21,7 @@ export default function SobreNosotrosPage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover object-[50%_65%]"
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-page relative z-10">
@@ -32,7 +32,7 @@ export default function SobreNosotrosPage() {
               { label: "Sobre nosotros" },
             ]}
           />
-          <h1 className="page-hero-heading text-white">
+          <h1 className="page-hero-heading text-accent">
             ESTO ES DYDALO
           </h1>
         </div>
