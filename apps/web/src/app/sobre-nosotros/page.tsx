@@ -24,15 +24,19 @@ export default function SobreNosotrosPage() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background" />
-        <div className="absolute inset-x-0 bottom-0 z-10">
-          <div className="container-page pb-10 md:pb-16">
+        <div className="absolute inset-x-0 top-0 z-10">
+          <div className="container-page pt-6 md:pt-8">
             <PageBreadcrumbs
-              className="mb-4 [&_*]:text-white/70"
+              className="[&_*]:text-white/70"
               items={[
                 { label: "Inicio", href: ROUTES.home },
                 { label: "Sobre nosotros" },
               ]}
             />
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 z-10">
+          <div className="container-page pb-10 md:pb-16">
             <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.03em] text-white md:text-8xl lg:text-9xl">
               ESTO ES
               <br />
