@@ -42,50 +42,85 @@ export default function SobreNosotrosPage() {
         </div>
       </section>
 
-      <section className="space-y-32 md:space-y-40 section-px py-24 md:py-32">
-        <div className="container-page space-y-32 md:space-y-40">
-          <div className="max-w-2xl">
-            <div className="mb-6 h-0.5 w-12 bg-accent" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
-              Hecho en la calle.
-            </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              DYDALO es calle. Es creatividad pura y la necesidad de expresarse
-              sin pedir permiso. Más que una marca, somos el movimiento de los
-              que buscan destacar con autenticidad.
-            </p>
+      <section className="section-px py-16 md:py-24">
+        <div className="container-page space-y-16 md:space-y-24">
+
+          <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-12 md:items-center">
+            <div>
+              <div className="mb-6 h-0.5 w-12 bg-accent" />
+              <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-4xl">
+                Hecho en la calle.
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
+                DYDALO es calle. Es creatividad pura y la necesidad de
+                expresarse sin pedir permiso. Más que una marca, somos el
+                movimiento de los que buscan destacar con autenticidad.
+              </p>
+            </div>
+            <div className="relative aspect-[16/9] md:aspect-[4/5] overflow-hidden rounded-xl border border-border">
+              <Image
+                src="/images/dydalo-tracksuit.jpg"
+                alt="Tracksuit DYDALO"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
           </div>
 
-          <div className="ml-auto max-w-2xl md:mr-0 md:ml-auto">
-            <div className="mb-6 h-0.5 w-12 bg-accent md:ml-auto" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-right md:text-5xl">
-              El estilo no se impone,
-              <br />
-              se elige.
-            </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:ml-auto md:text-right md:text-lg">
-              En nuestras colecciones encontrarás tu voz, yendo desde la
-              rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
-              prenda y combinación es una extensión de quién eres.
-            </p>
+          <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-12 md:items-center">
+            <div className="relative aspect-[16/9] md:aspect-[4/5] overflow-hidden rounded-xl border border-border md:order-1">
+              <Image
+                src="/images/dydalo-bling.jpg"
+                alt="Bling DYDALO"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
+            <div>
+              <div className="mb-6 h-0.5 w-12 bg-accent" />
+              <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-4xl">
+                El estilo no se impone,
+                <br />
+                se elige.
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
+                En nuestras colecciones encontrarás tu voz, yendo desde la
+                rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
+                prenda y combinación es una extensión de quién eres.
+              </p>
+            </div>
           </div>
 
-          <div className="max-w-2xl">
-            <div className="mb-6 h-0.5 w-12 bg-accent" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
-              Tu flow, tus reglas.
-            </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              Nuestra misión es darte el poder para sacar lo mejor de ti.
-              Porque la moda cambia y las tendencias pasan, pero la
-              personalidad se queda.
-            </p>
+          <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-12 md:items-center">
+            <div>
+              <div className="mb-6 h-0.5 w-12 bg-accent" />
+              <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-4xl">
+                Tu flow, tus reglas.
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-muted-foreground md:text-lg">
+                Nuestra misión es darte el poder para sacar lo mejor de ti.
+                Porque la moda cambia y las tendencias pasan, pero la
+                personalidad se queda.
+              </p>
+            </div>
+            <div className="relative aspect-[16/9] md:aspect-[4/5] overflow-hidden rounded-xl border border-border">
+              <Image
+                src="/images/dydalo-sneakers.jpg"
+                alt="Sneakers DYDALO"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
           </div>
+
         </div>
       </section>
 
       <section className="border-t border-border bg-muted/20">
-        <div className="container-page py-24 md:py-32">
+        <div className="container-page py-16 md:py-24">
           <div className="mx-auto max-w-2xl text-center">
             <div className="mb-8 inline-block border-l-2 border-accent py-2 pl-6 text-left">
               <p className="text-lg font-semibold uppercase leading-relaxed tracking-wide text-foreground md:text-2xl">
