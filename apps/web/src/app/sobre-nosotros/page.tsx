@@ -32,7 +32,7 @@ export default function SobreNosotrosPage() {
               { label: "Sobre nosotros" },
             ]}
           />
-          <h1 className="page-hero-heading text-accent">
+          <h1 className="page-hero-heading text-white">
             ESTO ES DYDALO
           </h1>
         </div>
