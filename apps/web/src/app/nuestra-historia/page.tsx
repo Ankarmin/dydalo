@@ -68,7 +68,7 @@ export default function NuestraHistoriaPage() {
             <div className="flex flex-col gap-12">
               {timeline.map((item) => (
                 <div key={item.year} className="relative flex gap-4 pl-8 sm:gap-8 sm:pl-10">
-                  <span className="absolute left-0 top-0 flex size-[15px] shrink-0 -translate-x-1/2 items-center justify-center rounded-full bg-accent ring-4 ring-background" />
+                  <span className="absolute left-[14px] top-1 flex size-[15px] -translate-x-1/2 items-center justify-center rounded-full bg-accent ring-4 ring-background" />
 
                   <div className="min-w-0 flex-1">
                     <span className="text-xs font-bold tracking-subhead text-accent">
