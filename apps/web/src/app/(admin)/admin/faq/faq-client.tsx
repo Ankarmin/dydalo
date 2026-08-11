@@ -40,6 +40,11 @@ export function FaqClient() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<FaqForm | null>(null);
   const [pending, setPending] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+
+  const categories = [...new Set(faqs.map((f) => f.category))];
 
   const actor = {
     id: authState.user?.id ?? "admin",
@@ -148,6 +153,58 @@ export function FaqClient() {
     setFaqs(next);
   }
 
+  function startRenameCategory(name: string) {
+    setEditingCategory(name);
+    setEditCategoryName(name);
+  }
+
+  function handleRenameCategory() {
+    if (!editingCategory || !editCategoryName.trim() || editCategoryName.trim() === editingCategory) {
+      setEditingCategory(null);
+      return;
+    }
+    const newName = editCategoryName.trim();
+    const next = faqs.map((f) =>
+      f.category === editingCategory ? { ...f, category: newName } : f
+    );
+    auditStore.create({
+      actor,
+      entityType: "user",
+      entityId: editingCategory,
+      entityLabel: `Categoria ${editingCategory}`,
+      action: "update",
+      summary: `Renombro categoria ${editingCategory} a ${newName}`,
+      before: { category: editingCategory },
+      after: { category: newName },
+      changes: [{ field: "category", before: editingCategory, after: newName }],
+    });
+    configStore.update({ faq: next });
+    setFaqs(next);
+    setEditingCategory(null);
+    notifyAdmin("Categoria renombrada", `${editingCategory} → ${newName}`, "success");
+  }
+
+  function handleDeleteCategory() {
+    if (!deletingCategory) return;
+    const affected = faqs.filter((f) => f.category === deletingCategory);
+    const next = faqs.filter((f) => f.category !== deletingCategory);
+    auditStore.createMany(
+      affected.map((f) => ({
+        actor,
+        entityType: "user" as const,
+        entityId: f.id,
+        entityLabel: f.question,
+        action: "delete" as const,
+        summary: `Elimino FAQ por eliminacion de categoria ${deletingCategory}`,
+        before: f,
+      }))
+    );
+    configStore.update({ faq: next });
+    setFaqs(next);
+    setDeletingCategory(null);
+    notifyAdmin("Categoria eliminada", `${deletingCategory} (${affected.length} FAQs)`, "success");
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -160,6 +217,57 @@ export function FaqClient() {
           Nueva FAQ
         </Button>
       </div>
+
+      {categories.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Categorias ({categories.length})</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <div key={cat} className="flex items-center gap-1">
+                {editingCategory === cat ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={editCategoryName}
+                      onChange={(e) => setEditCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleRenameCategory();
+                        if (e.key === "Escape") setEditingCategory(null);
+                      }}
+                      onBlur={handleRenameCategory}
+                      autoFocus
+                      className="h-8 w-32 text-xs"
+                    />
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-accent">
+                    {cat}
+                  </span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={() => startRenameCategory(cat)}
+                  aria-label={`Renombrar categoria ${cat}`}
+                >
+                  <Pencil className="size-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6 text-destructive hover:text-destructive"
+                  onClick={() => setDeletingCategory(cat)}
+                  aria-label={`Eliminar categoria ${cat}`}
+                >
+                  <Trash2 className="size-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -294,6 +402,15 @@ export function FaqClient() {
         onConfirm={handleDelete}
         title="Eliminar FAQ"
         description="Estas seguro de eliminar esta pregunta frecuente?"
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={deletingCategory !== null}
+        onOpenChange={(o) => { if (!o) setDeletingCategory(null); }}
+        onConfirm={handleDeleteCategory}
+        title="Eliminar categoria"
+        description={`Se eliminaran todas las FAQs de la categoria "${deletingCategory}". Esta accion no se puede deshacer.`}
         variant="destructive"
       />
     </div>
