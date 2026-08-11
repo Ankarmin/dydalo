@@ -43,6 +43,7 @@ export function FaqClient() {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const categories = [...new Set(faqs.map((f) => f.category))];
 
@@ -158,6 +159,17 @@ export function FaqClient() {
     setEditCategoryName(name);
   }
 
+  function addCategory() {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      notifyAdmin("Categoria duplicada", "Ya existe una categoria con ese nombre", "error");
+      return;
+    }
+    setEditing({ category: trimmed, question: "", answer: "" });
+    setNewCategoryName("");
+  }
+
   function handleRenameCategory() {
     if (!editingCategory || !editCategoryName.trim() || editCategoryName.trim() === editingCategory) {
       setEditingCategory(null);
@@ -220,8 +232,21 @@ export function FaqClient() {
 
       {categories.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-sm font-semibold">Categorias ({categories.length})</h2>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Nueva categoria..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCategory(); } }}
+                className="h-8 w-40 text-xs"
+              />
+              <Button variant="outline" size="sm" onClick={addCategory}>
+                <Plus className="size-3" />
+                Anadir
+              </Button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
