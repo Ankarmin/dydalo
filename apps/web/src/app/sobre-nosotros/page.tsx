@@ -45,11 +45,11 @@ export default function SobreNosotrosPage() {
             <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
               Hecho en la calle.
             </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              DYDALO es calle. Es creatividad pura y la necesidad de expresarse
-              sin pedir permiso. Más que una marca, somos el movimiento de los
-              que buscan destacar con autenticidad.
-            </p>
+          <p className="mt-6 max-w-lg body-text md:text-lg">
+            DYDALO es calle. Es creatividad pura y la necesidad de expresarse
+            sin pedir permiso. Más que una marca, somos el movimiento de los
+            que buscan destacar con autenticidad.
+          </p>
           </div>
 
           <div className="ml-auto max-w-2xl md:mr-0 md:ml-auto">
@@ -59,7 +59,7 @@ export default function SobreNosotrosPage() {
               <br />
               se elige.
             </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:ml-auto md:text-right md:text-lg">
+            <p className="mt-6 max-w-lg body-text md:ml-auto md:text-right md:text-lg">
               En nuestras colecciones encontrarás tu voz, yendo desde la
               rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
               prenda y combinación es una extensión de quién eres.
@@ -71,7 +71,7 @@ export default function SobreNosotrosPage() {
             <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
               Tu flow, tus reglas.
             </h2>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
+            <p className="mt-6 max-w-lg body-text md:text-lg">
               Nuestra misión es darte el poder para sacar lo mejor de ti.
               Porque la moda cambia y las tendencias pasan, pero la
               personalidad se queda.
