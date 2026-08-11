@@ -1,81 +1,103 @@
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import Link from "next/link";
+import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros',
-  description: 'DYDALO es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.',
+  title: "Sobre Nosotros",
+  description:
+    "DYDALO es calle. Creatividad pura sin pedir permiso. Conoce nuestra historia y lo que nos mueve.",
 };
-import { ROUTES } from '@/lib/utils/routes';
-import { Button } from '@/components/ui/button';
-import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
+import { ROUTES } from "@/lib/utils/routes";
+import { Button } from "@/components/ui/button";
+import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 
 export default function SobreNosotrosPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
-        <div className="container-page">
-          <PageBreadcrumbs
-            className="mb-4"
-            items={[
-              { label: "Inicio", href: ROUTES.home },
-              { label: "Sobre nosotros" },
-            ]}
-          />
-          <h1 className="page-hero-heading lg:text-8xl">
-            ESTO ES DYDALO
-          </h1>
+      <section className="relative h-[50vh] md:h-[65vh] overflow-hidden">
+        <Image
+          src="/images/dydalo-panoramica.png"
+          alt="Batalla de rap al atardecer"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background" />
+        <div className="absolute inset-x-0 bottom-0 z-10">
+          <div className="container-page pb-10 md:pb-16">
+            <PageBreadcrumbs
+              className="mb-4 [&_*]:text-white/70"
+              items={[
+                { label: "Inicio", href: ROUTES.home },
+                { label: "Sobre nosotros" },
+              ]}
+            />
+            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.03em] text-white md:text-8xl lg:text-9xl">
+              ESTO ES
+              <br />
+              DYDALO
+            </h1>
+          </div>
         </div>
       </section>
 
-      
-      <section className="section-px pb-12 pt-12">
-        <div className="container-page">
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            <div className="">
-              <div className="h-0.5 w-10 bg-accent" />
-              <h2 className="mt-6 text-3xl font-bold leading-[0.92] tracking-[-0.02em] text-foreground">
-                Hecho en la calle.
-              </h2>
-              <p className="mt-3 body-text">
-                DYDALO es calle. Es creatividad pura y la necesidad de expresarse
-                sin pedir permiso. Más que una marca, somos el movimiento de los
-                que buscan destacar con autenticidad.
-              </p>
-            </div>
-            <div className="">
-              <div className="h-0.5 w-10 bg-accent" />
-              <h2 className="mt-6 text-3xl font-bold leading-[0.92] tracking-[-0.02em] text-foreground">
-                El estilo no se impone, se elige.
-              </h2>
-              <p className="mt-3 body-text">
-                En nuestras colecciones encontrarás tu voz, yendo desde la
-                rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
-                prenda y combinación es una extensión de quién eres.
-              </p>
-            </div>
-            <div className="">
-              <div className="h-0.5 w-10 bg-accent" />
-              <h2 className="mt-6 text-3xl font-bold leading-[0.92] tracking-[-0.02em] text-foreground">
-                Tu flow, tus reglas.
-              </h2>
-              <p className="mt-3 body-text">
-                Nuestra misión es darte el poder para sacar lo mejor de ti.
-                Porque la moda cambia y las tendencias pasan, pero la
-                personalidad se queda.
-              </p>
-            </div>
-          </div>
-
-          
-          <div className="mt-12 border-l-2 border-accent pl-6 md:pl-8">
-            <p className="text-lg font-semibold uppercase tracking-wide text-foreground/80 md:text-xl">
-              No vestimos a todos por igual. Nosotros ponemos las herramientas,
-              tú defines el estilo.
+      <section className="space-y-32 md:space-y-40 section-px py-24 md:py-32">
+        <div className="container-page space-y-32 md:space-y-40">
+          <div className="max-w-2xl">
+            <div className="mb-6 h-0.5 w-12 bg-accent" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
+              Hecho en la calle.
+            </h2>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
+              DYDALO es calle. Es creatividad pura y la necesidad de expresarse
+              sin pedir permiso. Más que una marca, somos el movimiento de los
+              que buscan destacar con autenticidad.
             </p>
           </div>
 
-          
-          <div className="mt-8">
+          <div className="ml-auto max-w-2xl md:mr-0 md:ml-auto">
+            <div className="mb-6 h-0.5 w-12 bg-accent md:ml-auto" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-right md:text-5xl">
+              El estilo no se impone,
+              <br />
+              se elige.
+            </h2>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:ml-auto md:text-right md:text-lg">
+              En nuestras colecciones encontrarás tu voz, yendo desde la
+              rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
+              prenda y combinación es una extensión de quién eres.
+            </p>
+          </div>
+
+          <div className="max-w-2xl">
+            <div className="mb-6 h-0.5 w-12 bg-accent" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
+              Tu flow, tus reglas.
+            </h2>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
+              Nuestra misión es darte el poder para sacar lo mejor de ti.
+              Porque la moda cambia y las tendencias pasan, pero la
+              personalidad se queda.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border bg-muted/20">
+        <div className="container-page py-24 md:py-32">
+          <div className="mx-auto max-w-2xl text-center">
+            <div className="mb-8 inline-block border-l-2 border-accent py-2 pl-6 text-left">
+              <p className="text-lg font-semibold uppercase leading-relaxed tracking-wide text-foreground md:text-2xl">
+                No vestimos a todos por igual.
+                <br />
+                Nosotros ponemos las herramientas,
+                <br />
+                tú defines el estilo.
+              </p>
+            </div>
+          </div>
+          <div className="mt-12 text-center">
             <Button variant="hero" size="hero" asChild>
               <Link href={ROUTES.home}>Explorar Colecciones</Link>
             </Button>
