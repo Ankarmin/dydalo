@@ -134,54 +134,41 @@ export function FaqClient() {
     notifyAdmin("FAQ eliminada", item.question);
   }
 
-  function moveFaqUp(index: number) {
+  function moveFaqUp(faqId: string) {
     const next = [...faqs];
-    if (index === 0) return;
-    [next[index - 1], next[index]] = [next[index], next[index - 1]];
-    configStore.update({ faq: next });
-    setFaqs(next);
-  }
-
-  function moveFaqDown(index: number) {
-    const next = [...faqs];
-    if (index === faqs.length - 1) return;
-    [next[index], next[index + 1]] = [next[index + 1], next[index]];
-    configStore.update({ faq: next });
-    setFaqs(next);
-  }
-
-  function moveCategoryUp(categoryName: string) {
-    const entries = grouped;
-    const idx = entries.findIndex(([n]) => n === categoryName);
+    const idx = next.findIndex((f) => f.id === faqId);
     if (idx <= 0) return;
-    const prev = entries[idx - 1][0];
-    const next = [...faqs];
-    const catFaqs = next.filter((f) => f.category === categoryName);
-    const prevFaqs = next.filter((f) => f.category === prev);
-    const others = next.filter((f) => f.category !== categoryName && f.category !== prev);
-    const result = [...others];
-    const catStart = result.findIndex((f) => f.category === prev);
-    const insertIdx = catStart >= 0 ? catStart : result.length;
-    if (catStart >= 0) {
-      result.splice(insertIdx, 0, ...catFaqs);
-    } else {
-      result.unshift(...prevFaqs);
-      result.splice(prevFaqs.length, 0, ...catFaqs);
-      const prevNewIdx = result.findIndex((f) => f.category === prev);
-      const prevItems = result.filter((f) => f.category === prev);
-      result.splice(prevNewIdx, prevItems.length);
-      result.unshift(...prevItems);
-    }
-    configStore.update({ faq: result });
-    setFaqs(result);
+    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+    configStore.update({ faq: next });
+    setFaqs(next);
   }
 
-  function moveCategoryDown(categoryName: string) {
-    const entries = grouped;
-    const idx = entries.findIndex(([n]) => n === categoryName);
-    if (idx < 0 || idx >= entries.length - 1) return;
-    const next = entries[idx + 1][0];
-    moveCategoryUp(next);
+  function moveFaqDown(faqId: string) {
+    const next = [...faqs];
+    const idx = next.findIndex((f) => f.id === faqId);
+    if (idx >= next.length - 1) return;
+    [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+    configStore.update({ faq: next });
+    setFaqs(next);
+  }
+
+  function moveCategory(categoryName: string, direction: "up" | "down") {
+    const idx = grouped.findIndex(([n]) => n === categoryName);
+    if (direction === "up" && idx <= 0) return;
+    if (direction === "down" && idx >= grouped.length - 1) return;
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+
+    const movingItems = faqs.filter((f) => f.category === categoryName);
+    const others = faqs.filter((f) => f.category !== categoryName);
+    const destCategory = grouped[targetIdx][0];
+    const destFirstIdx = others.findIndex((f) => f.category === destCategory);
+    const insertAt = direction === "up"
+      ? destFirstIdx
+      : destFirstIdx + grouped[targetIdx][1].length;
+
+    others.splice(insertAt, 0, ...movingItems);
+    configStore.update({ faq: others });
+    setFaqs(others);
   }
 
   function handleRenameCategory() {
@@ -271,10 +258,10 @@ export function FaqClient() {
                   <span className="text-xs text-muted-foreground">({items.length})</span>
                 </button>
                 <div className="flex items-center gap-0.5">
-                  <Button variant="ghost" size="icon" className="size-7" onClick={() => moveCategoryUp(category)} aria-label={`Subir categoria ${category}`}>
+                  <Button variant="ghost" size="icon" className="size-7" onClick={() => moveCategory(category, "up")} aria-label={`Subir categoria ${category}`}>
                     <ChevronUp className="size-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="size-7" onClick={() => moveCategoryDown(category)} aria-label={`Bajar categoria ${category}`}>
+                  <Button variant="ghost" size="icon" className="size-7" onClick={() => moveCategory(category, "down")} aria-label={`Bajar categoria ${category}`}>
                     <ChevronDown className="size-3.5" />
                   </Button>
                   <Button variant="ghost" size="icon" className="size-7" onClick={() => { setRenamingCategory(category); setRenameCategoryName(category); }} aria-label={`Renombrar categoria ${category}`}>
@@ -293,10 +280,10 @@ export function FaqClient() {
                     return (
                       <div key={faq.id} className={cn("flex items-start gap-3 px-4 py-3 hover:bg-muted/30 transition-colors", globalIndex < items.length - 1 + items.indexOf(items[0]) ? "" : "")}>
                         <div className="flex flex-col items-center gap-0.5 pt-0.5">
-                          <button onClick={(e) => { e.stopPropagation(); moveFaqUp(globalIndex); }} className="text-muted-foreground hover:text-foreground" aria-label="Subir FAQ">
+                          <button onClick={(e) => { e.stopPropagation(); moveFaqUp(faq.id); }} className="text-muted-foreground hover:text-foreground" aria-label="Subir FAQ">
                             <ChevronUp className="size-3" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); moveFaqDown(globalIndex); }} className="text-muted-foreground hover:text-foreground" aria-label="Bajar FAQ">
+                          <button onClick={(e) => { e.stopPropagation(); moveFaqDown(faq.id); }} className="text-muted-foreground hover:text-foreground" aria-label="Bajar FAQ">
                             <ChevronDown className="size-3" />
                           </button>
                         </div>
