@@ -14,7 +14,7 @@ import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 export default function SobreNosotrosPage() {
   return (
     <main className="page-root">
-      <section className="relative h-[50vh] md:h-[65vh] overflow-hidden">
+      <section className="page-hero relative overflow-hidden">
         <Image
           src="/images/dydalo-panoramica.png"
           alt="Batalla de rap al atardecer"
@@ -23,26 +23,18 @@ export default function SobreNosotrosPage() {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background" />
-        <div className="absolute inset-x-0 top-0 z-10">
-          <div className="container-page pt-6 md:pt-8">
-            <PageBreadcrumbs
-              className="[&_*]:text-white/70"
-              items={[
-                { label: "Inicio", href: ROUTES.home },
-                { label: "Sobre nosotros" },
-              ]}
-            />
-          </div>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 z-10">
-          <div className="container-page pb-10 md:pb-16">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-[-0.03em] text-white md:text-8xl lg:text-9xl">
-              ESTO ES
-              <br />
-              DYDALO
-            </h1>
-          </div>
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="container-page relative z-10">
+          <PageBreadcrumbs
+            className="mb-4 [&_*]:text-white/70"
+            items={[
+              { label: "Inicio", href: ROUTES.home },
+              { label: "Sobre nosotros" },
+            ]}
+          />
+          <h1 className="page-hero-heading text-white">
+            ESTO ES DYDALO
+          </h1>
         </div>
       </section>
 
