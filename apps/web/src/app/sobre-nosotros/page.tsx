@@ -21,7 +21,7 @@ export default function SobreNosotrosPage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[50%_30%]"
+          className="object-cover object-[50%_85%]"
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="container-page relative z-10">
