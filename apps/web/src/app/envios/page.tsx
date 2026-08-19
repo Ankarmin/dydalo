@@ -59,27 +59,15 @@ const rates = [
 export default function EnviosPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
+      <section className="section-px page-top pb-16">
         <div className="container-page">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Envíos" },
             ]}
           />
-          <h1 className="page-hero-heading">
-            De Lima a todo el Perú.
-          </h1>
-          <p className="hero-description">
-            Envíos gratis en Lima Metropolitana. Para provincia, coordinamos con{" "}
-            {SHIPPING_PROVINCIA_COURIER} para que tu pedido llegue seguro.
-          </p>
-        </div>
-      </section>
-
-      <section className="border-t border-border section-px section-md">
-        <div className="container-page">
           <p className="section-tag">Tarifas</p>
           <h2 className="mt-2 text-3xl font-bold uppercase tracking-tight md:text-4xl">
             Lo que cuesta llegar.

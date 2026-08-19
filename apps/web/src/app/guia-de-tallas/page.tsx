@@ -14,26 +14,15 @@ import { PageBreadcrumbs } from '@/components/breadcrumbs/page-breadcrumbs';
 export default function GuiaDeTallasPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
-        <div className="container-page">
+      <section className="section-px page-top pb-16">
+        <div className="mx-auto max-w-3xl">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Guía de tallas" },
             ]}
           />
-          <h1 className="page-hero-heading">
-            Que el número no te engañe.
-          </h1>
-          <p className="hero-description">
-            Medidas reales, sin trucos. Encuentra tu talla exacta en segundos.
-          </p>
-        </div>
-      </section>
-
-      <section className="section-px pt-12">
-        <div className="mx-auto max-w-3xl">
           <GuiaTabs />
         </div>
       </section>

@@ -39,29 +39,15 @@ const timeline = [
 export default function NuestraHistoriaPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
+      <section className="section-px page-top pb-20">
         <div className="container-page">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Nuestra historia" },
             ]}
           />
-          <h1 className="page-hero-heading lg:text-8xl">
-            No nacimos.
-            <br />
-            Nos hicimos.
-          </h1>
-          <p className="hero-description">
-            DYDALO no fue un plan de negocio. Fue una necesidad. La historia de
-            una marca construida desde abajo, sin atajos, sin permiso.
-          </p>
-        </div>
-      </section>
-
-      <section className="section-px section-lg">
-        <div className="container-page">
           <div className="relative">
             <div className="absolute bottom-0 left-[7px] top-0 w-px bg-border" />
 

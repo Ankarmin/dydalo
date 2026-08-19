@@ -11,21 +11,18 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
+      <section className="section-px page-top pb-16">
         <div className="container-page">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Blog" },
             ]}
           />
-          <h1 className="page-hero-heading">
-            La cultura no se copia, se vive.
-          </h1>
         </div>
+        <BlogClient />
       </section>
-      <BlogClient />
     </main>
   );
 }

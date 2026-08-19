@@ -151,7 +151,7 @@ export function FaqClient() {
   const isEmpty = faqs.length === 0;
 
   return (
-    <section className="section-px section-md">
+    <>
       <div className="container-page">
         {meta.isAdmin && (
           <div className="mb-6 flex justify-end">
@@ -356,6 +356,6 @@ export function FaqClient() {
         description="Estas seguro de eliminar esta pregunta frecuente?"
         variant="destructive"
       />
-    </section>
+    </>
   );
 }

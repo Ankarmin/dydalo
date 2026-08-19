@@ -12,23 +12,15 @@ export const metadata: Metadata = {
 export default function CookiesPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
-        <div className="container-page">
+      <section className="section-px page-top pb-20">
+        <div className="container-page prose-content">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Política de cookies" },
             ]}
           />
-          <h1 className="page-hero-heading lg:text-6xl">
-            POLÍTICA DE COOKIES
-          </h1>
-        </div>
-      </section>
-
-      <section className="section-px pb-20 pt-8">
-        <div className="container-page prose-content">
           <div className="mx-auto max-w-3xl space-y-10 text-sm leading-relaxed text-muted-foreground">
             <div>
               <h2 className="mb-3 text-base font-bold uppercase tracking-tight text-foreground">

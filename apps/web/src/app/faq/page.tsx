@@ -14,23 +14,18 @@ import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 export default function FaqPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
+      <section className="section-px page-top pb-16">
         <div className="container-page">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "FAQ" },
             ]}
           />
-          <h1 className="page-hero-heading">Sin vueltas.</h1>
-          <p className="hero-description">
-            Preguntas frecuentes con respuestas directas. Si no encuentras lo que buscas, escribenos.
-          </p>
         </div>
+        <FaqClient />
       </section>
-
-      <FaqClient />
 
       <section className="border-t border-border section-px py-20">
         <div className="mx-auto max-w-3xl text-center">

@@ -44,28 +44,15 @@ const conditions = [
 export default function DevolucionesPage() {
   return (
     <main className="page-root">
-      <section className="page-hero">
+      <section className="section-px page-top pb-16">
         <div className="container-page">
           <PageBreadcrumbs
-            className="mb-4"
+            className="mb-6"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Devoluciones" },
             ]}
           />
-          <h1 className="page-hero-heading">
-            Sin letra pequeña.
-          </h1>
-          <p className="hero-description">
-            Cambiar o devolver debería ser tan fácil como comprar. Sin
-            condiciones escondidas, sin letra pequeña.
-          </p>
-        </div>
-      </section>
-
-      
-      <section className="section-px section-md">
-        <div className="container-page">
           <div className="grid gap-8 md:grid-cols-3">
             {steps.map((step) => (
               <div

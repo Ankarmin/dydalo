@@ -14,7 +14,7 @@ import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 export default function SobreNosotrosPage() {
   return (
     <main className="page-root">
-      <section className="page-hero relative overflow-hidden">
+      <section className="relative overflow-hidden section-px page-top pb-16 md:pb-24">
         <Image
           src="/images/dydalo-panoramica.png"
           alt="Batalla de rap al atardecer"
@@ -24,42 +24,34 @@ export default function SobreNosotrosPage() {
           className="object-cover object-[50%_85%]"
         />
         <div className="absolute inset-0 bg-black/50" />
-        <div className="container-page relative z-10">
+        <div className="container-page relative z-10 space-y-10 md:space-y-14">
           <PageBreadcrumbs
-            className="mb-4 [&_a]:text-white/70 [&_span]:text-accent"
+            className="[&_a]:text-white/70 [&_span]:text-accent"
             items={[
               { label: "Inicio", href: ROUTES.home },
               { label: "Sobre nosotros" },
             ]}
           />
-          <h1 className="page-hero-heading text-white">
-            ESTO ES DYDALO
-          </h1>
-        </div>
-      </section>
-
-      <section className="section-px py-16 md:py-24">
-        <div className="container-page space-y-20 md:space-y-28">
           <div className="max-w-2xl">
-            <div className="mb-6 h-0.5 w-12 bg-accent" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
+            <div className="mb-4 h-0.5 w-12 bg-accent" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] text-white md:text-4xl">
               Hecho en la calle.
             </h2>
-          <p className="mt-6 max-w-lg body-text md:text-lg">
-            DYDALO es calle. Es creatividad pura y la necesidad de expresarse
-            sin pedir permiso. Más que una marca, somos el movimiento de los
-            que buscan destacar con autenticidad.
-          </p>
+            <p className="mt-4 max-w-lg body-text text-white/80 md:text-lg">
+              DYDALO es calle. Es creatividad pura y la necesidad de expresarse
+              sin pedir permiso. Más que una marca, somos el movimiento de los
+              que buscan destacar con autenticidad.
+            </p>
           </div>
 
           <div className="ml-auto max-w-2xl md:mr-0 md:ml-auto">
-            <div className="mb-6 h-0.5 w-12 bg-accent md:ml-auto" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-right md:text-5xl">
+            <div className="mb-4 h-0.5 w-12 bg-accent md:ml-auto" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] text-white md:text-right md:text-4xl">
               El estilo no se impone,
               <br />
               se elige.
             </h2>
-            <p className="mt-6 max-w-lg body-text md:ml-auto md:text-right md:text-lg">
+            <p className="mt-4 max-w-lg body-text text-white/80 md:ml-auto md:text-right md:text-lg">
               En nuestras colecciones encontrarás tu voz, yendo desde la
               rebeldía de lo urbano hasta la nitidez de lo elegante. Cada
               prenda y combinación es una extensión de quién eres.
@@ -67,11 +59,11 @@ export default function SobreNosotrosPage() {
           </div>
 
           <div className="max-w-2xl">
-            <div className="mb-6 h-0.5 w-12 bg-accent" />
-            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] md:text-5xl">
+            <div className="mb-4 h-0.5 w-12 bg-accent" />
+            <h2 className="text-3xl font-bold uppercase leading-[0.95] tracking-[-0.02em] text-white md:text-4xl">
               Tu flow, tus reglas.
             </h2>
-            <p className="mt-6 max-w-lg body-text md:text-lg">
+            <p className="mt-4 max-w-lg body-text text-white/80 md:text-lg">
               Nuestra misión es darte el poder para sacar lo mejor de ti.
               Porque la moda cambia y las tendencias pasan, pero la
               personalidad se queda.
