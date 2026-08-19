@@ -51,7 +51,7 @@ export function PageBreadcrumbs({ items, className }: PageBreadcrumbsProps) {
                   <BreadcrumbPage className="text-accent font-medium">{item.label}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
-              {i < items.length - 1 && <BreadcrumbSeparator />}
+              {i < items.length - 1 && <BreadcrumbSeparator className="text-accent" />}
             </Fragment>
           ))}
         </BreadcrumbList>
