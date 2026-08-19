@@ -69,7 +69,7 @@ export function HeaderNav({
   }, [catalogoOpen, marcaOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b-2 border-favorite bg-background/85 px-5 backdrop-blur-xl md:px-10">
+    <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b-2 border-favorite bg-background px-5 md:px-10">
       <div className="flex items-center gap-3">
         {left}
         <nav

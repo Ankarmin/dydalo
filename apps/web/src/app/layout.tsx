@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { Oswald, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,6 +14,13 @@ import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const oswald = Oswald({
+  variable: "--font-oswald",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -56,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${spaceGrotesk.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${oswald.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
