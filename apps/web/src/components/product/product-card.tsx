@@ -90,7 +90,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
 
     const interval = window.setInterval(() => {
       cycleToNextImage();
-    }, 1200);
+    }, 2500);
 
     return () => window.clearInterval(interval);
   }, [cycleToNextImage, isCyclingImages, hasMultipleImages]);
