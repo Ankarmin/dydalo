@@ -15,6 +15,7 @@ import { categoriesStore } from "@/lib/stores/data-store.categories";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
 import { showCartToast } from "@/components/cart/cart-toast";
 import { RelatedProducts } from "@/components/product/related-products";
+import { ProductShare } from "@/components/product/product-share";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import { LOW_STOCK_THRESHOLD } from "@/config/constants";
@@ -171,6 +172,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 {product.name}
               </h1>
               <div className="flex shrink-0 items-center gap-1">
+                <ProductShare productName={product.name} />
                 {authState.status === "loading" ? null : authMeta.isAdmin ? (
                   <Button
                     variant="ghost"

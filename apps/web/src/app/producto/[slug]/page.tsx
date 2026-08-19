@@ -22,6 +22,22 @@ export async function generateMetadata({
   return {
     title: `${product.name} | DYDALO`,
     description: `Compra ${product.name} en DYDALO. Envíos a todo el Perú.`,
+    alternates: {
+      canonical: `/producto/${product.slug}`,
+    },
+    openGraph: {
+      title: `${product.name} | DYDALO`,
+      description: `Compra ${product.name} en DYDALO. Envíos a todo el Perú.`,
+      type: "website",
+      url: `/producto/${product.slug}`,
+      images: product.image ? [{ url: product.image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | DYDALO`,
+      description: `Compra ${product.name} en DYDALO. Envíos a todo el Perú.`,
+      images: product.image ? [product.image] : undefined,
+    },
   };
 }
 
