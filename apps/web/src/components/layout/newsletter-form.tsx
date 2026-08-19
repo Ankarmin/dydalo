@@ -8,11 +8,13 @@ export function NewsletterForm({
   title = "Próximos lanzamientos",
   description = "Sé el primero en enterarte de nuevos drops y lanzamientos exclusivos.",
   buttonText = "Suscribir",
+  onSuccess,
 }: {
   id?: string;
   title?: string;
   description?: string;
   buttonText?: string;
+  onSuccess?: (email: string) => void;
 }) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +47,14 @@ export function NewsletterForm({
           setError(emailError);
           if (emailError) return;
 
-          setSubmitted(true);
+          const normalized = normalizeEmail(email);
           if (inputRef.current) {
-            inputRef.current.value = normalizeEmail(email);
+            inputRef.current.value = "";
+          }
+          if (onSuccess) {
+            onSuccess(normalized);
+          } else {
+            setSubmitted(true);
           }
         }}
         className="w-full max-w-sm"

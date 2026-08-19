@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LOGO_DARK, LOGO_LIGHT } from "@/config/constants";
 import { ROUTES } from "@/lib/utils/routes";
+import { NewsletterForm } from "@/components/layout/newsletter-form";
 
 export function SiteFooter() {
   return (
@@ -81,6 +82,16 @@ export function SiteFooter() {
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border section-px py-10">
+        <div className="mx-auto max-w-6xl">
+          <NewsletterForm
+            id="footer-newsletter-email"
+            title="Únete al movimiento"
+            description="Sé el primero en enterarte de nuevos drops y exclusivos."
+          />
         </div>
       </section>
 
