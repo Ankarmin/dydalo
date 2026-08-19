@@ -11,7 +11,7 @@ export function SafeImage({
   sizes,
   className,
   priority = false,
-  fallback = '/images/dydalo-hero-negro.webp',
+  fallback = '/images/dydalo-panoramica.png',
 }: {
   src: string;
   alt: string;

@@ -9,7 +9,7 @@ export const BRAND_TAGLINE = "El estilo no se impone, se elige.";
 
 export const BRAND_SUBTITLE = "The Real Cream";
 
-export const FALLBACK_IMAGE = "/images/dydalo-hero-negro.webp";
+export const FALLBACK_IMAGE = "/images/dydalo-panoramica.png";
 
 export const LOGO_DARK = "/dydalo-blanco.svg";
 

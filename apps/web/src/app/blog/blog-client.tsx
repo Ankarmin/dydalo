@@ -9,10 +9,10 @@ import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 
 const FALLBACK_POSTS = [
-  { slug: "como-combinar-streetwear", title: "Como combinar streetwear sin perder identidad", excerpt: "Reglas no escritas para dominar el arte de mezclar lo urbano con lo personal sin caer en lo generico.", date: "12 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "el-renacer-del-bling", title: "El renacer del bling en la cultura urbana", excerpt: "De simbolo de estatus a declaracion de intenciones. Como las cadenas volvieron a hablar.", date: "10 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "zapatillas-que-hicieron-historia", title: "Zapatillas que hicieron historia en el underground", excerpt: "Siluetas que marcaron generaciones desde la calle. Del basket al asfalto, un recorrido visual.", date: "08 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
-  { slug: "el-poder-del-mono-color", title: "El poder del mono-color en el streetwear actual", excerpt: "Menos es mas cuando el fit habla solo. La tendencia monocromatica que domina el 2026.", date: "05 Jun 2026", image: "/images/dydalo-hero-negro.webp" },
+  { slug: "como-combinar-streetwear", title: "Como combinar streetwear sin perder identidad", excerpt: "Reglas no escritas para dominar el arte de mezclar lo urbano con lo personal sin caer en lo generico.", date: "12 Jun 2026", image: "/images/dydalo-panoramica.png" },
+  { slug: "el-renacer-del-bling", title: "El renacer del bling en la cultura urbana", excerpt: "De simbolo de estatus a declaracion de intenciones. Como las cadenas volvieron a hablar.", date: "10 Jun 2026", image: "/images/dydalo-panoramica.png" },
+  { slug: "zapatillas-que-hicieron-historia", title: "Zapatillas que hicieron historia en el underground", excerpt: "Siluetas que marcaron generaciones desde la calle. Del basket al asfalto, un recorrido visual.", date: "08 Jun 2026", image: "/images/dydalo-panoramica.png" },
+  { slug: "el-poder-del-mono-color", title: "El poder del mono-color en el streetwear actual", excerpt: "Menos es mas cuando el fit habla solo. La tendencia monocromatica que domina el 2026.", date: "05 Jun 2026", image: "/images/dydalo-panoramica.png" },
 ];
 
 export function BlogClient() {
@@ -25,7 +25,7 @@ export function BlogClient() {
     : FALLBACK_POSTS;
 
   return (
-    <section className="section-px section-md">
+    <>
       <div className="container-page">
         {meta.isAdmin && (
           <div className="mb-6 flex justify-end">
@@ -73,6 +73,6 @@ export function BlogClient() {
           })}
         </div>
       </div>
-    </section>
+    </>
   );
 }

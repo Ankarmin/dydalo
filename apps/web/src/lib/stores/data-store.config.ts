@@ -49,7 +49,7 @@ const DEFAULT_CONFIG: SiteConfig = {
     subtitle: "Descubre la nueva colección",
     ctaText: "VER CATÁLOGO",
     ctaLink: "/catalogo",
-    backgroundImage: "/images/dydalo-hero-negro.webp",
+    backgroundImage: "/images/dydalo-panoramica.png",
   },
   maintenanceMode: false,
 };

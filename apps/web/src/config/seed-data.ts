@@ -116,7 +116,7 @@ export function seedIfEmpty(): void {
       slug: "the-real-cream-nueva-coleccion",
       excerpt: "Descubre la nueva colección de DYDALO con los esenciales de la temporada.",
       content: "Contenido del post...",
-      coverImage: "/images/dydalo-hero-negro.webp",
+      coverImage: "/images/dydalo-panoramica.png",
       authorId: "system",
       authorName: "DYDALO",
       published: true,

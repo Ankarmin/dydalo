@@ -31,7 +31,7 @@ const fallback: Record<string, PostDisplay> = {
       "Tercero: los accesorios mandan. Una gorra bien puesta, una cadena con peso o unas zapatillas limpias pueden transformar un look basico en algo inolvidable.",
       "Y el mas importante: si te sientes comodo, lo estas haciendo bien. El estilo no se impone, se elige. Y esa eleccion es solo tuya.",
     ],
-    coverImage: "/images/dydalo-hero-negro.webp",
+    coverImage: "/images/dydalo-panoramica.png",
     published: true,
   },
   "el-renacer-del-bling": {
@@ -43,7 +43,7 @@ const fallback: Record<string, PostDisplay> = {
       "En el underground, el bling nunca se fue. Solo estaba esperando que el mainstream dejara de sobre-explotarlo para volver a las raices: piezas que cuentan una historia personal.",
       "Desde los dijes personalizados hasta las cadenas cubanas con eslabones pesados, el nuevo bling es sutil pero inconfundible.",
     ],
-    coverImage: "/images/dydalo-hero-negro.webp",
+    coverImage: "/images/dydalo-panoramica.png",
     published: true,
   },
   "zapatillas-que-hicieron-historia": {
@@ -55,7 +55,7 @@ const fallback: Record<string, PostDisplay> = {
       "En los 2000, las zapatillas tecnicas y las runner invadieron el streetwear. La comodidad se volvio prioridad sin sacrificar el estilo.",
       "En Night Court High recogemos esa herencia: siluetas que respetan el pasado pero miran al frente.",
     ],
-    coverImage: "/images/dydalo-hero-negro.webp",
+    coverImage: "/images/dydalo-panoramica.png",
     published: true,
   },
   "el-poder-del-mono-color": {
@@ -67,7 +67,7 @@ const fallback: Record<string, PostDisplay> = {
       "La clave del mono-color esta en los matices: mezclar diferentes tejidos, grosores y caidas dentro de una misma gama cromatica crea profundidad visual sin esfuerzo.",
       "En Pure Form Set llevamos esta filosofia al extremo: basicos de alta calidad en blanco y negro que funcionan como lienzo para construir el fit que quieras.",
     ],
-    coverImage: "/images/dydalo-hero-negro.webp",
+    coverImage: "/images/dydalo-panoramica.png",
     published: true,
   },
 };

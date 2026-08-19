@@ -17,7 +17,7 @@ const defaultConfig: SiteConfig = {
   returnPolicy: "",
   sizeGuide: "",
   faq: [],
-  heroSettings: { title: "THE REAL CREAM", subtitle: "UNDERGROUND STREETWEAR", ctaText: "VER CATÁLOGO", ctaLink: "/catalogo", backgroundImage: "/images/dydalo-hero-negro.webp" },
+  heroSettings: { title: "THE REAL CREAM", subtitle: "UNDERGROUND STREETWEAR", ctaText: "VER CATÁLOGO", ctaLink: "/catalogo", backgroundImage: "/images/dydalo-panoramica.png" },
   maintenanceMode: false,
 };
 
