@@ -169,6 +169,9 @@ export function ProductForm({ productId }: ProductFormProps) {
   const sizes = useWatch({ control: form.control, name: "sizes" });
   const colors = useWatch({ control: form.control, name: "colors" });
   const variants = useWatch({ control: form.control, name: "variants" });
+  const watchedPrice = useWatch({ control: form.control, name: "price" });
+  const watchedDiscount = useWatch({ control: form.control, name: "discount" });
+  const watchedCost = useWatch({ control: form.control, name: "costPrice" });
 
   function syncVariants(
     nextSizes: string[],
@@ -560,6 +563,11 @@ export function ProductForm({ productId }: ProductFormProps) {
                       <Input type="number" min="0" step="0.01" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} disabled={isPending} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">Para calculo de margen.</p>
+                    {watchedCost !== undefined && watchedPrice > 0 && (
+                      <p className="mt-1 text-xs font-medium">
+                        Margen: S/{((watchedDiscount ? watchedPrice * (1 - watchedDiscount / 100) : watchedPrice) - watchedCost).toFixed(2)} por unidad
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
