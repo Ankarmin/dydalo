@@ -32,23 +32,41 @@ export const ROUTES = {
   adminInventario: "/admin/inventario",
   adminAuditoria: "/admin/auditoria",
 
-  adminFaq: "/admin/faq",
+  adminFaq: "/admin/configuracion/faq",
 
   adminProductos: "/admin/productos",
   adminProductoNuevo: "/admin/productos/nuevo",
   adminProductoEditar: (id: string) => `/admin/productos/${id}`,
 
-  adminCategorias: "/admin/categorias",
-  adminCategoriaNueva: "/admin/categorias/nueva",
-  adminCategoriaEditar: (slug: string) => `/admin/categorias/${slug}`,
+  adminCategorias: "/admin/configuracion/categorias",
+  adminCategoriaNueva: "/admin/configuracion/categorias/nueva",
+  adminCategoriaEditar: (slug: string) => `/admin/configuracion/categorias/${slug}`,
 
   adminPedidos: "/admin/pedidos",
   adminPedidoNuevo: "/admin/pedidos/nuevo",
   adminPedidoDetalle: (id: string) => `/admin/pedidos/${id}`,
 
-  adminBlog: "/admin/blog",
-  adminBlogNuevo: "/admin/blog/nuevo",
-  adminBlogEditar: (id: string) => `/admin/blog/${id}`,
+  adminPagos: "/admin/pagos",
+  adminPagoDetalle: (id: string) => `/admin/pagos/${id}`,
+
+  adminEnvios: "/admin/envios",
+  adminEnvioDetalle: (id: string) => `/admin/envios/${id}`,
+
+  adminProveedores: "/admin/proveedores",
+  adminProveedorDetalle: (id: string) => `/admin/proveedores/${id}`,
+
+  adminCompras: "/admin/compras",
+  adminCompraDetalle: (id: string) => `/admin/compras/${id}`,
+
+  adminCupones: "/admin/cupones",
+  adminCuponDetalle: (id: string) => `/admin/cupones/${id}`,
+
+  adminDevoluciones: "/admin/devoluciones",
+  adminDevolucionDetalle: (id: string) => `/admin/devoluciones/${id}`,
+
+  adminBlog: "/admin/configuracion/blog",
+  adminBlogNuevo: "/admin/configuracion/blog/nuevo",
+  adminBlogEditar: (id: string) => `/admin/configuracion/blog/${id}`,
 
   adminUsuarios: "/admin/usuarios",
   adminUsuarioDetalle: (id: string) => `/admin/usuarios/${id}`,

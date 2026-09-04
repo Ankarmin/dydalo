@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, PanelLeftClose, PanelLeftOpen, LogOut, User, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
@@ -15,8 +16,60 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ordersStore } from "@/lib/stores/data-store.orders";
+import { usersStore } from "@/lib/stores/data-store.users";
+import { productsStore } from "@/lib/stores/data-store.products";
+import { categoriesStore } from "@/lib/stores/data-store.categories";
+import { blogStore } from "@/lib/stores/data-store.blog";
 import { ROUTES } from "@/lib/utils/routes";
-import { cn } from "@/lib/utils/utils";
+
+const SEGMENT_LABELS: Record<string, string> = {
+  configuracion: "Configuración",
+  categorias: "Categorías",
+  nueva: "Nueva",
+  nuevo: "Nuevo",
+  analiticas: "Analíticas",
+  inventario: "Inventario",
+  productos: "Productos",
+  pedidos: "Pedidos",
+  pagos: "Pagos",
+  envios: "Envíos",
+  proveedores: "Proveedores",
+  compras: "Compras",
+  cupones: "Cupones",
+  usuarios: "Clientes",
+  auditoria: "Auditoría",
+  faq: "FAQ",
+  blog: "Blog",
+};
+
+function labelForSegment(segment: string, parent: string | undefined): string {
+  if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
+  if (parent === "pedidos" || parent === "pagos" || parent === "envios") {
+    const order = ordersStore.getById(segment);
+    if (order) {
+      const user = usersStore.getById(order.userId);
+      return `#${segment.slice(0, 8)}${user ? ` · ${user.name}` : ""}`;
+    }
+    return `#${segment.slice(0, 8)}`;
+  }
+  if (parent === "productos") {
+    return productsStore.getById(segment)?.name ?? segment;
+  }
+  if (parent === "categorias") {
+    return categoriesStore.getBySlug(segment)?.name ?? segment;
+  }
+  if (parent === "blog") {
+    return blogStore.getById(segment)?.title ?? segment;
+  }
+  if (parent === "usuarios") {
+    return usersStore.getById(segment)?.name ?? segment;
+  }
+  if (parent === "proveedores" || parent === "compras" || parent === "cupones") {
+    return `#${segment.slice(0, 8)}`;
+  }
+  return segment.charAt(0).toUpperCase() + segment.slice(1);
+}
 
 function AdminBreadcrumb() {
   const pathname = usePathname();
@@ -29,27 +82,36 @@ function AdminBreadcrumb() {
   if (segments.length === 0) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <span className="font-medium">Panel</span>
+        <span className="font-medium" aria-current="page">Panel</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1 text-sm min-w-0 overflow-hidden">
-      <span className="text-muted-foreground shrink-0">Admin</span>
+    <nav aria-label="breadcrumb" className="flex items-center gap-1 text-sm min-w-0 overflow-hidden">
+      <Link href={ROUTES.admin} className="text-muted-foreground shrink-0 hover:text-accent transition-colors">
+        Admin
+      </Link>
       {segments.map((segment, i) => {
         const isLast = i === segments.length - 1;
-        const label = segment.charAt(0).toUpperCase() + segment.slice(1);
+        const href = `/admin/${segments.slice(0, i + 1).join("/")}`;
+        const label = labelForSegment(segment, i > 0 ? segments[i - 1] : undefined);
         return (
-          <div key={segment} className="flex items-center gap-1 min-w-0">
+          <div key={`${i}-${href}`} className="flex items-center gap-1 min-w-0">
             <ChevronRight className="size-3 text-muted-foreground shrink-0" />
-            <span className={cn("truncate", isLast ? "font-medium" : "text-muted-foreground")}>
-              {label}
-            </span>
+            {isLast ? (
+              <span aria-current="page" className="truncate font-medium">
+                {label}
+              </span>
+            ) : (
+              <Link href={href} className="truncate text-muted-foreground hover:text-accent transition-colors">
+                {label}
+              </Link>
+            )}
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

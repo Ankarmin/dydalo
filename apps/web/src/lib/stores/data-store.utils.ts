@@ -9,6 +9,12 @@ export const KEYS = {
   addresses: "dydalo_addresses",
   stockMovements: "dydalo_stock_movements",
   auditLogs: "dydalo_audit_logs",
+  payments: "dydalo_payments",
+  shipments: "dydalo_shipments",
+  suppliers: "dydalo_suppliers",
+  purchases: "dydalo_purchases",
+  coupons: "dydalo_coupons",
+  returns: "dydalo_returns",
 } as const;
 
 function hashKey(key: string): string {

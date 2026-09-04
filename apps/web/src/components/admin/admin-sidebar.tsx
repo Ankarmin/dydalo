@@ -2,22 +2,20 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LOGO_DARK, LOGO_LIGHT } from "@/config/constants";
 import {
   LayoutDashboard,
-  BarChart3,
-  ClipboardList,
-  MessageCircle,
-  Package,
   ShieldCheck,
-  Tags,
-  FileText,
+  Settings,
   ShoppingCart,
-  Users,
   ArrowLeft,
   LogOut,
   X,
+  ChevronDown,
+  Boxes,
+  HeartHandshake,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useAdminLayout } from "./admin-layout";
@@ -25,14 +23,24 @@ import { showLogoutToast } from "@/components/auth/auth-toast";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { ordersStore } from "@/lib/stores/data-store.orders";
+import { paymentsStore } from "@/lib/stores/data-store.payments";
+import { returnsStore } from "@/lib/stores/data-store.returns";
 import { ROUTES } from "@/lib/utils/routes";
 import { cn } from "@/lib/utils/utils";
+
+interface NavChild {
+  label: string;
+  href: string;
+}
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
+  children?: NavChild[];
+  badgeKey?: "operacion";
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -43,49 +51,52 @@ const NAV_ITEMS: NavItem[] = [
     exact: true,
   },
   {
-    label: "Analíticas",
-    href: ROUTES.adminAnaliticas,
-    icon: BarChart3,
-  },
-  {
-    label: "Inventario",
-    href: ROUTES.adminInventario,
-    icon: ClipboardList,
-  },
-  {
-    label: "Productos",
-    href: ROUTES.adminProductos,
-    icon: Package,
-  },
-  {
-    label: "Categorías",
-    href: ROUTES.adminCategorias,
-    icon: Tags,
-  },
-  {
-    label: "Pedidos",
+    label: "Operación",
     href: ROUTES.adminPedidos,
     icon: ShoppingCart,
+    badgeKey: "operacion",
+    children: [
+      { label: "Pedidos", href: ROUTES.adminPedidos },
+      { label: "Pagos", href: ROUTES.adminPagos },
+      { label: "Envíos", href: ROUTES.adminEnvios },
+      { label: "Devoluciones", href: ROUTES.adminDevoluciones },
+    ],
+  },
+  {
+    label: "Catálogo",
+    href: ROUTES.adminProductos,
+    icon: Boxes,
+    children: [
+      { label: "Productos", href: ROUTES.adminProductos },
+      { label: "Inventario", href: ROUTES.adminInventario },
+      { label: "Compras", href: ROUTES.adminCompras },
+      { label: "Proveedores", href: ROUTES.adminProveedores },
+    ],
   },
   {
     label: "Clientes",
     href: ROUTES.adminUsuarios,
-    icon: Users,
+    icon: HeartHandshake,
+    children: [
+      { label: "Clientes", href: ROUTES.adminUsuarios },
+      { label: "Cupones", href: ROUTES.adminCupones },
+      { label: "Analíticas", href: ROUTES.adminAnaliticas },
+    ],
+  },
+  {
+    label: "Configuración",
+    href: ROUTES.adminCategorias,
+    icon: Settings,
+    children: [
+      { label: "Categorías", href: ROUTES.adminCategorias },
+      { label: "FAQ", href: ROUTES.adminFaq },
+      { label: "Blog", href: ROUTES.adminBlog },
+    ],
   },
   {
     label: "Auditoría",
     href: ROUTES.adminAuditoria,
     icon: ShieldCheck,
-  },
-  {
-    label: "FAQ",
-    href: ROUTES.adminFaq,
-    icon: MessageCircle,
-  },
-  {
-    label: "Blog",
-    href: ROUTES.adminBlog,
-    icon: FileText,
   },
 ] as const;
 
@@ -107,27 +118,98 @@ export function AdminSidebar() {
     router.push(ROUTES.home);
   }
 
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  function isGroupOpen(item: (typeof NAV_ITEMS)[number]): boolean {
+    if (openSections[item.label] !== undefined) return openSections[item.label];
+    return item.children?.some((child) => pathname.startsWith(child.href)) ?? false;
+  }
+
+  function toggleGroup(label: string, currentlyExpanded: boolean) {
+    setOpenSections((prev) => ({ ...prev, [label]: !currentlyExpanded }));
+  }
+
+  const operacionBadge = (() => {
+    try {
+      const rejected = ordersStore.getAll().filter((o) => paymentsStore.lastRejectedWithoutRetry(o.id)).length;
+      const stuck = ordersStore.getAll().filter((o) => paymentsStore.isStuckInReview(o.id)).length;
+      const rma = returnsStore.getAll().filter((r) => r.status === "solicitada" || r.status === "aprobada").length;
+      return rejected + stuck + rma;
+    } catch {
+      return 0;
+    }
+  })();
+
   const sidebarContent = (
     <div className={cn("flex h-full flex-col", collapsed && "items-center")}>
       <ScrollArea className="flex-1 min-h-0 px-2 py-3">
         <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => layoutActions.setMobileSidebarOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent",
-                collapsed && "justify-center px-2",
-                isActive(item.href, item.exact)
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted-foreground"
-              )}
-            >
-              <item.icon className="size-4 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            if (!item.children) {
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => layoutActions.setMobileSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent",
+                    collapsed && "justify-center px-2",
+                    isActive(item.href, item.exact)
+                      ? "bg-accent/10 text-accent"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <item.icon className="size-4 shrink-0" />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            }
+            const groupActive = item.children?.some((child) => pathname.startsWith(child.href)) ?? false;
+            const expanded = isGroupOpen(item);
+            return (
+              <div key={item.href}>
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(item.label, expanded)}
+                  aria-expanded={expanded}
+                  aria-label={`${item.label}, ${expanded ? "contraer" : "expandir"}`}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent",
+                    collapsed && "justify-center px-2",
+                    groupActive ? "bg-accent/10 text-accent" : "text-muted-foreground"
+                  )}
+                >
+                  <item.icon className="size-4 shrink-0" />
+                  {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+                  {!collapsed && item.badgeKey === "operacion" && operacionBadge > 0 && (
+                    <span className="rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {operacionBadge}
+                    </span>
+                  )}
+                  {!collapsed && (
+                    <ChevronDown className={cn("size-4 shrink-0 transition-transform", expanded && "rotate-180")} />
+                  )}
+                </button>
+                {expanded && !collapsed && (
+                  <div className="ml-7 mt-0.5 flex flex-col gap-0.5 border-l border-border pl-2">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => layoutActions.setMobileSidebarOpen(false)}
+                        className={cn(
+                          "rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-accent/10 hover:text-accent",
+                          pathname.startsWith(child.href) ? "bg-accent/10 text-accent" : "text-muted-foreground"
+                        )}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
       </ScrollArea>
 

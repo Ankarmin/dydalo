@@ -13,6 +13,7 @@ import { ordersStore } from "@/lib/stores/data-store.orders";
 import { addressesStore } from "@/lib/stores/data-store.addresses";
 import { stockMovementsStore } from "@/lib/stores/data-store.stock-movements";
 import { auditStore } from "@/lib/stores/data-store.audit";
+import { couponsStore } from "@/lib/stores/data-store.coupons";
 import type { Address, AdminProduct } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { ADMIN_FORM_SIMULATED_DELAY_MS } from "@/config/constants";
@@ -35,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatPrice } from "@/lib/utils/format";
+import { formatPrice, getDisplayPrice } from "@/lib/utils/format";
 import { notifyAdmin } from "@/components/admin/admin-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/contexts/auth-context";
@@ -90,6 +91,10 @@ const formSchema = z
     paymentMethod: z.string().optional(),
     paymentStatus: z.string().optional(),
     trackingNumber: z.string().optional(),
+    fulfillmentType: z.enum(["LIMA_APP", "PROVINCIA_OLVA", "RECOJO"]).optional(),
+    courier: z.string().optional(),
+    realShippingCost: z.number().min(0).optional(),
+    couponCode: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.customerMode === "existing" && !data.existingUserId) {
@@ -202,6 +207,10 @@ const defaultValues: FormValues = {
   paymentMethod: "",
   paymentStatus: "",
   trackingNumber: "",
+  fulfillmentType: "LIMA_APP",
+  courier: "",
+  realShippingCost: undefined,
+  couponCode: "",
 };
 
 function formatAddressLabel(address: Address): string {
@@ -212,6 +221,7 @@ export function CreateOrderForm() {
   const router = useRouter();
   const { state: authState } = useAuth();
   const [isPending, setIsPending] = useState(false);
+  const [couponFormError, setCouponFormError] = useState("");
 
   const customers = useMemo(
     () => usersStore.getAll().filter((u) => u.role === "customer"),
@@ -417,10 +427,52 @@ export function CreateOrderForm() {
     [items, form]
   );
 
+  function resolveCouponIdentity(values: {
+    customerMode: string;
+    existingUserId?: string;
+    newCustomerEmail?: string;
+  }): { userId: string; email: string } | null {
+    if (values.customerMode === "existing" && values.existingUserId) {
+      const customer = usersStore.getById(values.existingUserId);
+      if (!customer) return null;
+      return { userId: customer.id, email: customer.email };
+    }
+    if (values.newCustomerEmail) {
+      return { userId: `new:${values.newCustomerEmail.toLowerCase()}`, email: values.newCustomerEmail };
+    }
+    return null;
+  }
+
+  function applyCouponToForm() {
+    const vals = form.getValues();
+    const identity = resolveCouponIdentity(vals);
+    if (!identity) {
+      setCouponFormError("Elige o registra al cliente primero.");
+      return;
+    }
+    const itemsTotal = (vals.items ?? []).reduce((sum, item) => {
+      const product = activeProducts.find((p) => p.id === item.productId);
+      const price = product ? getDisplayPrice(product).final : item.price;
+      return sum + price * item.quantity;
+    }, 0);
+    const result = couponsStore.validate(vals.couponCode ?? "", {
+      userId: identity.userId,
+      email: identity.email,
+      subtotal: itemsTotal,
+    });
+    if (!result.valid) {
+      setCouponFormError(result.error);
+      return;
+    }
+    setCouponFormError("");
+    form.setValue("couponCode", result.coupon.code, { shouldValidate: true });
+    form.setValue("discount", result.discount, { shouldValidate: true });
+    notifyAdmin("Cupón aplicado", `${result.coupon.code} −S/${result.discount}`, "success");
+  }
+
   const onSubmit = form.handleSubmit((rawValues) => {
     const values = {
-      ...rawValues,
-      newCustomerFirstName: rawValues.newCustomerFirstName
+      ...rawValues,      newCustomerFirstName: rawValues.newCustomerFirstName
         ? normalizeText(rawValues.newCustomerFirstName)
         : rawValues.newCustomerFirstName,
       newCustomerLastName: rawValues.newCustomerLastName
@@ -579,6 +631,7 @@ export function CreateOrderForm() {
         return {
           ...item,
           variantId: variant?.id ?? `${item.productId}-${item.size}-${item.color}`,
+          unitCost: product?.costPrice,
         };
       });
       const stockValidation = productsStore.validateStockChange([], orderItems);
@@ -595,20 +648,46 @@ export function CreateOrderForm() {
         return;
       }
 
+      let finalDiscount = values.discount;
+      let finalCoupon: string | undefined;
+      const couponInput = (values.couponCode ?? "").trim();
+      if (couponInput) {
+        const customer = usersStore.getById(userId);
+        const recheck = couponsStore.validate(couponInput, {
+          userId,
+          email: customer?.email ?? "",
+          subtotal,
+        });
+        if (!recheck.valid) {
+          notifyAdmin("Cupón inválido", recheck.error, "error");
+          setIsPending(false);
+          return;
+        }
+        finalDiscount = recheck.discount;
+        finalCoupon = recheck.coupon.code;
+      }
+
       const order = ordersStore.create({
         userId,
         shippingAddressId,
         source: "admin",
+        origin: "manual",
         createdBy: authState.user?.id ?? "admin",
         stockReserved: true,
         items: orderItems,
         subtotal,
         shipping: values.shipping,
-        discount: values.discount,
-        total,
+        discount: finalDiscount,
+        couponCode: finalCoupon,
+        total: subtotal + values.shipping - finalDiscount,
         shippingAddressSnapshot,
         paymentMethod: values.paymentMethod || undefined,
-        paymentStatus: values.paymentStatus || undefined,
+        paymentStatus: (values.paymentStatus || "sin_registro") as "sin_registro" | "pendiente" | "en_revision" | "verificado_manual" | "aprobado" | "rechazado" | "reembolsado",
+        fulfillmentType: values.fulfillmentType ?? "LIMA_APP",
+        shipmentStatus: "pendiente",
+        courier: values.courier || undefined,
+        trackingCode: values.trackingNumber || undefined,
+        realShippingCost: values.realShippingCost,
         trackingNumber: values.trackingNumber || undefined,
       });
 
@@ -620,10 +699,10 @@ export function CreateOrderForm() {
       stockMovementsStore.createFromOrderDiff({
         previousItems: [],
         nextItems: orderItems,
-        type: "sale",
+        type: "reservation",
         orderId: order.id,
         actor,
-        reason: "Pedido manual admin",
+        reason: "Reserva temporal pedido manual (expira en 48h sin pago)",
       });
 
       auditStore.create({
@@ -632,9 +711,17 @@ export function CreateOrderForm() {
         entityId: order.id,
         entityLabel: `#${order.id.slice(0, 8)}`,
         action: "create",
-        summary: `Creó pedido manual para ${customerFullName}`,
+        summary: `Creó pedido manual para ${customerFullName}${finalCoupon ? ` con cupón ${finalCoupon}` : ""}`,
         after: order,
       });
+
+      if (finalCoupon) {
+        const used = couponsStore.getByCode(finalCoupon);
+        const customer = usersStore.getById(userId);
+        if (used && customer) {
+          couponsStore.registerUse(used.id, { userId, email: customer.email, orderId: order.id });
+        }
+      }
 
       notifyAdmin("Pedido creado", `#${order.id.slice(0, 8)}`, "success");
       router.push(ROUTES.adminPedidoDetalle(order.id));
@@ -1293,6 +1380,38 @@ export function CreateOrderForm() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="couponCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cupón (aplica y fija descuento)</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          placeholder="Ej: BIENVENIDA10"
+                          disabled={isPending}
+                          className="uppercase"
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isPending}
+                        onClick={() => applyCouponToForm()}
+                      >
+                        Aplicar
+                      </Button>
+                    </div>
+                    {couponFormError && (
+                      <p className="text-xs text-danger">{couponFormError}</p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-border">
               <span className="text-sm font-semibold">Total</span>
@@ -1353,7 +1472,10 @@ export function CreateOrderForm() {
                       <SelectContent>
                         <SelectItem value="">Sin registro</SelectItem>
                         <SelectItem value="pendiente">Pendiente</SelectItem>
-                        <SelectItem value="pagado">Pagado</SelectItem>
+                        <SelectItem value="en_revision">En revisión</SelectItem>
+                        <SelectItem value="verificado_manual">Verificado manual</SelectItem>
+                        <SelectItem value="aprobado">Aprobado MP</SelectItem>
+                        <SelectItem value="rechazado">Rechazado</SelectItem>
                         <SelectItem value="reembolsado">Reembolsado</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1371,6 +1493,71 @@ export function CreateOrderForm() {
                       <Input
                         {...field}
                         value={field.value ?? ""}
+                        placeholder="Opcional"
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="fulfillmentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de entrega</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? "LIMA_APP"}
+                      disabled={isPending}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="LIMA_APP">App Lima (paga al recibir)</SelectItem>
+                        <SelectItem value="PROVINCIA_OLVA">Olva provincia</SelectItem>
+                        <SelectItem value="RECOJO">Recojo en oficina</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="courier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Courier / aplicativo</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Olva, inDriver, oficina..."
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="realShippingCost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Costo real envío S/ (solo Olva)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                         placeholder="Opcional"
                         disabled={isPending}
                       />

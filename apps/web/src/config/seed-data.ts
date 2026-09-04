@@ -2,6 +2,10 @@ import { productsStore } from "@/lib/stores/data-store.products";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { usersStore } from "@/lib/stores/data-store.users";
 import { blogStore } from "@/lib/stores/data-store.blog";
+import { suppliersStore } from "@/lib/stores/data-store.suppliers";
+import { purchasesStore } from "@/lib/stores/data-store.purchases";
+import { couponsStore } from "@/lib/stores/data-store.coupons";
+import { returnsStore } from "@/lib/stores/data-store.returns";
 import { getVariantId } from "@/lib/utils/inventory";
 import type { User, BlogPost, Address, CreateOrderInput } from "@/lib/stores/data-store.types";
 
@@ -27,20 +31,82 @@ export function seedIfEmpty(): void {
 
   const createdUsers = sampleUsers.map((u) => usersStore.create(u));
 
+  if (!couponsStore.getByCode("BIENVENIDA10")) {
+    couponsStore.create({
+      code: "BIENVENIDA10",
+      type: "PERCENT",
+      value: 10,
+      maxUses: 100,
+      actorId: "sistema",
+      actorName: "Sistema",
+    });
+  }
+
+  const demoCosts: Record<string, number> = {
+    "1": 45, "31": 70, "51": 80, "11": 100, "91": 25, "71": 30, "21": 95, "41": 70, "92": 130,
+  };
+  for (const [productId, costPrice] of Object.entries(demoCosts)) {
+    productsStore.update(productId, { costPrice });
+  }
+
+  const demoSupplier = suppliersStore.create({
+    name: "Gamarra – Juan Pérez",
+    contact: "Juan Pérez",
+    phone: "+51 987 111 222",
+    notes: "Entrega en 3 días",
+    actorId: "sistema",
+    actorName: "Sistema",
+  });
+  const demoPurchase = purchasesStore.create({
+    supplierId: demoSupplier.id,
+    lines: [
+      { productId: "1", quantity: 20, unitCost: 45 },
+      { productId: "31", quantity: 10, unitCost: 70 },
+    ],
+    note: "Compra demo",
+    actorId: "sistema",
+    actorName: "Sistema",
+  });
+  if (demoPurchase) {
+    purchasesStore.receive(
+      demoPurchase.id,
+      {
+        lines: [
+          { productId: "1", quantity: 20 },
+          { productId: "31", quantity: 10 },
+        ],
+        actorId: "sistema",
+        actorName: "Sistema",
+      }
+    );
+  }
+
   const orderInputs: CreateOrderInput[] = [
     {
       userId: createdUsers[0].id,
+      origin: "mp_online",
+      paymentMethod: "Tarjeta MP",
+      paymentStatus: "aprobado",
       items: [
         { productId: "1", variantId: getVariantId("M", "Negro"), name: "Heavy Cotton Polo", quantity: 2, price: 89, size: "M", color: "Negro" },
         { productId: "31", variantId: getVariantId("L", "Gris"), name: "Shadow Oversized Hoodie", quantity: 1, price: 128, size: "L", color: "Gris" },
       ],
       subtotal: 306,
-      shipping: 15,
+      shipping: 0,
       discount: 0,
-      total: 321,
+      total: 306,
+      fulfillmentType: "LIMA_APP",
+      shipmentStatus: "en_camino",
+      courier: "inDriver",
+      trackingCode: "ABC-123",
     },
     {
       userId: createdUsers[1].id,
+      origin: "mp_online",
+      paymentMethod: "Tarjeta MP",
+      paymentStatus: "rechazado",
+      fulfillmentType: "PROVINCIA_OLVA",
+      shipmentStatus: "pendiente",
       items: [
         { productId: "51", variantId: getVariantId("32", "Indigo"), name: "Raw Denim Straight", quantity: 1, price: 145, size: "32", color: "Indigo" },
       ],
@@ -51,17 +117,25 @@ export function seedIfEmpty(): void {
     },
     {
       userId: createdUsers[2].id,
+      origin: "manual",
+      paymentMethod: "Yape",
+      paymentStatus: "verificado_manual",
       items: [
         { productId: "11", variantId: getVariantId("XL", "Negro"), name: "Midnight Track Set", quantity: 1, price: 189, size: "XL", color: "Negro" },
         { productId: "91", variantId: getVariantId("Única", "Negro/Blanco"), name: "Two Tone Caps", quantity: 2, price: 54, size: "Única", color: "Negro/Blanco" },
       ],
       subtotal: 297,
-      shipping: 0,
+      shipping: 15,
       discount: 30,
-      total: 267,
+      total: 282,
+      fulfillmentType: "PROVINCIA_OLVA",
+      shipmentStatus: "pendiente",
+      courier: "Olva",
     },
     {
       userId: createdUsers[3].id,
+      fulfillmentType: "PROVINCIA_OLVA",
+      shipmentStatus: "pendiente",
       items: [
         { productId: "71", variantId: getVariantId("S", "Blanco"), name: "Ribbed Tank Top", quantity: 3, price: 64, size: "S", color: "Blanco" },
       ],
@@ -81,6 +155,10 @@ export function seedIfEmpty(): void {
       shipping: 0,
       discount: 50,
       total: 507,
+      fulfillmentType: "RECOJO",
+      shipmentStatus: "coordinado",
+      pickupName: "Diego Paz",
+      pickupDni: "12345678",
     },
   ];
 
@@ -101,6 +179,16 @@ export function seedIfEmpty(): void {
     ordersStore.update(order.id, { shippingAddressSnapshot: addressSnapshots[index] });
   });
 
+  for (const order of createdOrders) {
+    const snapshotted = order.items.map((item) => ({
+      ...item,
+      unitCost: item.unitCost ?? demoCosts[item.productId],
+    }));
+    if (snapshotted.some((item, i) => item.unitCost !== order.items[i].unitCost)) {
+      ordersStore.update(order.id, { items: snapshotted });
+    }
+  }
+
   ordersStore.transitionStatus(createdOrders[0].id, "confirmado", createdUsers[0].id);
   ordersStore.transitionStatus(createdOrders[0].id, "enviado", createdUsers[0].id);
   ordersStore.transitionStatus(createdOrders[1].id, "confirmado", createdUsers[1].id);
@@ -109,6 +197,30 @@ export function seedIfEmpty(): void {
   ordersStore.transitionStatus(createdOrders[3].id, "confirmado", createdUsers[3].id);
   ordersStore.transitionStatus(createdOrders[3].id, "enviado", createdUsers[3].id);
   ordersStore.transitionStatus(createdOrders[3].id, "entregado", createdUsers[3].id);
+
+  const demoOrder = ordersStore.getById(createdOrders[3].id);
+  if (demoOrder && demoOrder.items.length > 0) {
+    const first = demoOrder.items[0];
+    const rma = returnsStore.create({
+      orderId: demoOrder.id,
+      userId: demoOrder.userId,
+      origin: "web",
+      items: [{ productId: first.productId, variantId: first.variantId, quantity: 1, reason: "talla", reasonNote: "Me quedó grande" }],
+      actorId: demoOrder.userId,
+      actorName: "Sofia Vega",
+    });
+    if (rma.success) {
+      returnsStore.setStatus(rma.data.id, "aprobada", { id: "sistema", name: "Sistema" }, "Demo aprobada");
+      returnsStore.receive(
+        rma.data.id,
+        {
+          lines: [{ productId: first.productId, variantId: first.variantId, quantity: 1 }],
+          actorId: "sistema",
+          actorName: "Sistema",
+        }
+      );
+    }
+  }
 
   const blogPosts: Omit<BlogPost, "id" | "createdAt" | "updatedAt">[] = [
     {

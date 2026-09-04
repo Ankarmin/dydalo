@@ -9,6 +9,7 @@ import { productsStore } from "@/lib/stores/data-store.products";
 import { addressesStore } from "@/lib/stores/data-store.addresses";
 import { stockMovementsStore } from "@/lib/stores/data-store.stock-movements";
 import { auditStore } from "@/lib/stores/data-store.audit";
+import { returnsStore } from "@/lib/stores/data-store.returns";
 import type { Address, Order, OrderStatus, OrderItem, ProductVariantStock } from "@/lib/stores";
 import { VALID_TRANSITIONS, STATUS_STYLES } from "@/lib/stores";
 import { useAuth } from "@/contexts/auth-context";
@@ -166,6 +167,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
   function addItem(product: { id: string; name: string; price: number; sizes: string[]; colors: { name: string; hex: string }[]; variants?: ProductVariantStock[] }, size: string, color: string, quantity: number) {
     const variant = product.variants?.find((v) => v.size === size && v.color === color);
     const variantId = variant?.id ?? `${product.id}-${size}-${color}`;
+    const unitCost = productsStore.getById(product.id)?.costPrice;
     setEditedItems((prev) => {
       const existing = prev.find(
         (i) => i.productId === product.id && i.size === size && i.color === color
@@ -173,7 +175,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
       if (existing) {
         return prev.map((i) =>
           i.productId === product.id && i.size === size && i.color === color
-            ? { ...i, quantity: i.quantity + quantity }
+            ? { ...i, quantity: i.quantity + quantity, unitCost: i.unitCost ?? unitCost }
             : i
         );
       }
@@ -184,6 +186,7 @@ export function PedidoDetalleClient({ id }: { id: string }) {
           variantId,
           name: product.name,
           price: product.price,
+          unitCost,
           size,
           color,
           quantity,
@@ -314,6 +317,8 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         return;
       }
 
+      const previousPaymentStatus = order.paymentStatus ?? "sin_registro";
+      const nextPaymentStatus = editedPaymentStatus || "sin_registro";
       const updated = ordersStore.update(order.id, {
         items: editedItems,
         subtotal: recalculatedSubtotal,
@@ -321,12 +326,21 @@ export function PedidoDetalleClient({ id }: { id: string }) {
         shipping: editedShipping,
         discount: editedDiscount,
         paymentMethod: editedPaymentMethod || undefined,
-        paymentStatus: editedPaymentStatus || undefined,
         trackingNumber: editedTrackingNumber || undefined,
         shippingAddressId: nextShippingAddressId,
         shippingAddressSnapshot: normalizedAddress,
         stockReserved: true,
       });
+
+      if (updated && nextPaymentStatus !== previousPaymentStatus) {
+        ordersStore.updatePaymentStatus(order.id, {
+          status: nextPaymentStatus as "sin_registro" | "pendiente" | "in_process" | "aprobado" | "rechazado" | "cancelado" | "reembolsado" | "en_revision" | "verificado_manual" | "en_disputa" | "contracargo",
+          method: editedPaymentMethod || undefined,
+          reason: `Editado desde detalle de pedido: ${previousPaymentStatus} → ${nextPaymentStatus}`,
+          actorId: authState.user?.id ?? "admin",
+          actorName: authState.user?.name ?? "Admin",
+        });
+      }
 
       if (updated) {
         const actor = {
@@ -440,6 +454,13 @@ export function PedidoDetalleClient({ id }: { id: string }) {
             Editar
           </Button>
         )}
+        {!editMode && order.status === "entregado" && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`${ROUTES.adminDevoluciones}/nueva?pedido=${order.id}`}>
+              Devolución
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
@@ -472,6 +493,15 @@ export function PedidoDetalleClient({ id }: { id: string }) {
               </Select>
             </div>
           )}
+          {allowedTransitions.length === 0 && order.status === "entregado" && (
+            <p className="text-xs text-muted-foreground">
+              El devuelto se genera al cerrar su devolución en{" "}
+              <Link href={ROUTES.adminDevoluciones} className="text-accent hover:underline">
+                Devoluciones
+              </Link>
+              .
+            </p>
+          )}
         </div>
       </div>
 
@@ -485,6 +515,20 @@ export function PedidoDetalleClient({ id }: { id: string }) {
           <div>
             <p className="text-muted-foreground">Creado por</p>
             <p className="font-medium">{creatorLabel}</p>
+          </div>
+          <div className="sm:col-span-2">
+            <p className="text-muted-foreground">Devoluciones</p>
+            {returnsStore.getByOrderId(order.id).length === 0 ? (
+              <p className="font-medium">—</p>
+            ) : (
+              <div className="mt-1 flex flex-wrap gap-2">
+                {returnsStore.getByOrderId(order.id).map((r) => (
+                  <Link key={r.id} href={ROUTES.adminDevolucionDetalle(r.id)} className="rounded-full border border-border px-2 py-0.5 font-mono text-xs text-accent hover:underline">
+                    {r.code} · {r.status}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -518,19 +562,43 @@ export function PedidoDetalleClient({ id }: { id: string }) {
 
       {!editMode && (
         <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold mb-3">Pago y Envío</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Pago y Envío</h2>
+            <div className="flex gap-3">
+              <Link href={ROUTES.adminPagoDetalle(order.id)} className="text-xs text-accent hover:underline">
+                Ver trazabilidad de pago →
+              </Link>
+              <Link href={ROUTES.adminEnvioDetalle(order.id)} className="text-xs text-accent hover:underline">
+                Ver envío →
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+            <div>
+              <p className="text-muted-foreground">Origen</p>
+              <p className="font-medium">{order.origin === "manual" || order.source === "admin" ? "🧾 Manual" : "🌐 Online MP"}</p>
+            </div>
             <div>
               <p className="text-muted-foreground">Método de pago</p>
               <p className="font-medium">{order.paymentMethod || "-"}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Estado de pago</p>
-              <p className="font-medium">{order.paymentStatus || "-"}</p>
+              <p className="font-medium">{order.paymentStatus || "sin_registro"}</p>
+              {order.couponCode && (
+                <p className="text-xs text-success">Cupón {order.couponCode} · −S/{order.discount}</p>
+              )}
             </div>
             <div>
-              <p className="text-muted-foreground">N° de seguimiento</p>
-              <p className="font-medium">{order.trackingNumber || "-"}</p>
+              <p className="text-muted-foreground">Entrega</p>
+              <p className="font-medium">
+                {order.fulfillmentType === "PROVINCIA_OLVA" ? "📦 Olva" : order.fulfillmentType === "RECOJO" ? "🏬 Recojo" : "🛵 App Lima"}
+                {order.shipmentStatus ? ` · ${order.shipmentStatus}` : ""}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {order.trackingCode ? `Guía: ${order.trackingCode}` : order.trackingNumber || "—"}
+                {order.realShippingCost !== undefined ? ` · Real S/${order.realShippingCost}` : ""}
+              </p>
             </div>
           </div>
         </div>
@@ -762,7 +830,10 @@ export function PedidoDetalleClient({ id }: { id: string }) {
                 <SelectContent>
                   <SelectItem value="">Sin registro</SelectItem>
                   <SelectItem value="pendiente">Pendiente</SelectItem>
-                  <SelectItem value="pagado">Pagado</SelectItem>
+                  <SelectItem value="en_revision">En revisión</SelectItem>
+                  <SelectItem value="verificado_manual">Verificado manual</SelectItem>
+                  <SelectItem value="aprobado">Aprobado MP</SelectItem>
+                  <SelectItem value="rechazado">Rechazado</SelectItem>
                   <SelectItem value="reembolsado">Reembolsado</SelectItem>
                 </SelectContent>
               </Select>

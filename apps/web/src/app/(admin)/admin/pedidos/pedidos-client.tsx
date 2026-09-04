@@ -9,7 +9,7 @@ import { auditStore } from "@/lib/stores/data-store.audit";
 import { seedIfEmpty } from "@/config/seed-data";
 import { useStoreData } from "@/hooks/use-store-data";
 import type { OrderStatus } from "@/lib/stores";
-import { ORDER_STATUSES, STATUS_STYLES } from "@/lib/stores";
+import { ORDER_STATUSES, STATUS_STYLES, getOrderMargin } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,11 @@ const PAGE_SIZE = 15;
 export function PedidosClient() {
   const { state: authState } = useAuth();
   seedIfEmpty();
+  const [housekeeping] = useState(() => {
+    ordersStore.expireStaleReservations();
+    return true;
+  });
+  void housekeeping;
   const orders = useStoreData(() => ordersStore.getAll().toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "todos">("todos");
@@ -67,6 +72,7 @@ export function PedidosClient() {
           case "fecha": return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
           case "items": return dir * (a.items.length - b.items.length);
           case "total": return dir * (a.total - b.total);
+          case "margen": return dir * (getOrderMargin(a).margin - getOrderMargin(b).margin);
           case "estado": return dir * a.status.localeCompare(b.status);
           default: return 0;
         }
@@ -154,6 +160,7 @@ export function PedidosClient() {
                 <SortableHeader label="Fecha" field="fecha" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Items" field="items" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Total" field="total" currentSort={sort} onSortChange={setSort} />
+                <SortableHeader label="Margen" field="margen" currentSort={sort} onSortChange={setSort} />
                 <SortableHeader label="Estado" field="estado" currentSort={sort} onSortChange={setSort} />
                 <th className="px-3 py-2 font-medium text-right">Acción</th>
               </tr>
@@ -177,6 +184,16 @@ export function PedidosClient() {
                     </td>
                     <td className="px-4 py-3">{order.items.length}</td>
                     <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const m = getOrderMargin(order);
+                        return m.known ? (
+                          <span className="font-medium text-success">{formatPrice(m.margin)}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        );
+                      })()}
+                    </td>
                     <td className="px-3 py-2">
                       <span
                         className={cn(

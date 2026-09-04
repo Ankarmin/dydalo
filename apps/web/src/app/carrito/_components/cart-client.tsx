@@ -21,6 +21,7 @@ import { ordersStore } from "@/lib/stores/data-store.orders";
 import { productsStore } from "@/lib/stores/data-store.products";
 import { stockMovementsStore } from "@/lib/stores/data-store.stock-movements";
 import { addressesStore } from "@/lib/stores/data-store.addresses";
+import { couponsStore } from "@/lib/stores/data-store.coupons";
 import type { Address } from "@/lib/stores";
 import { departments, type Province } from "@/config/ubigeos";
 import { SHIPPING_PROVINCIA_PRICE } from "@/config/constants";
@@ -120,6 +121,11 @@ export function CartClient() {
   const [addressMode, setAddressMode] = useState<"saved" | "new">(
     state.user && addressesStore.getByUserId(state.user.id).length > 0 ? "saved" : "new"
   );
+  const [fulfillmentType, setFulfillmentType] = useState<"LIMA_APP" | "PROVINCIA_OLVA" | "RECOJO">("LIMA_APP");
+  const [couponInput, setCouponInput] = useState("");
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [saveAddress, setSaveAddress] = useState(false);
 
@@ -153,8 +159,36 @@ export function CartClient() {
   }
   const [submitting, setSubmitting] = useState(false);
 
-  const shippingCost = department === "Lima" ? 0 : SHIPPING_PROVINCIA_PRICE;
-  const total = subtotal + shippingCost;
+  const shippingCost = fulfillmentType === "PROVINCIA_OLVA" ? SHIPPING_PROVINCIA_PRICE : 0;
+  const fulfillmentNote =
+    fulfillmentType === "LIMA_APP"
+      ? "Lo pagas al conductor al recibir. Desde S/10 aprox."
+      : fulfillmentType === "PROVINCIA_OLVA"
+        ? `Olva desde S/${SHIPPING_PROVINCIA_PRICE}*. Se confirma por WhatsApp.`
+        : "Gratis. Coordinamos por WhatsApp según disponibilidad.";
+
+  function applyCoupon() {
+    if (!state.user) return;
+    const result = couponsStore.validate(couponInput, {
+      userId: state.user.id,
+      email: state.user.email,
+      subtotal,
+    });
+    if (!result.valid) {
+      setCouponError(result.error);
+      return;
+    }
+    setCouponCode(result.coupon.code);
+    setCouponDiscount(result.discount);
+    setCouponError("");
+  }
+
+  function removeCoupon() {
+    setCouponCode(null);
+    setCouponDiscount(0);
+    setCouponError("");
+    setCouponInput("");
+  }
 
   if (state.status === "loading" || !state.user || meta.isAdmin) {
     return (
@@ -223,6 +257,7 @@ export function CartClient() {
         name: item.product.name,
         quantity: item.quantity,
         price: priceData.final,
+        unitCost: item.product.costPrice,
         size: item.size,
         color: item.color,
       };
@@ -241,17 +276,43 @@ export function CartClient() {
       return;
     }
 
+    let finalDiscount = 0;
+    let finalCoupon: string | undefined;
+    if (couponCode && state.user) {
+      const recheck = couponsStore.validate(couponCode, {
+        userId: state.user.id,
+        email: state.user.email,
+        subtotal,
+      });
+      if (!recheck.valid) {
+        setSubmitting(false);
+        setCouponError(recheck.error);
+        setCouponCode(null);
+        setCouponDiscount(0);
+        window.alert(recheck.error);
+        return;
+      }
+      finalDiscount = recheck.discount;
+      finalCoupon = recheck.coupon.code;
+    }
+
     const order = ordersStore.create({
       userId: state.user?.id ?? "guest",
       shippingAddressId,
       source: "checkout",
+      origin: "mp_online",
       createdBy: state.user?.id ?? "guest",
       stockReserved: true,
       items: orderItems,
       subtotal,
       shipping: shippingCost,
-      discount: 0,
-      total,
+      discount: finalDiscount,
+      couponCode: finalCoupon,
+      total: subtotal + shippingCost - finalDiscount,
+      paymentMethod: "Tarjeta MP",
+      paymentStatus: "pendiente",
+      fulfillmentType,
+      shipmentStatus: "pendiente",
       shippingAddressSnapshot: {
         id: shippingAddressId ?? "",
         userId: state.user?.id ?? "guest",
@@ -273,18 +334,29 @@ export function CartClient() {
     stockMovementsStore.createFromOrderDiff({
       previousItems: [],
       nextItems: orderItems,
-      type: "sale",
+      type: "reservation",
       orderId: order.id,
       actor: {
         id: state.user!.id,
         name: state.user!.name,
       },
-      reason: "Venta por checkout",
+      reason: "Reserva temporal checkout (expira en 24h sin pago)",
     });
 
     clearCart();
 
-    showOrderConfirmedToast(order.id, total);
+    if (finalCoupon && state.user) {
+      const used = couponsStore.getByCode(finalCoupon);
+      if (used) {
+        couponsStore.registerUse(used.id, {
+          userId: state.user.id,
+          email: state.user.email,
+          orderId: order.id,
+        });
+      }
+    }
+
+    showOrderConfirmedToast(order.id, order.total);
     router.push(`${ROUTES.pedidoConfirmado}?orderId=${order.id}`);
   };
 
@@ -542,6 +614,35 @@ export function CartClient() {
             )}
             </>
           )}
+
+            <div className="p-4 rounded-xl border border-border bg-card/50">
+              <p className="text-sm font-medium leading-snug">Método de entrega</p>
+              <RadioGroup
+                value={fulfillmentType}
+                onValueChange={(v) => setFulfillmentType(v as "LIMA_APP" | "PROVINCIA_OLVA" | "RECOJO")}
+                className="mt-3 space-y-3"
+              >
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="LIMA_APP" id="ff-app" />
+                  <Label htmlFor="ff-app" className="cursor-pointer text-sm font-medium leading-snug">
+                    Envío por aplicativo (Lima)
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="PROVINCIA_OLVA" id="ff-olva" />
+                  <Label htmlFor="ff-olva" className="cursor-pointer text-sm font-medium leading-snug">
+                    Envío Olva (provincia)
+                  </Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="RECOJO" id="ff-recojo" />
+                  <Label htmlFor="ff-recojo" className="cursor-pointer text-sm font-medium leading-snug">
+                    Recojo en oficina (gratis)
+                  </Label>
+                </div>
+              </RadioGroup>
+              <p className="mt-3 text-xs text-muted-foreground">{fulfillmentNote}</p>
+            </div>
           </div>
 
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
@@ -610,10 +711,46 @@ export function CartClient() {
                   <span className="text-muted-foreground">Envío</span>
                   <span className="font-semibold">{shippingCost === 0 ? "GRATIS" : formatPrice(shippingCost)}</span>
                 </div>
+                {couponCode ? (
+                  <div className="flex justify-between text-success">
+                    <span>Cupón {couponCode}</span>
+                    <span className="font-semibold">−{formatPrice(couponDiscount)}</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between border-t border-border pt-2 text-base">
                   <span className="font-bold">Total</span>
-                  <span className="font-bold">{formatPrice(total)}</span>
+                  <span className="font-bold">{formatPrice(subtotal + shippingCost - couponDiscount)}</span>
                 </div>
+              </div>
+
+              <div className="mt-4 rounded-md border border-border p-3">
+                {couponCode ? (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">Cupón {couponCode} aplicado</span>
+                    <button type="button" onClick={removeCoupon} className="text-xs text-accent hover:underline">
+                      Quitar
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Label htmlFor="coupon" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      ¿Tienes un cupón?
+                    </Label>
+                    <div className="mt-2 flex gap-2">
+                      <Input
+                        id="coupon"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        placeholder="Ej: BIENVENIDA10"
+                        className="h-9"
+                      />
+                      <Button variant="outline" size="sm" onClick={applyCoupon}>
+                        Aplicar
+                      </Button>
+                    </div>
+                    {couponError && <p className="mt-2 text-xs text-danger">{couponError}</p>}
+                  </>
+                )}
               </div>
 
               <Button

@@ -28,8 +28,11 @@ import { FALLBACK_IMAGE } from "@/config/constants";
 const MOVEMENT_LABELS: Record<StockMovementType, string> = {
   purchase: "Compra",
   sale: "Venta",
+  reservation: "Reserva",
+  release_reservation: "Reserva liberada",
   manual_adjustment: "Ajuste",
   return: "Devolución",
+  damage: "Merma",
   cancellation: "Cancelación",
   order_edit: "Edición pedido",
   variant_created: "Variante creada",
@@ -40,8 +43,11 @@ const MOVEMENT_TYPES: Array<StockMovementType | "todos"> = [
   "todos",
   "purchase",
   "sale",
+  "reservation",
+  "release_reservation",
   "manual_adjustment",
   "return",
+  "damage",
   "cancellation",
   "order_edit",
   "variant_created",
@@ -169,8 +175,8 @@ export function InventarioClient() {
       notifyAdmin("Selecciona variante", "Elige un producto y una variante", "error");
       return;
     }
-    if (!adjustReason.trim()) {
-      notifyAdmin("Motivo requerido", "Indica por qué se mueve el stock", "error");
+    if (adjustReason.trim().length < 5) {
+      notifyAdmin("Motivo muy corto", "Describe el motivo con al menos 5 caracteres", "error");
       return;
     }
 
@@ -180,7 +186,11 @@ export function InventarioClient() {
       ? quantity
       : adjustMode === "add"
         ? quantityBefore + quantity
-        : Math.max(0, quantityBefore - quantity);
+        : quantityBefore - quantity;
+    if (quantityAfter < 0) {
+      notifyAdmin("Stock insuficiente", `Solo quedan ${quantityBefore} uds, no puedes retirar ${quantity}`, "error");
+      return;
+    }
     const quantityChange = quantityAfter - quantityBefore;
 
     if (quantityChange === 0) {
