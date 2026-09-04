@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatPrice, getDisplayPrice } from "@/lib/utils/format";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
-import { categoriesStore } from "@/lib/stores/data-store.categories";
 import { ROUTES } from "@/lib/utils/routes";
 import { cn } from "@/lib/utils/utils";
 
@@ -43,8 +42,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, priority }: ProductCardProps) {
-  const categoryName =
-    categoriesStore.getBySlug(product.category)?.name ?? product.category;
   const { final, hasDiscount } = getDisplayPrice(product);
   const productImages = getProductImages(product);
   const primaryImage = productImages[0] ?? product.image;
@@ -120,9 +117,6 @@ export function ProductCard({ product, priority }: ProductCardProps) {
         onBlur={stopImageCycle}
         className="product-glass relative block aspect-square w-full overflow-hidden border border-border text-left transition-all duration-500 cursor-pointer group-hover:-translate-y-2 group-hover:border-accent focus-ring"
       >
-        <span className="absolute left-2 top-2 md:left-4 md:top-4 z-10 product-label max-md:text-[7px] max-md:px-1.5 max-md:py-1 max-md:tracking-[0.12em]">
-          {categoryName}
-        </span>
         <FavoriteButton
           productId={product.id}
           productName={product.name}
@@ -159,24 +153,23 @@ export function ProductCard({ product, priority }: ProductCardProps) {
         )}
       </Link>
 
-      {product.colors && product.colors.length > 0 && (
-        <div className="mt-2 md:mt-3 flex items-center gap-1.5 md:gap-2">
-          {product.colors.map((color) => (
-            <span
-              key={color.name}
-              className="size-4 md:size-5 rounded-full border border-border"
-              style={{ backgroundColor: color.hex }}
-              title={color.name}
-            />
-          ))}
-        </div>
-      )}
-
       <div className="mt-2 md:mt-4 flex items-start justify-between gap-2 md:gap-4">
         <div className="min-w-0 flex-1">
           <h3 className="text-xs md:text-sm font-bold uppercase tracking-tight">
             {product.name}
           </h3>
+          {product.colors && product.colors.length > 0 && (
+            <div className="mt-1.5 flex items-center gap-1.5 md:gap-2">
+              {product.colors.map((color) => (
+                <span
+                  key={color.name}
+                  className="size-4 md:size-5 rounded-full border border-border"
+                  style={{ backgroundColor: color.hex }}
+                  title={color.name}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="shrink-0 text-right">
           {hasDiscount ? (

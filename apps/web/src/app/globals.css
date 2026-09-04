@@ -228,14 +228,12 @@ html {
 [data-theme="light"] .logo-dark { display: none; }
 [data-theme="light"] .logo-light { display: inline; }
 
-@keyframes ticker { to { transform: translateX(-50%); } }
 @keyframes shimmer {
   0% { transform: scaleX(0); }
   100% { transform: scaleX(1); }
 }
 
 @utility animate-shimmer { animation: shimmer 2s ease-out; }
-@utility ticker-track { animation: ticker 22s linear infinite; }
 @utility asphalt {
   background-image:
     radial-gradient(circle at 20% 10%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 28%),
