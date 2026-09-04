@@ -9,6 +9,25 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/admin/categorias/:path*",
+        destination: "/admin/configuracion/categorias/:path*",
+        permanent: true,
+      },
+      {
+        source: "/admin/faq",
+        destination: "/admin/configuracion/faq",
+        permanent: true,
+      },
+      {
+        source: "/admin/blog/:path*",
+        destination: "/admin/configuracion/blog/:path*",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     viewTransition: true,
   },
