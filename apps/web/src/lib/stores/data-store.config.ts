@@ -1,4 +1,4 @@
-import { read, write, generateId, KEYS } from "./data-store.utils";
+import { read, write, KEYS } from "./data-store.utils";
 import type { SiteConfig } from "./data-store.types";
 
 const DEFAULT_CONFIG: SiteConfig = {
@@ -10,7 +10,7 @@ const DEFAULT_CONFIG: SiteConfig = {
   contactPhone: "",
   address: "",
   socialLinks: {},
-  shippingInfo: "## Envíos\n\n**Lima Metropolitana:** Envío gratis en todos los pedidos. Entrega en 2-3 días hábiles.\n\n**Provincia:** Envíos vía Olva desde S/ 15. Entrega en 5-12 días hábiles. El costo varía según peso y destino.",
+  shippingInfo: "## Envíos\n\n**Lima por aplicativo:** El cliente lo paga al conductor al recibir (desde S/ 10 aprox). Entrega el mismo día.\n\n**Provincia vía Olva:** Desde S/ 15. Entrega en 5-12 días hábiles. El costo final se confirma por WhatsApp según destino.\n\n**Recojo en oficina:** Gratis. Coordinamos por WhatsApp según disponibilidad.",
   returnPolicy: "## Devoluciones\n\nPolítica de devoluciones próximamente.",
   sizeGuide: "## Guía de Tallas\n\nGuía de tallas próximamente.",
   faq: [
@@ -19,8 +19,8 @@ const DEFAULT_CONFIG: SiteConfig = {
     { id: "3", category: "Pedidos", question: "¿Cómo sé si mi pedido fue confirmado?", answer: "Recibirás un email de confirmación con el resumen de tu compra en cuanto el pago sea procesado exitosamente." },
     { id: "4", category: "Pedidos", question: "¿Puedo cancelar un pedido?", answer: "Sí, siempre que aún no haya sido enviado. Escríbenos por contacto indicando tu número de pedido y lo cancelamos sin costo." },
     { id: "5", category: "Pedidos", question: "¿Hay un pedido mínimo?", answer: "No. Puedes comprar desde un solo producto sin monto mínimo." },
-    { id: "6", category: "Envíos", question: "¿Cuánto tarda el envío?", answer: "Lima Metropolitana: 2-3 días hábiles con envío gratis. Provincia vía Olva: 5-12 días hábiles con costo desde S/ 15." },
-    { id: "7", category: "Envíos", question: "¿El envío es gratis en todos los pedidos?", answer: "El envío es gratis solo en Lima Metropolitana. Para provincia, el costo varía según peso y destino y lo asume el cliente." },
+    { id: "6", category: "Envíos", question: "¿Cuánto tarda el envío?", answer: "Lima por aplicativo: entrega el mismo día. Provincia vía Olva: 5-12 días hábiles. Recojo en oficina: coordinamos por WhatsApp." },
+    { id: "7", category: "Envíos", question: "¿Cuánto cuesta el envío?", answer: "Lima por aplicativo: lo pagas al conductor al recibir (desde S/ 10 aprox). Provincia vía Olva: desde S/ 15, el costo final se confirma por WhatsApp. Recojo en oficina: gratis." },
     { id: "8", category: "Envíos", question: "¿Hacen envíos a todo el Perú?", answer: "Sí. Realizamos envíos a todo el territorio nacional: gratis en Lima y vía Olva para provincia." },
     { id: "9", category: "Envíos", question: "¿Cómo sé el estado de mi pedido?", answer: "Te notificaremos por email cada vez que tu pedido cambie de estado (confirmado, enviado, entregado). También puedes contactarnos por WhatsApp para consultar." },
     { id: "10", category: "Envíos", question: "¿Qué pasa si no estoy en casa al momento de la entrega?", answer: "Olva realiza hasta 2 intentos de entrega. Si no es posible, coordinarán contigo una nueva fecha o podrás recogerlo en la agencia más cercana." },

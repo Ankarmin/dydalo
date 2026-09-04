@@ -13,7 +13,7 @@ const defaultConfig: SiteConfig = {
   contactPhone: "",
   address: "",
   socialLinks: {},
-  shippingInfo: "**Lima Metropolitana:** Envío gratis. 2-3 días hábiles.\n\n**Provincia:** Envíos vía Olva desde S/ 15. 5-12 días hábiles.",
+  shippingInfo: "**Lima por aplicativo:** Lo pagas al conductor al recibir (desde S/ 10 aprox).\n\n**Provincia vía Olva:** Desde S/ 15. El costo final se confirma por WhatsApp.\n\n**Recojo en oficina:** Gratis, según disponibilidad.",
   returnPolicy: "",
   sizeGuide: "",
   faq: [],
