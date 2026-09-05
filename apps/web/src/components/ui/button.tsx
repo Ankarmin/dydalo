@@ -11,6 +11,8 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
         hero: "rounded-none bg-primary text-primary-foreground shadow-[var(--shadow-punch)] hover:bg-accent hover:text-accent-foreground",
+        heroLight:
+          "rounded-none bg-white text-black shadow-[var(--shadow-punch)] hover:bg-neutral-200 hover:text-black",
         street:
           "rounded-none border border-border bg-transparent text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
