@@ -2,7 +2,7 @@
 
 Documento de contexto para OpenCode y para cualquier sesion futura de trabajo sobre el ecommerce.
 
-Ultima actualizacion: 2026-07-30
+Ultima actualizacion: 2026-09-14
 
 ## Resumen
 
@@ -53,6 +53,10 @@ Responsabilidades clave:
 - Gestionar devoluciones.
 - Validar pagos o comprobantes cuando el pago sea manual.
 - Exportar informacion para control externo.
+- Conciliar intentos de pago y verificar comprobantes manuales.
+- Asignar fulfillment por pedido (App Lima, Olva provincia o recojo) con guia o DNI.
+- Crear ordenes de compra a proveedores y recepcionar mercaderia.
+- Gestionar devoluciones RMA con inspeccion y reembolso.
 
 Necesidades del sistema:
 
@@ -110,8 +114,14 @@ Necesidades del sistema:
 | Blog | Existe basico |
 | SEO tecnico avanzado | Pendiente |
 | Backend real | Pendiente |
-| Auditoria por admin | Pendiente |
-| Historial de stock | Pendiente |
+| Pagos | Existe mock con 11 estados, sin webhook real |
+| Fulfillment triple (App Lima, Olva, Recojo) | Existe |
+| Costo, proveedor y margen | Existe |
+| Cupones | Existe |
+| Devoluciones RMA | Existe |
+| Compras a proveedores | Existe |
+| Auditoria por admin | Existe con filtros y exportacion |
+| Historial de stock | Existe por variante con reserva temporal |
 
 ## Reglas Comerciales Actuales
 
@@ -141,19 +151,13 @@ Necesidades del sistema:
 | Riesgo | Impacto |
 | --- | --- |
 | Stores/localStorage en vez de backend real | Datos no son confiables para produccion multiusuario |
-| Sin auditoria admin | No se sabe quien hizo cambios criticos |
-| Sin movimientos de stock | No se puede reconstruir inventario historico |
-| Sin costo/proveedor | No se puede medir margen real |
-| Sin tracking/courier | La gestion logistica depende de control externo |
-| SEO incompleto | Menor visibilidad organica |
 | Sin pagos reales/webhooks | Control manual de pago y riesgo operativo |
+| SEO incompleto | Menor visibilidad organica |
 
 ## Prioridad Estrategica
 
-La siguiente etapa debe enfocarse en trazabilidad y SEO base:
+La siguiente etapa es el backend real con datos confiables multiusuario. Despues:
 
-1. Historial de movimientos de stock.
-2. Auditoria por admin/socio.
+1. Backend real NestJS + PostgreSQL con migracion de los stores actuales.
+2. Pagos reales MercadoPago con webhooks firmados.
 3. SEO tecnico: `robots.ts`, `sitemap.ts`, canonicals y Product JSON-LD.
-4. Costo/proveedor/margen.
-5. Tracking/courier y estados logisticos.
