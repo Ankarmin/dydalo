@@ -1,9 +1,11 @@
+import type { ConfigService } from '@nestjs/config';
 import {
   buildManifest,
   parseSignatureHeader,
   verifyWebhookSignature,
 } from './mp-signature';
 import { buildPreferenceBody, mapMpPaymentStatus } from './mp-mapper';
+import { MpService } from './mp.service';
 
 describe('mp-signature', () => {
   // Vector precomputado independiente (node:crypto directo):
@@ -78,6 +80,7 @@ describe('mp-mapper', () => {
       items: [{ id: 'p1', title: 'Polo S/Negro', quantity: 2, unitPrice: 89 }],
       frontendUrl: 'https://tienda.test',
       notificationUrl: 'https://api.test/payments/webhook',
+      autoReturn: true,
     });
     expect(body.binary_mode).toBe(false);
     expect(body.external_reference).toBe('order-1');
@@ -93,5 +96,87 @@ describe('mp-mapper', () => {
         currency_id: 'PEN',
       },
     ]);
+  });
+
+  it('omite auto_return con URLs locales (MP lo rechaza)', () => {
+    const body = buildPreferenceBody({
+      orderId: 'order-1',
+      orderLabel: 'order-1',
+      items: [{ id: 'p1', title: 'Polo', quantity: 1, unitPrice: 10 }],
+      frontendUrl: 'http://localhost:3000',
+      notificationUrl: 'http://localhost:3001/payments/webhook',
+    });
+    expect('auto_return' in body).toBe(false);
+  });
+});
+
+describe('mp sin credenciales (modo mock)', () => {
+  const stubConfig = (values: Record<string, string>) =>
+    ({
+      get: (key: string) => values[key] ?? '',
+    }) as unknown as ConfigService;
+
+  const pendingOrder = {
+    id: 'order-1',
+    status: 'pendiente',
+    paymentStatus: 'pendiente',
+    userId: 'user-1',
+    items: [],
+  };
+
+  function serviceWithoutToken() {
+    return new MpService(
+      stubConfig({}),
+      {
+        findById: (id: string) =>
+          Promise.resolve(id === 'order-1' ? pendingOrder : null),
+      } as never,
+      {} as never,
+    );
+  }
+
+  it('preferencia sin token → mock:true sin salir a red', async () => {
+    const spy = jest.spyOn(globalThis, 'fetch');
+    const svc = serviceWithoutToken();
+    await expect(
+      svc.createPreferenceForOrder('order-1', {
+        id: 'user-1',
+        role: 'customer',
+      }),
+    ).resolves.toEqual({ mock: true });
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('webhook con firma válida pero sin token → 503', async () => {
+    const ts = '1704908010';
+    const v1 =
+      'fe601d434b9782c32a2863aec99718a9263c4300835e75d990041d9b7cbfaebe';
+    // Mismo secret que valida el stub.
+    const svcWithSecret = new MpService(
+      stubConfig({ MP_WEBHOOK_SECRET: 'test-secret' }),
+      {
+        findById: () => Promise.resolve(pendingOrder),
+      } as never,
+      {} as never,
+    );
+    await expect(
+      svcWithSecret.handleWebhook({
+        type: 'payment',
+        dataId: '123456',
+        xSignature: `ts=${ts},v1=${v1}`,
+        xRequestId: 'req-1',
+      }),
+    ).rejects.toMatchObject({ status: 503 });
+  });
+
+  it('sync sin token → 503 sin salir a red', async () => {
+    const spy = jest.spyOn(globalThis, 'fetch');
+    const svc = serviceWithoutToken();
+    await expect(
+      svc.syncOrderPayment('order-1', { id: 'user-1', role: 'customer' }),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

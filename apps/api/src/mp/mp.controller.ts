@@ -30,6 +30,15 @@ export class MpController {
     });
   }
 
+  // Sincronización manual (dueño/admin): consulta en MP el último pago
+  // del pedido y lo aplica. Reemplaza al webhook en local y reconcilia
+  // en producción si alguna notificación se pierde.
+  @UseGuards(JwtAuthGuard)
+  @Post('orders/:id/mp-sync')
+  syncPayment(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.mp.syncOrderPayment(id, { id: user.id, role: user.role });
+  }
+
   // Webhook real de MercadoPago. Público (MP no tiene sesión):
   // la seguridad es la firma HMAC + throttle estricto.
   // Responde 200 ante todo lo procesable; 401 con firma inválida.

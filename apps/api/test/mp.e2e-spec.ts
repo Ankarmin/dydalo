@@ -110,21 +110,102 @@ describe('MercadoPago (e2e)', () => {
     expect(res.status).toBe(401);
   });
 
-  it('webhook payment con firma válida pero sin token → 503', async () => {
+  it('webhook con firma válida supera verificación y consulta MP (token fake → 502)', async () => {
+    // El 401 queda descartado: la firma es válida. El 503 sin token se
+    // cubre en unit (mp.spec.ts); aquí el token fake falla en MP real.
     const ts = String(Math.floor(Date.now() / 1000));
     const res = await anon()
       .post('/payments/webhook?type=payment&data.id=999999')
       .set('x-signature', sign('999999', 'req-e2e', ts))
       .set('x-request-id', 'req-e2e');
-    expect(res.status).toBe(503);
+    expect(res.status).toBe(502);
   });
 
-  it('preferencia sin token → mock:true; pedido ajeno → 404', async () => {
-    const mock = await customer.post(`/orders/${orderId}/mp-preference`);
-    expect(mock.status).toBe(201);
-    expect((mock.body as { mock: boolean }).mock).toBe(true);
+  it('preferencia con token fake (fetch mockeado) → initPoint sandbox', async () => {
+    const spy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: 'pref-e2e-1',
+          init_point: 'https://www.mercadopago.com/pay',
+          sandbox_init_point: 'https://sandbox.mercadopago.com/pay',
+        }),
+    } as Response);
+    try {
+      const res = await customer.post(`/orders/${orderId}/mp-preference`);
+      expect(res.status).toBe(201);
+      const body = res.body as {
+        initPoint: string;
+        sandbox: boolean;
+        preferenceId: string;
+      };
+      expect(body.initPoint).toBe('https://sandbox.mercadopago.com/pay');
+      expect(body.sandbox).toBe(true);
+      expect(body.preferenceId).toBe('pref-e2e-1');
+    } finally {
+      spy.mockRestore();
+    }
 
     const missing = await customer.post('/orders/no-existe/mp-preference');
     expect(missing.status).toBe(404);
+  });
+
+  describe('mp-sync (fetch mockeado: sin red real)', () => {
+    const mpPayment = {
+      id: 777888999,
+      status: 'approved',
+      status_detail: 'accredited',
+      external_reference: '',
+      transaction_amount: 100,
+    };
+
+    function mockSearch(results: Array<Record<string, unknown>>) {
+      return jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ results }),
+      } as Response);
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('pedido ajeno → 404 sin llamar a MP', async () => {
+      const spy = jest.spyOn(globalThis, 'fetch');
+      const res = await customer.post('/orders/no-existe/mp-sync');
+      expect(res.status).toBe(404);
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('aplica el último pago y es idempotente', async () => {
+      mpPayment.external_reference = orderId;
+      const spy = mockSearch([{ ...mpPayment }]);
+
+      const first = await customer.post(`/orders/${orderId}/mp-sync`);
+      expect(first.status).toBe(201);
+      expect((first.body as { synced: boolean }).synced).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(1);
+
+      const detail = await customer.get(`/orders/${orderId}`);
+      expect((detail.body as { paymentStatus: string }).paymentStatus).toBe(
+        'aprobado',
+      );
+
+      const second = await customer.post(`/orders/${orderId}/mp-sync`);
+      expect((second.body as { duplicate?: boolean }).duplicate).toBe(true);
+
+      const attempts = await prisma.paymentAttempt.findMany({
+        where: { orderId, mpPaymentId: '777888999' },
+      });
+      expect(attempts).toHaveLength(1);
+    });
+
+    it('sin pagos en MP → synced:false', async () => {
+      mockSearch([]);
+      const res = await customer.post(`/orders/${orderId}/mp-sync`);
+      expect(res.status).toBe(201);
+      expect((res.body as { synced: boolean }).synced).toBe(false);
+    });
   });
 });

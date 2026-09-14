@@ -23,9 +23,12 @@ const envSchema = z.object({
   // En local MP no la alcanza: usar el simulador admin.
   API_PUBLIC_URL: z.string().default('http://localhost:3001'),
   // MercadoPago real (Fase 7). Sin token: preferencia en modo mock y
-  // webhook responde 503 (ver MpService).
+  // webhook/sync responden 503 (ver MpService).
   MP_ACCESS_TOKEN: z.string().optional().default(''),
   MP_WEBHOOK_SECRET: z.string().optional().default(''),
+  // Las credenciales de prueba de MP también pueden venir como APP_USR-,
+  // así que el prefijo TEST- no basta para detectar sandbox.
+  MP_SANDBOX: z.enum(['true', 'false']).default('false'),
 });
 
 export type Env = z.infer<typeof envSchema>;

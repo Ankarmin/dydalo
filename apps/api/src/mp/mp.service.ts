@@ -21,6 +21,24 @@ const FINAL_PAYMENT_STATUSES = [
   'reembolsado',
 ] as const;
 
+type MpPaymentRaw = {
+  id?: number | string;
+  status?: string;
+  status_detail?: string;
+  external_reference?: string;
+  transaction_amount?: number;
+};
+
+function toMpPayment(data: MpPaymentRaw, fallbackId: string): MpPayment {
+  return {
+    id: String(data.id ?? fallbackId),
+    status: data.status ?? '',
+    statusDetail: data.status_detail,
+    externalReference: data.external_reference,
+    transactionAmount: data.transaction_amount,
+  };
+}
+
 export type MpPreferenceResult =
   | { mock: true }
   | { mock: false; initPoint: string; preferenceId: string; sandbox: boolean };
@@ -46,6 +64,9 @@ export class MpService {
   }
 
   isSandbox(): boolean {
+    if ((this.config.get<string>('MP_SANDBOX') ?? 'false') === 'true') {
+      return true;
+    }
     return this.token().startsWith('TEST-');
   }
 
@@ -86,6 +107,7 @@ export class MpService {
       })),
       frontendUrl,
       notificationUrl,
+      autoReturn: frontendUrl.startsWith('https://'),
     });
     const res = await fetch(`${MP_API}/checkout/preferences`, {
       method: 'POST',
@@ -131,13 +153,71 @@ export class MpService {
       external_reference?: string;
       transaction_amount?: number;
     };
-    return {
-      id: String(data.id ?? mpPaymentId),
-      status: data.status ?? '',
-      statusDetail: data.status_detail,
-      externalReference: data.external_reference,
-      transactionAmount: data.transaction_amount,
+    return toMpPayment(data, mpPaymentId);
+  }
+
+  // Busca pagos por external_reference (el orderId que mandamos al crear
+  // la preferencia), del más reciente al más antiguo.
+  async searchPayments(externalReference: string): Promise<MpPayment[]> {
+    const res = await fetch(
+      `${MP_API}/v1/payments/search?external_reference=${encodeURIComponent(externalReference)}&sort=date_created&criteria=desc`,
+      { headers: { Authorization: `Bearer ${this.token()}` } },
+    );
+    if (!res.ok) {
+      throw new BadGatewayException('No se pudo consultar pagos en MP');
+    }
+    const data = (await res.json()) as {
+      results?: Array<{
+        id?: number | string;
+        status?: string;
+        status_detail?: string;
+        external_reference?: string;
+        transaction_amount?: number;
+      }>;
     };
+    return (data.results ?? []).map((p, i) => toMpPayment(p, `search-${i}`));
+  }
+
+  private requireConfigured(): void {
+    if (!this.isConfigured()) {
+      throw new ServiceUnavailableException(
+        'MercadoPago no configurado (MP_ACCESS_TOKEN)',
+      );
+    }
+  }
+
+  // Núcleo compartido webhook/sync: idempotencia + aplicación del estado.
+  private async applyPayment(
+    orderId: string,
+    payment: MpPayment,
+    reason: string,
+  ) {
+    const status = mapMpPaymentStatus(payment.status);
+    if (!status) {
+      this.logger.warn(`Estado MP desconocido: ${payment.status}`);
+      return { applied: false as const, reason: 'unknown-status' as const };
+    }
+    const existing = await this.payments.findAttemptByMpPaymentId(
+      orderId,
+      payment.id,
+    );
+    if (existing) {
+      const order = await this.orders.findById(orderId);
+      return {
+        applied: false as const,
+        duplicate: true as const,
+        order,
+        attempt: existing,
+      };
+    }
+    const result = await this.payments.updatePaymentStatus(orderId, {
+      status,
+      mpPaymentId: payment.id,
+      mpStatusDetail: payment.statusDetail,
+      reason,
+      actor: { id: 'sistema_mp', name: 'MercadoPago' },
+    });
+    return { applied: true as const, ...result };
   }
 
   // Webhook real de MP. Falla cerrado: firma inválida → 401.
@@ -167,11 +247,6 @@ export class MpService {
       );
     }
     const payment = await this.fetchPayment(input.dataId);
-    const status = mapMpPaymentStatus(payment.status);
-    if (!status) {
-      this.logger.warn(`Estado MP desconocido: ${payment.status}`);
-      return { ignored: true as const, reason: 'unknown-status' as const };
-    }
     const orderId = payment.externalReference;
     if (!orderId) {
       this.logger.warn(`Webhook MP sin external_reference: ${payment.id}`);
@@ -182,20 +257,56 @@ export class MpService {
       this.logger.warn(`Webhook MP de pedido inexistente: ${orderId}`);
       return { ignored: true as const, reason: 'order-not-found' as const };
     }
-    const existing = await this.payments.findAttemptByMpPaymentId(
+    const applied = await this.applyPayment(
       orderId,
-      payment.id,
+      payment,
+      `Webhook MP: pago ${payment.id} (${payment.status})`,
     );
-    if (existing) {
-      return { duplicate: true as const, order, attempt: existing };
+    if (!applied.applied) {
+      return applied.duplicate
+        ? { duplicate: true as const, order, attempt: applied.attempt }
+        : { ignored: true as const, reason: applied.reason };
     }
-    const result = await this.payments.updatePaymentStatus(orderId, {
-      status,
-      mpPaymentId: payment.id,
-      mpStatusDetail: payment.statusDetail,
-      reason: `Webhook MP: pago ${payment.id} (${payment.status})`,
-      actor: { id: 'sistema_mp', name: 'MercadoPago' },
-    });
-    return { duplicate: false as const, ...result };
+    return {
+      duplicate: false as const,
+      order: applied.order,
+      attempt: applied.attempt,
+    };
+  }
+
+  // Sincronización manual (dueño/admin): trae el último pago de MP para
+  // el pedido y lo aplica. Sirve en local (sin webhook entrante) y como
+  // reconciliación en producción si un webhook se pierde.
+  async syncOrderPayment(orderId: string, user: { id: string; role: string }) {
+    const order = await this.orders.findById(orderId);
+    if (!order || (order.userId !== user.id && user.role !== 'admin')) {
+      throw new NotFoundException('Pedido no encontrado');
+    }
+    this.requireConfigured();
+    const payments = await this.searchPayments(orderId);
+    if (payments.length === 0) {
+      return { synced: false as const, reason: 'no-payments' as const };
+    }
+    const latest = payments[0];
+    const applied = await this.applyPayment(
+      orderId,
+      latest,
+      `Sincronización MP: pago ${latest.id} (${latest.status})`,
+    );
+    if (!applied.applied) {
+      return applied.duplicate
+        ? {
+            synced: false as const,
+            duplicate: true as const,
+            order,
+            attempt: applied.attempt,
+          }
+        : { synced: false as const, reason: applied.reason };
+    }
+    return {
+      synced: true as const,
+      order: applied.order,
+      attempt: applied.attempt,
+    };
   }
 }

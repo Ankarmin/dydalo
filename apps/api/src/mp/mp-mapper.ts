@@ -39,6 +39,10 @@ export type MpPreferenceInput = {
   }>;
   frontendUrl: string;
   notificationUrl: string;
+  // MP rechaza `auto_return: approved` con back_urls localhost, así que
+  // solo se manda con URLs públicas (https). En local el retorno se
+  // concilia vía webhook (túnel) o mp-sync.
+  autoReturn?: boolean;
 };
 
 // Constructor puro del body de preferencia (testeable sin red).
@@ -58,7 +62,7 @@ export function buildPreferenceBody(input: MpPreferenceInput) {
       failure: `${confirmBase}&mp=failure`,
       pending: `${confirmBase}&mp=pending`,
     },
-    auto_return: 'approved' as const,
+    ...(input.autoReturn ? { auto_return: 'approved' as const } : {}),
     external_reference: input.orderId,
     notification_url: input.notificationUrl,
     binary_mode: false,
