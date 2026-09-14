@@ -85,6 +85,16 @@ export async function apiMpPreference(orderId: string): Promise<MpPreferenceResu
   });
 }
 
+export type MpSyncResult =
+  | { synced: true; order: Order }
+  | { synced: false; duplicate?: boolean; reason?: string };
+
+export async function apiMpSync(orderId: string): Promise<MpSyncResult> {
+  return apiFetch<MpSyncResult>(`/orders/${orderId}/mp-sync`, {
+    method: "POST",
+  });
+}
+
 export async function apiMyReturns(): Promise<ReturnRequest[]> {
   return apiFetch<ReturnRequest[]>("/returns");
 }

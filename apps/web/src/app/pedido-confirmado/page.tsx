@@ -13,11 +13,12 @@ import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import type { Order, PaymentAttempt } from "@/lib/stores/data-store.types";
 import { PAYMENT_STATUS_LABELS, type PaymentStatus } from "@/lib/stores";
 import { isApiEnabled } from "@/lib/api/client";
-import { apiGetAttempts, apiGetOrder, apiRetryLink } from "@/lib/api/orders";
+import { apiGetAttempts, apiGetOrder, apiMpSync, apiRetryLink } from "@/lib/api/orders";
 
 export default function PedidoConfirmadoPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const mpStatus = searchParams.get("mp");
   const apiMode = isApiEnabled();
   const [apiOrder, setApiOrder] = useState<Order | null>(null);
   const [apiAttempts, setApiAttempts] = useState<PaymentAttempt[]>([]);
@@ -28,6 +29,10 @@ export default function PedidoConfirmadoPage() {
     let alive = true;
     void (async () => {
       try {
+        // Vuelta desde MercadoPago: sincronizar antes de mostrar.
+        if (mpStatus === "success") {
+          await apiMpSync(orderId).catch(() => null);
+        }
         const [order, attempts] = await Promise.all([
           apiGetOrder(orderId),
           apiGetAttempts(orderId).catch(() => [] as PaymentAttempt[]),
@@ -43,7 +48,7 @@ export default function PedidoConfirmadoPage() {
     return () => {
       alive = false;
     };
-  }, [apiMode, orderId]);
+  }, [apiMode, orderId, mpStatus]);
 
   const [localOrder] = useState<Order | null>(
     () => (apiMode ? null : orderId ? (ordersStore.getById(orderId) ?? null) : null),
