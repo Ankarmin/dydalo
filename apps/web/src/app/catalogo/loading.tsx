@@ -12,7 +12,7 @@ export default function CatalogoLoading() {
               <Skeleton className="mb-1 h-8 w-32" />
               <Skeleton className="mb-8 h-3 w-20" />
 
-              <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, pi) => (
                   <div key={pi} className="space-y-4">
                     <Skeleton className="aspect-square w-full" />

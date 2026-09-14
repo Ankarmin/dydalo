@@ -129,7 +129,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
               src={previousImage}
               alt=""
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
               className="absolute inset-0 size-full object-cover animate-out slide-out-to-left duration-500 ease-out group-hover:scale-105"
             />
           )}
@@ -139,7 +139,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
             alt={product.name}
             fill
             priority={priority}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
             className={cn(
               "absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105",
               isAnimatingImage && "animate-in slide-in-from-right duration-500 ease-out",

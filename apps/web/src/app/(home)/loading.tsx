@@ -15,10 +15,20 @@ export default function HomeLoading() {
         <Skeleton className="mx-auto h-4 w-96 bg-accent-foreground/20" />
       </div>
 
+      <section className="section-px pt-14 md:pt-20">
+        <Skeleton className="mb-3 h-5 w-28" />
+        <Skeleton className="mb-8 h-12 w-72 md:mb-12" />
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+          ))}
+        </div>
+      </section>
+
       <section className="section-px section-lg">
         <Skeleton className="mb-12 h-6 w-32" />
-        <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="space-y-4">
               <Skeleton className="aspect-square w-full" />
               <Skeleton className="h-4 w-3/4" />

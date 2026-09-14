@@ -119,6 +119,7 @@ export function CategoriasClient() {
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-foreground">
               <th className="px-4 py-3 font-medium w-10">#</th>
+              <th className="px-4 py-3 font-medium">Foto</th>
               <th className="px-4 py-3 font-medium">Nombre</th>
               <th className="px-4 py-3 font-medium">Slug</th>
               <th className="px-4 py-3 font-medium">Activo</th>
@@ -151,6 +152,16 @@ export function CategoriasClient() {
                             ▼
                           </button>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-medium">
+                      <div className="size-10 rounded-md border border-border bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0 overflow-hidden">
+                        {cat.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={cat.image} alt="" className="size-full object-cover" />
+                        ) : (
+                          cat.name.charAt(0)
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-medium">
@@ -202,7 +213,7 @@ export function CategoriasClient() {
               })}
             {categories.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">
+                <td colSpan={7} className="px-5 py-12 text-center text-sm text-muted-foreground">
                   No hay categorías. ¡Crea la primera!
                 </td>
               </tr>

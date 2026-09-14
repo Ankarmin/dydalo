@@ -55,7 +55,7 @@ export function RelatedProducts({ product }: RelatedProductsProps) {
   return (
     <section className="mt-16 border-t border-border pt-12">
       <p className="section-tag mb-8">También te puede gustar</p>
-      <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-x-3 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
         {related.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}

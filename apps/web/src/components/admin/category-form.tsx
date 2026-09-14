@@ -20,9 +20,6 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { ImageUploader } from "@/components/admin/image-uploader";
@@ -34,7 +31,6 @@ const schema = z.object({
   active: z.boolean(),
   description: z.string().optional(),
   image: z.string().optional(),
-  parentId: z.string().optional(),
   sizeGuide: z.object({
     columns: z.array(z.string()),
     unit: z.string(),
@@ -76,14 +72,9 @@ export function CategoryForm({ slug }: CategoryFormProps) {
   const [guide, setGuide] = useState<SizeGuideData>(emptyGuide());
   const [newColumn, setNewColumn] = useState("");
 
-  const allCategories = useStoreData(() => categoriesStore.getAll());
-  const parentOptions = isEdit && category
-    ? allCategories.filter(c => c.slug !== slug)
-    : allCategories;
-
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", active: true, description: "", image: "", parentId: "", sizeGuide: undefined },
+    defaultValues: { name: "", active: true, description: "", image: "", sizeGuide: undefined },
   });
 
   useEffect(() => {
@@ -93,10 +84,10 @@ export function CategoryForm({ slug }: CategoryFormProps) {
       active: category.active,
       description: category.description ?? "",
       image: category.image ?? "",
-      parentId: category.parentId ?? "",
       sizeGuide: category.sizeGuide,
     });
     if (category.sizeGuide) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- precarga puntual del formulario en edición (una vez por categoría), no suscripción reactiva
       setHasGuide(true);
       setGuide(category.sizeGuide);
     }
@@ -170,16 +161,15 @@ export function CategoryForm({ slug }: CategoryFormProps) {
       active: values.active,
       createdAt: category?.createdAt ?? now,
       updatedAt: now,
-    } as { id: string; name: string; active: boolean; sizeGuide?: SizeGuideData; description?: string; image?: string; parentId?: string; createdAt: string; updatedAt: string };
+    } as { id: string; name: string; active: boolean; sizeGuide?: SizeGuideData; description?: string; image?: string; createdAt: string; updatedAt: string };
 
     if (values.description?.trim()) {
       normalizedValues.description = values.description.trim();
     }
     if (values.image?.trim()) {
       normalizedValues.image = values.image.trim();
-    }
-    if (values.parentId?.trim()) {
-      normalizedValues.parentId = values.parentId.trim();
+    } else if (isEdit) {
+      normalizedValues.image = undefined;
     }
 
     if (hasGuide) {
@@ -232,7 +222,7 @@ export function CategoryForm({ slug }: CategoryFormProps) {
             ? auditStore.diffFields(
                 before as unknown as Record<string, unknown>,
                 updated as unknown as Record<string, unknown>,
-                ["name", "active", "sizeGuide"]
+                ["name", "active", "description", "image", "sizeGuide"]
               )
             : [];
 
@@ -313,24 +303,6 @@ export function CategoryForm({ slug }: CategoryFormProps) {
                 <FormLabel>Imagen</FormLabel>
                 <FormControl>
                   <ImageUploader value={field.value ?? ""} onChange={field.onChange} disabled={isPending} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="parentId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Categoría padre</FormLabel>
-                <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Ninguna (categoría raíz)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {parentOptions.map((c) => (
-                        <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

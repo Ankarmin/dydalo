@@ -399,7 +399,6 @@ export type CatalogCategory = {
   order: number;
   description?: string;
   image?: string;
-  parentId?: string;
   sizeGuide?: SizeGuideData;
   createdAt: string;
   updatedAt: string;
