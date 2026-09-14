@@ -1,0 +1,31 @@
+# DYDALO — infraestructura local (Fase 1 backend).
+# Solo Postgres 16 por ahora. La API vive en apps/api (puerto 3001),
+# la web en apps/web (puerto 3000). Sin Adminer: lo mínimo necesario.
+# Uso: docker compose up -d db  (o pnpm --filter api db:up)
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dydalo-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dydalo}
+      POSTGRES_USER: ${POSTGRES_USER:-dydalo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dydalo}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-dydalo} -d $${POSTGRES_DB:-dydalo}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:

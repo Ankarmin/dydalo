@@ -1,0 +1,568 @@
+// DYDALO — Prisma v6 (pinneado en ^6, no v7: evita el breaking
+// `prisma.config.ts` y el generador `prisma-client` de v7).
+// Los modelos de negocio llegan en Fases 3-6 desde
+// `apps/web/src/lib/stores/data-store.types.ts`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Fase 2: sin modelos aún. La primera migración (`init`) queda vacía
+// a propósito; cada fase agrega sus modelos con su propia migración.
+
+// Fase 3: identidad. Roles del backlog §8 (solo admin/customer).
+enum UserRole {
+  admin
+  customer
+}
+
+model User {
+  id            String    @id @default(cuid())
+  // Siempre en minúsculas (normalizado en app); el @unique equivale
+  // entonces a unicidad case-insensitive sin extensión citext.
+  email         String    @unique
+  role          UserRole  @default(customer)
+  firstName     String?
+  lastName      String?
+  phone         String?
+  // bcrypt (bcryptjs). Nunca se expone ni se audita.
+  passwordHash  String
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  addresses     Address[]
+  orders        Order[]
+
+  @@map("users")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  label     String
+  fullName  String
+  street    String
+  district  String
+  city      String
+  state     String
+  zip       String?
+  country   String   @default("Perú")
+  phone     String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Un solo default por usuario: se garantiza en transacción de app
+  // (setDefault resetea las demás); Prisma no soporta índices parciales.
+  @@index([userId])
+  @@map("addresses")
+}
+
+// Fase 4: catálogo. Espejo de `data-store.types.ts` (frontend).
+// Dinero en Float (paridad con la matemática actual del frontend;
+// pasar a Decimal es migración futura dedicada). `colors`/`sizeGuide`/
+// `socialLinks`/`faq`/`heroSettings` como Json: solo display, sin queries.
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  active      Boolean   @default(true)
+  order       Int       @default(0)
+  description String?
+  image       String?
+  sizeGuide   Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  category        Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId      String
+  price           Float
+  image           String
+  images          String[]
+  // [{ name, hex }] del frontend.
+  colors          Json
+  // Agregado recalculado de variantes activas (no fuente de verdad).
+  stock           Int              @default(0)
+  active          Boolean          @default(true)
+  featured        Boolean          @default(false)
+  discount        Float?
+  sku             String           @unique
+  description     String?
+  costPrice       Float?
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  variants        ProductVariant[]
+
+  @@index([categoryId, active])
+  @@index([featured, active])
+  @@map("products")
+}
+
+model ProductVariant {
+  id                String   @id @default(cuid())
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId         String
+  // Id de variante del frontend (`size|color` normalizado): estable para
+  // que carrito/pedidos la referencien igual que hoy.
+  key               String
+  size              String
+  color             String
+  // Fuente de verdad del stock (Fase 5 lo mueve con kardex).
+  stock             Int      @default(0)
+  active            Boolean  @default(true)
+  lowStockThreshold Int?
+  sku               String?  @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([productId, size, color])
+  @@index([productId, active])
+  @@map("product_variants")
+}
+
+model BlogPost {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  excerpt    String
+  content    String
+  coverImage String
+  // Snapshot libre ('system' en el seed): sin FK a propósito, el autor
+  // es informativo como en el frontend.
+  authorId   String?
+  authorName String
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("blog_posts")
+}
+
+// Singleton (`id = 'default'`). Sin UI admin por decisión B-05;
+// el endpoint PATCH existe para uso futuro/operativo.
+model SiteConfig {
+  id              String   @id
+  siteName        String
+  siteDescription String
+  brandSubtitle   String
+  contactEmail    String
+  contactPhone    String
+  address         String
+  socialLinks     Json
+  shippingInfo    String
+  returnPolicy    String
+  sizeGuide       String
+  faq             Json
+  heroSettings    Json
+  maintenanceMode Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?
+
+  @@map("site_config")
+}
+
+// Append-only: sin UPDATE ni DELETE desde ningún servicio (Fase 5+
+// agregará más entityTypes: order, payment, inventory…).
+model AuditLog {
+  id            String   @id @default(cuid())
+  entityType    String
+  entityId      String
+  entityLabel   String
+  action        String
+  summary       String
+  before        Json?
+  after         Json?
+  changes       Json?
+  createdBy     String
+  createdByName String
+  createdAt     DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Fase 5: núcleo transaccional. Espejo de `data-store.types.ts`.
+// Dinero en Float (paridad frontend, ver decisión Fase 4).
+// Kardex y auditoría son históricos: SIN FKs que borren historia
+// (productId/variantId como strings + snapshots embebidos).
+
+enum OrderStatus {
+  pendiente
+  confirmado
+  enviado
+  entregado
+  cancelado
+  devuelto
+}
+
+enum OrderOrigin {
+  mp_online
+  manual
+}
+
+enum PaymentStatus {
+  sin_registro
+  pendiente
+  in_process
+  aprobado
+  rechazado
+  cancelado
+  reembolsado
+  en_revision
+  verificado_manual
+  en_disputa
+  contracargo
+}
+
+enum FulfillmentType {
+  LIMA_APP
+  PROVINCIA_OLVA
+  RECOJO
+}
+
+enum ShipmentStatus {
+  pendiente
+  conductor_asignado
+  en_camino
+  en_agencia
+  en_transito
+  coordinado
+  listo_para_recojo
+  entregado
+  fallido
+  cancelado
+  no_show
+  devuelto_agencia
+}
+
+enum CouponType {
+  PERCENT
+  AMOUNT
+}
+
+enum StockMovementType {
+  purchase
+  sale
+  reservation
+  release_reservation
+  manual_adjustment
+  return
+  damage
+  cancellation
+  order_edit
+  variant_created
+  variant_deactivated
+}
+
+model Coupon {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  type        CouponType
+  value       Float
+  minSubtotal Float?
+  maxUses     Int?
+  usedCount   Int                @default(0)
+  startsAt    DateTime?
+  expiresAt   DateTime?
+  active      Boolean            @default(true)
+  createdBy   String
+  createdByName String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  redemptions CouponRedemption[]
+
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id        String   @id @default(cuid())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  couponId  String
+  userId    String
+  email     String
+  orderId   String
+  createdAt DateTime @default(now())
+
+  // 1 uso por cliente (por id y por email, como el frontend).
+  @@unique([couponId, userId])
+  @@unique([couponId, email])
+  @@index([orderId])
+  @@map("coupon_redemptions")
+}
+
+model Order {
+  id                    String          @id @default(cuid())
+  user                  User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId                String?
+  shippingAddressId     String?
+  source                String          @default("checkout")
+  origin                OrderOrigin     @default(mp_online)
+  manualWithMpLink      Boolean         @default(false)
+  createdBy             String?
+  stockReserved         Boolean         @default(false)
+  reservationExpiryAt   DateTime?
+  status                OrderStatus     @default(pendiente)
+  subtotal              Float
+  shipping              Float           @default(0)
+  discount              Float           @default(0)
+  couponCode            String?
+  total                 Float
+  // Snapshot congelado (la dirección viva puede cambiar/eliminarse).
+  shippingAddressSnapshot Json
+  statusHistory         Json            @default("[]")
+  paymentMethod         String?
+  paymentStatus         PaymentStatus   @default(sin_registro)
+  mpPaymentId           String?
+  fulfillmentType       FulfillmentType @default(LIMA_APP)
+  shipmentStatus        ShipmentStatus  @default(pendiente)
+  courier               String?
+  trackingCode          String?
+  realShippingCost      Float?
+  pickupName            String?
+  pickupDni             String?
+  trackingNumber        String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  items                 OrderItem[]
+  attempts              PaymentAttempt[]
+  shipments             ShipmentEvent[]
+  returns               ReturnRequest[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([origin])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  productId String
+  variantId String?
+  name      String
+  size      String
+  color     String
+  quantity  Int
+  // Precio unitario final (con descuento de producto aplicado).
+  price     Float
+  // Foto del costo al vender (margen aunque el costo cambie después).
+  unitCost  Float?
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model PaymentAttempt {
+  id             String        @id @default(cuid())
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        String
+  attemptNumber  Int
+  status         PaymentStatus
+  amount         Float
+  method         String?
+  mpPaymentId    String?
+  mpStatusDetail String?
+  reason         String?
+  evidence       String?
+  actorId        String
+  actorName      String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([orderId, attemptNumber])
+  @@index([orderId])
+  @@index([mpPaymentId])
+  @@map("payment_attempts")
+}
+
+model StockMovement {
+  id             String            @id @default(cuid())
+  productId      String
+  productName    String
+  productImage   String?
+  sku            String
+  variantId      String
+  size           String
+  color          String
+  type           StockMovementType
+  quantityBefore Int
+  quantityChange Int
+  quantityAfter  Int
+  orderId        String?
+  reason         String?
+  note           String?
+  createdBy      String
+  createdByName  String
+  createdAt      DateTime          @default(now())
+
+  @@index([productId, variantId, createdAt])
+  @@index([orderId])
+  @@index([type, createdAt])
+  @@map("stock_movements")
+}
+
+// Fase 6: logística y postventa. Espejo de `data-store.types.ts`.
+// ShipmentEvent cuelga del pedido (los pedidos no se borran: FK segura).
+// RMA referencia al pedido con Restrict (no se puede borrar historia).
+
+enum PurchaseStatus {
+  pendiente
+  parcial
+  recibida
+  cancelada
+}
+
+enum ReturnStatus {
+  solicitada
+  aprobada
+  rechazada
+  recibida
+  inspeccionada
+  cerrada
+}
+
+enum ReturnReason {
+  talla
+  color
+  falla_fabrica
+  incompleto
+  arrepentimiento
+  otro
+}
+
+enum ReturnOrigin {
+  web
+  admin
+}
+
+model Supplier {
+  id        String          @id @default(cuid())
+  name      String
+  contact   String?
+  phone     String?
+  notes     String?
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  purchases PurchaseOrder[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  supplier      Supplier       @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  supplierId    String
+  supplierName  String
+  status        PurchaseStatus @default(pendiente)
+  note          String?
+  createdBy     String
+  createdByName String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  lines         PurchaseLine[]
+
+  @@index([supplierId])
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model PurchaseLine {
+  id               String        @id @default(cuid())
+  purchase         PurchaseOrder @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId       String
+  productId        String
+  productName      String
+  // Variante objetivo (opcional): si se indica, toda la línea entra ahí;
+  // si no, se reparte entre variantes activas (paridad frontend).
+  variantId        String?
+  quantity         Int
+  receivedQuantity Int           @default(0)
+  unitCost         Float
+
+  @@index([purchaseId])
+  @@map("purchase_lines")
+}
+
+model ShipmentEvent {
+  id           String         @id @default(cuid())
+  order        Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+  status       ShipmentStatus
+  courier      String?
+  trackingCode String?
+  note         String?
+  evidence     String?
+  actorId      String
+  actorName    String
+  createdAt    DateTime       @default(now())
+
+  @@index([orderId, createdAt])
+  @@map("shipment_events")
+}
+
+model ReturnRequest {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  order         Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  orderId       String
+  userId        String
+  origin        ReturnOrigin
+  status        ReturnStatus @default(solicitada)
+  refundAmount  Float?
+  refundNote    String?
+  createdBy     String
+  createdByName String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  items         ReturnItem[]
+
+  @@index([orderId])
+  @@index([status])
+  @@map("return_requests")
+}
+
+model ReturnItem {
+  id               String       @id @default(cuid())
+  return           ReturnRequest @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  returnId         String
+  productId        String
+  variantId        String?
+  name             String
+  size             String
+  color            String
+  price            Float
+  unitCost         Float?
+  quantity         Int
+  reason           ReturnReason
+  reasonNote       String?
+  receivedQuantity Int          @default(0)
+  restockQuantity  Int          @default(0)
+  damageQuantity   Int          @default(0)
+  evidence         String?
+
+  @@index([returnId])
+  @@map("return_items")
+}

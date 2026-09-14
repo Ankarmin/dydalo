@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      // SOLO para el seed (`prisma/`): importa el seed del frontend como
+      // fuente única (`@/config/products`, `@/lib/stores/data-store.config`).
+      // `src/` NUNCA importa `@/` (nest build no resuelve alias en runtime).
+      "@/*": ["../web/src/*"]
+    },
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,

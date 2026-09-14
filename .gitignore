@@ -16,6 +16,10 @@ node_modules
 # Testing
 coverage
 
+# DB backups locales (datos reales, nunca commitear)
+backups/*
+!backups/.gitkeep
+
 # Turbo
 .turbo
 
