@@ -1,6 +1,27 @@
 # SESION — estado entre sesiones
 
-## 2026-09-14 — Fase 7 backend+web: integración lectura-primero + MP real + hardening (SIN commit)
+## 2026-09-14 — Fase 7b: MP sandbox en vivo (commiteado; falta solo el pago manual)
+
+- Objetivo: probar la integración MP contra sandbox real (credenciales de prueba del usuario) + endpoint de sincronización.
+- Hecho (código):
+  - `MP_SANDBOX` en env (`APP_USR-` de prueba también lo necesita; el prefijo `TEST-` no basta) + `.env.example`.
+  - `POST /orders/:id/mp-sync` (dueño/admin): busca el último pago por `external_reference` y lo aplica (idempotente); la web lo dispara al volver con `?mp=success`.
+  - `buildPreferenceBody` solo manda `auto_return` con URLs https.
+  - Tests: unit de ramas sin token (mock/503) + e2e de sync con fetch mockeado; setup-e2e con token falso.
+- Hecho (vivo, token de prueba SOLO en `apps/api/.env` gitignored, MP_SANDBOX=true):
+  - Preferencia real creada: `3689326986-5fe30abd-...`, `sandbox_init_point` sandbox.mercadopago.com.pe, `sandbox:true`.
+  - `mp-sync` contra API real: `no-payments` (sin crash).
+  - Pedido de prueba: orden `cmu0vod7r…` (usuario `f7live@test.com`, S/168.3, pendiente, 1 unidad reservada). Servidor API dejado CORRIENDO para la prueba de pago.
+- Hallazgos MP (verificados contra API real):
+  - `auto_return: approved` + back_urls localhost → 400 `invalid_auto_return` (por eso el flag https).
+  - `POST /v1/payments` directo con estas credenciales → 401 `Unauthorized use of live credentials`: el cobro server-side no aplica; el camino soportado es Checkout Pro hospedado (preferencia + pago en MP).
+  - Tarjetas de prueba PE (docs oficiales): Mastercard 5031…0604 / Visa 4009…6176, cvv 123, vto 11/30, titular APRO + doc 123456789 = aprobado.
+- Pendiente (paso manual del usuario, cuando quiera): pagar en el link sandbox como comprador de prueba → avisar → correr `mp-sync` y verificar `aprobado` + idempotencia. Sin túnel el webhook de MP no llega (normal); el sync lo cubre.
+- Datos para retomar: orden `cmu0vod7r0001uy6o9hmj3lci`, preferencia `3689326986-5fe30abd-4f42-4165-9de6-4f4f50b2e450`, link `https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=3689326986-5fe30abd-4f42-4165-9de6-4f4f50b2e450`. Para retomar: `db:up` + `pnpm --filter api dev` (el token test sigue en `.env` local, gitignored, nunca commiteado).
+- Verificado al cierre: e2e 44/44 + unit 14/14; `lint` + `check-types` api verdes; web `check-types` + `lint` (0 errores, 1 warning preexistente) + `build` OK. Commits atómicos pusheados a `origin/main`.
+- Próximo paso: pago manual + sync; luego rotar credenciales de prueba, limpiar pedido `cmu0vod7r…` y migrar el admin a la API.
+
+## 2026-09-14 — Fase 7 backend+web: integración lectura-primero + MP real + hardening (commiteado)
 
 - Objetivo: la web consume el backend tras `NEXT_PUBLIC_API_URL` (sin la variable todo sigue mock) + Checkout Pro real con webhook firmado.
 - Hecho:
