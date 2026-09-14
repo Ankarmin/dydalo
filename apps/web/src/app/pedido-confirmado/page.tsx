@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Clock, AlertTriangle, Package, MapPin, CreditCard, ArrowRight, Home, ShoppingCart } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { paymentsStore } from "@/lib/stores/data-store.payments";
@@ -10,17 +10,46 @@ import { formatPrice } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
-import type { Order } from "@/lib/stores/data-store.types";
+import type { Order, PaymentAttempt } from "@/lib/stores/data-store.types";
 import { PAYMENT_STATUS_LABELS, type PaymentStatus } from "@/lib/stores";
+import { isApiEnabled } from "@/lib/api/client";
+import { apiGetAttempts, apiGetOrder, apiRetryLink } from "@/lib/api/orders";
 
 export default function PedidoConfirmadoPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const [order] = useState<Order | null>(
-    () => orderId ? (ordersStore.getById(orderId) ?? null) : null
-  );
+  const apiMode = isApiEnabled();
+  const [apiOrder, setApiOrder] = useState<Order | null>(null);
+  const [apiAttempts, setApiAttempts] = useState<PaymentAttempt[]>([]);
+  const [apiMissing, setApiMissing] = useState(false);
 
-  if (!orderId || !order) {
+  useEffect(() => {
+    if (!apiMode || !orderId) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const [order, attempts] = await Promise.all([
+          apiGetOrder(orderId),
+          apiGetAttempts(orderId).catch(() => [] as PaymentAttempt[]),
+        ]);
+        if (alive) {
+          setApiOrder(order);
+          setApiAttempts(attempts);
+        }
+      } catch {
+        if (alive) setApiMissing(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [apiMode, orderId]);
+
+  const [localOrder] = useState<Order | null>(
+    () => (apiMode ? null : orderId ? (ordersStore.getById(orderId) ?? null) : null),
+  );
+  const shown = apiMode ? apiOrder : localOrder;
+  if (apiMode && apiMissing) {
     return (
       <main className="page-root">
         <section className="section-px flex min-h-[60vh] flex-col items-center justify-center text-center">
@@ -40,6 +69,27 @@ export default function PedidoConfirmadoPage() {
       </main>
     );
   }
+  if (!orderId || !shown) {
+    return (
+      <main className="page-root">
+        <section className="section-px flex min-h-[60vh] flex-col items-center justify-center text-center">
+          <ShoppingCart className="mb-6 size-16 text-muted-foreground" strokeWidth={1} />
+          <h1 className="text-2xl font-bold uppercase tracking-tight">
+            Pedido no encontrado
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            No se pudo encontrar la información de tu pedido.
+          </p>
+          <Button asChild variant="hero" size="hero" className="mt-8">
+            <Link href={ROUTES.catalogo}>
+              Ver Catálogo <ArrowRight className="ml-2 size-4" />
+            </Link>
+          </Button>
+        </section>
+      </main>
+    );
+  }
+  const order = shown;
 
   const paymentMethodLabel: Record<string, string> = {
     "yape-plin": "Yape / Plin",
@@ -50,9 +100,11 @@ export default function PedidoConfirmadoPage() {
   const paymentStatus = (PAYMENT_STATUS_LABELS[order.paymentStatus as PaymentStatus]
     ? (order.paymentStatus as PaymentStatus)
     : "sin_registro") as PaymentStatus;
-  const attempts = paymentsStore.getByOrderId(order.id);
+  const attempts = apiMode ? apiAttempts : paymentsStore.getByOrderId(order.id);
   const lastAttempt = attempts[attempts.length - 1];
-  const retryLink = paymentsStore.buildRetryLink(order.id, attempts.length + 1);
+  const retryLink = apiMode
+    ? apiRetryLink(order.id, attempts.length + 1)
+    : paymentsStore.buildRetryLink(order.id, attempts.length + 1);
   const isPaid = paymentStatus === "aprobado" || paymentStatus === "verificado_manual";
   const isRejected = paymentStatus === "rechazado";
 

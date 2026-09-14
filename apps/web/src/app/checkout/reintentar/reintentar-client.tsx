@@ -1,29 +1,61 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CreditCard, ArrowRight, Home } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { paymentsStore } from "@/lib/stores/data-store.payments";
 import { PAYMENT_STATUS_LABELS, type PaymentStatus } from "@/lib/stores";
+import type { Order, PaymentAttempt } from "@/lib/stores/data-store.types";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils/format";
+import { isApiEnabled } from "@/lib/api/client";
+import { apiGetAttempts, apiGetOrder, apiMpPreference, apiRetryOrder } from "@/lib/api/orders";
 
 export function ReintentarPagoClient() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order") ?? "";
-  const [order, setOrder] = useState(() => (orderId ? ordersStore.getById(orderId) : undefined));
+  const apiMode = isApiEnabled();
+  const [order, setOrder] = useState(() => (apiMode || !orderId ? undefined : ordersStore.getById(orderId)));
+  const [apiAttempts, setApiAttempts] = useState<PaymentAttempt[]>([]);
+  const [apiMissing, setApiMissing] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const attempts = useMemo(() => (order ? paymentsStore.getByOrderId(order.id) : []), [order]);
+  useEffect(() => {
+    if (!apiMode || !orderId) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const [remote, attempts] = await Promise.all([
+          apiGetOrder(orderId),
+          apiGetAttempts(orderId).catch(() => [] as PaymentAttempt[]),
+        ]);
+        if (alive) {
+          setOrder(remote as Order);
+          setApiAttempts(attempts);
+        }
+      } catch {
+        if (alive) setApiMissing(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [apiMode, orderId]);
+
+  const attempts = useMemo(
+    () => (apiMode ? apiAttempts : order ? paymentsStore.getByOrderId(order.id) : []),
+    [apiMode, apiAttempts, order],
+  );
   const last = attempts[attempts.length - 1];
   const paymentStatus = (order && PAYMENT_STATUS_LABELS[order.paymentStatus as PaymentStatus]
     ? (order.paymentStatus as PaymentStatus)
     : "sin_registro") as PaymentStatus;
 
-  if (!orderId || !order) {
+  if (!orderId || !order || (apiMode && apiMissing)) {
     return (
       <main className="page-root">
         <section className="section-px flex min-h-[60vh] flex-col items-center justify-center text-center">
@@ -54,6 +86,30 @@ export function ReintentarPagoClient() {
       setProcessing(false);
       if (updated) setOrder(updated);
     }, 900);
+  }
+
+  async function payWithMercadoPago() {
+    if (processing) return;
+    setProcessing(true);
+    setApiError("");
+    try {
+      await apiRetryOrder(orderId);
+      const preference = await apiMpPreference(orderId);
+      if (!preference.mock) {
+        window.location.assign(preference.initPoint);
+        return;
+      }
+      const [remote, remoteAttempts] = await Promise.all([
+        apiGetOrder(orderId),
+        apiGetAttempts(orderId).catch(() => [] as PaymentAttempt[]),
+      ]);
+      setOrder(remote as Order);
+      setApiAttempts(remoteAttempts);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "No se pudo iniciar el pago");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   return (
@@ -95,15 +151,29 @@ export function ReintentarPagoClient() {
                     {paymentsStore.getFriendlyRejectionMessage(last?.mpStatusDetail)}
                   </p>
                 )}
-                <p className="text-sm text-muted-foreground">Intento N° {attempts.length + 1} vía MercadoPago (mock).</p>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                  <Button variant="hero" size="hero" disabled={processing} onClick={() => simulate("aprobado")}>
-                    {processing ? "Procesando..." : "Pagar ahora"}
-                  </Button>
-                  <Button variant="outline" size="lg" disabled={processing} onClick={() => simulate("rechazado")}>
-                    Simular rechazo
-                  </Button>
-                </div>
+                {apiMode ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">Serás redirigido a MercadoPago para completar el pago.</p>
+                    {apiError && <p className="mt-2 text-sm text-danger">{apiError}</p>}
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                      <Button variant="hero" size="hero" disabled={processing} onClick={() => void payWithMercadoPago()}>
+                        {processing ? "Procesando..." : "Pagar con MercadoPago"}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">Intento N° {attempts.length + 1} vía MercadoPago (mock).</p>
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                      <Button variant="hero" size="hero" disabled={processing} onClick={() => simulate("aprobado")}>
+                        {processing ? "Procesando..." : "Pagar ahora"}
+                      </Button>
+                      <Button variant="outline" size="lg" disabled={processing} onClick={() => simulate("rechazado")}>
+                        Simular rechazo
+                      </Button>
+                    </div>
+                  </>
+                )}
                 <Button asChild variant="ghost" size="sm" className="mt-4">
                   <Link href={ROUTES.home}>
                     <Home className="mr-2 size-4" /> Ir al inicio

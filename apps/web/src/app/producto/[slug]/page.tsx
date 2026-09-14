@@ -2,13 +2,21 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { products } from "@/config/products";
 import { productsStore } from "@/lib/stores/data-store.products";
+import type { AdminProduct } from "@/lib/stores/data-store.types";
+import { apiGetProductBySlug } from "@/lib/api/catalog";
+import { isApiEnabled } from "@/lib/api/client";
 import { ProductDetail } from "./_components/product-detail";
 
 interface ProductoPageProps {
   params: Promise<{ slug: string }>;
 }
 
-function findProduct(slug: string) {
+async function findProduct(slug: string): Promise<AdminProduct | null> {
+  // Vía API (lectura-primero): stock/precios reales. Fallback local.
+  if (isApiEnabled()) {
+    const remote = await apiGetProductBySlug(slug);
+    if (remote) return remote;
+  }
   return productsStore.getBySlug(slug) ?? products.find((p) => p.slug === slug) ?? null;
 }
 
@@ -16,7 +24,7 @@ export async function generateMetadata({
   params,
 }: ProductoPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = findProduct(slug);
+  const product = await findProduct(slug);
   if (!product) return { title: "Producto no encontrado" };
 
   return {
@@ -47,7 +55,7 @@ export function generateStaticParams() {
 
 export default async function ProductoPage({ params }: ProductoPageProps) {
   const { slug } = await params;
-  const product = findProduct(slug);
+  const product = await findProduct(slug);
 
   if (!product) notFound();
 

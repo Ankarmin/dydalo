@@ -1,8 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useEffect } from "react";
 import { configStore } from "@/lib/stores/data-store.config";
 import type { SiteConfig } from "@/lib/stores/data-store.types";
+import { isApiEnabled } from "@/lib/api/client";
+import { apiGetSiteConfig } from "@/lib/api/catalog";
 
 const defaultConfig: SiteConfig = {
   id: "default",
@@ -21,32 +23,37 @@ const defaultConfig: SiteConfig = {
   maintenanceMode: false,
 };
 
-let cachedConfig: SiteConfig | null = null;
-
-function invalidateCache() {
-  cachedConfig = null;
-}
-
-function subscribe(callback: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    invalidateCache();
-  };
-}
-
-function getSnapshot(): SiteConfig {
+function localConfig(): SiteConfig {
   if (typeof window === "undefined") return defaultConfig;
-  if (cachedConfig) return cachedConfig;
-  cachedConfig = configStore.get();
-  return cachedConfig;
-}
-
-function getServerSnapshot(): SiteConfig {
-  return defaultConfig;
+  return configStore.get();
 }
 
 export function useSiteConfig() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [config, setConfig] = useState<SiteConfig>(() => localConfig());
+
+  useEffect(() => {
+    function refreshLocal() {
+      if (!isApiEnabled()) setConfig(configStore.get());
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", refreshLocal);
+    }
+
+    let alive = true;
+    if (isApiEnabled()) {
+      apiGetSiteConfig()
+        .then((remote) => {
+          if (alive) setConfig(remote);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      alive = false;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", refreshLocal);
+      }
+    };
+  }, []);
+
+  return config;
 }

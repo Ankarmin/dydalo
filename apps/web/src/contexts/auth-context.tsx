@@ -9,6 +9,7 @@ import type { User } from "@/lib/stores";
 import { seedIfEmpty } from "@/config/seed-data";
 import { composeFullName, getUserFirstName, getUserLastName } from "@/lib/utils/user-name";
 import { normalizePhone, normalizeText } from "@/lib/validations/forms";
+import { apiFetch, isApiEnabled, ApiError } from "@/lib/api/client";
 
 type AuthState = {
   user: User | null;
@@ -54,32 +55,116 @@ type UpdateProfileInput = {
   phone: string;
 };
 
+type ApiUser = {
+  id: string;
+  email: string;
+  role: "admin" | "customer";
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function mapApiUser(apiUser: ApiUser): User {
+  const firstName = apiUser.firstName ?? "";
+  const lastName = apiUser.lastName ?? "";
+  return {
+    id: apiUser.id,
+    name: composeFullName(firstName, lastName) || apiUser.email,
+    firstName,
+    lastName,
+    email: apiUser.email,
+    role: apiUser.role,
+    phone: apiUser.phone ?? undefined,
+    createdAt: apiUser.createdAt,
+    updatedAt: apiUser.updatedAt,
+  };
+}
+
+function apiErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    if (error.status === 409) return "Este email ya está registrado";
+    if (error.status === 401) return "Email o contraseña incorrectos";
+    return error.message;
+  }
+  return fallback;
+}
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function persistSession(user: User): void {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
 }
 
+function clearSession(): void {
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch {
+
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, status: "loading" });
 
   useEffect(() => {
-    let nextState: AuthState = { user: null, status: "unauthenticated" };
+    let cancelled = false;
 
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        const user = JSON.parse(stored) as User;
-        nextState = { user, status: "authenticated" };
+    async function boot() {
+      // Vía API: la cookie httpOnly es la fuente de verdad.
+      if (isApiEnabled()) {
+        try {
+          const apiUser = await apiFetch<ApiUser>("/auth/me");
+          if (!cancelled) {
+            const user = mapApiUser(apiUser);
+            persistSession(user);
+            setState({ user, status: "authenticated" });
+          }
+        } catch {
+          if (!cancelled) {
+            clearSession();
+            setState({ user: null, status: "unauthenticated" });
+          }
+        }
+        return;
       }
-    } catch {
 
+      let nextState: AuthState = { user: null, status: "unauthenticated" };
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          const user = JSON.parse(stored) as User;
+          nextState = { user, status: "authenticated" };
+        }
+      } catch {
+
+      }
+      if (!cancelled) setState(nextState);
     }
 
-    queueMicrotask(() => setState(nextState));
+    void boot();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
+    if (isApiEnabled()) {
+      try {
+        const apiUser = await apiFetch<ApiUser>("/auth/login", {
+          method: "POST",
+          body: { email, password },
+        });
+        const user = mapApiUser(apiUser);
+        persistSession(user);
+        setState({ user, status: "authenticated" });
+        return { success: true, user };
+      } catch (error) {
+        return { success: false, error: apiErrorMessage(error, "No se pudo iniciar sesión") };
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     seedIfEmpty();
 
@@ -130,6 +215,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     phone?: string,
   ): Promise<LoginResult> => {
+    if (isApiEnabled()) {
+      try {
+        const apiUser = await apiFetch<ApiUser>("/auth/register", {
+          method: "POST",
+          body: { firstName, lastName, email, password, phone },
+        });
+        const user = mapApiUser(apiUser);
+        persistSession(user);
+        setState({ user, status: "authenticated" });
+        return { success: true, user };
+      } catch (error) {
+        return { success: false, error: apiErrorMessage(error, "No se pudo crear la cuenta") };
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     seedIfEmpty();
 
@@ -172,6 +272,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(() => {
+    if (isApiEnabled()) {
+      void apiFetch<ApiUser>("/auth/me")
+        .then((apiUser) => {
+          const user = mapApiUser(apiUser);
+          persistSession(user);
+          setState({ user, status: "authenticated" });
+        })
+        .catch(() => {
+          clearSession();
+          setState({ user: null, status: "unauthenticated" });
+        });
+      return;
+    }
+
     setState((current) => {
       if (!current.user || current.user.role !== "customer") return current;
       const storedUser = usersStore.getById(current.user.id);
@@ -188,6 +302,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProfile = useCallback(async (data: UpdateProfileInput): Promise<AuthActionResult> => {
+    if (isApiEnabled()) {
+      try {
+        const apiUser = await apiFetch<ApiUser>("/users/me", {
+          method: "PATCH",
+          body: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phone: data.phone,
+          },
+        });
+        const user = mapApiUser(apiUser);
+        persistSession(user);
+        setState({ user, status: "authenticated" });
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: apiErrorMessage(error, "No se pudo actualizar el perfil") };
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 500));
 
     if (!state.user || state.user.role !== "customer") {
@@ -221,6 +354,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     currentPassword: string,
     newPassword: string
   ): Promise<AuthActionResult> => {
+    if (isApiEnabled()) {
+      try {
+        await apiFetch("/users/me/password", {
+          method: "PATCH",
+          body: { currentPassword, newPassword },
+        });
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: apiErrorMessage(error, "No se pudo cambiar la contraseña") };
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 500));
 
     if (!state.user || state.user.role !== "customer") {
@@ -250,11 +395,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [state.user]);
 
   const logout = useCallback(() => {
-    try {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    } catch {
-
+    if (isApiEnabled()) {
+      void apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
     }
+    clearSession();
     setState({ user: null, status: "unauthenticated" });
   }, []);
 

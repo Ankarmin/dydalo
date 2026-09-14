@@ -1,39 +1,44 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useEffect } from "react";
 import { blogStore } from "@/lib/stores/data-store.blog";
 import type { BlogPost } from "@/lib/stores/data-store.types";
+import { isApiEnabled } from "@/lib/api/client";
+import { apiGetPosts } from "@/lib/api/catalog";
 
-const emptyPosts: BlogPost[] = [];
-
-let cachedPosts: BlogPost[] | null = null;
-
-function invalidateCache() {
-  cachedPosts = null;
-}
-
-function subscribe(callback: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    invalidateCache();
-  };
-}
-
-function getSnapshot(): BlogPost[] {
-  if (typeof window === "undefined") return emptyPosts;
-  if (cachedPosts) return cachedPosts;
-  cachedPosts = blogStore.getAll();
-  return cachedPosts;
-}
-
-function getServerSnapshot(): BlogPost[] {
-  return emptyPosts;
+function localPosts(): BlogPost[] {
+  if (typeof window === "undefined") return [];
+  return blogStore.getAll();
 }
 
 export function useBlogPosts(): BlogPost[] {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [posts, setPosts] = useState<BlogPost[]>(() => localPosts());
+
+  useEffect(() => {
+    function refreshLocal() {
+      if (!isApiEnabled()) setPosts(blogStore.getAll());
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", refreshLocal);
+    }
+
+    let alive = true;
+    if (isApiEnabled()) {
+      apiGetPosts()
+        .then((list) => {
+          if (alive) setPosts(list);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      alive = false;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", refreshLocal);
+      }
+    };
+  }, []);
+
+  return posts;
 }
 
 export function usePublishedPosts(): BlogPost[] {

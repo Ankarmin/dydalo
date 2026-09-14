@@ -1,0 +1,2 @@
+# Los backups de la DB van aquí (`pnpm --filter api db:backup`).
+# Nunca se commitean (ver .gitignore): contienen datos reales.

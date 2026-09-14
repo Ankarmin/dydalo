@@ -26,6 +26,14 @@ import type { Address } from "@/lib/stores";
 import { departments, type Province } from "@/config/ubigeos";
 import { SHIPPING_PROVINCIA_PRICE } from "@/config/constants";
 import { getVariantStock } from "@/lib/utils/inventory";
+import { isApiEnabled } from "@/lib/api/client";
+import { apiGetProductBySlug } from "@/lib/api/catalog";
+import {
+  apiCreateOrder,
+  apiMpPreference,
+  apiValidateCoupon,
+  type ApiCheckoutItem,
+} from "@/lib/api/orders";
 
 const STEPS = [
   { num: 1, label: "Carrito", icon: ShoppingCart },
@@ -167,8 +175,24 @@ export function CartClient() {
         ? `Olva desde S/${SHIPPING_PROVINCIA_PRICE}*. Se confirma por WhatsApp.`
         : "Gratis. Coordinamos por WhatsApp según disponibilidad.";
 
-  function applyCoupon() {
+  async function applyCoupon() {
     if (!state.user) return;
+    // Vía API: el backend valida (vigencia, usos, mínimo) y calcula.
+    if (isApiEnabled()) {
+      try {
+        const result = await apiValidateCoupon(couponInput, subtotal);
+        if (!result.valid) {
+          setCouponError(result.error ?? "Cupón no válido.");
+          return;
+        }
+        setCouponCode(couponInput.trim().toUpperCase().replace(/\s+/g, ""));
+        setCouponDiscount(result.discount ?? 0);
+        setCouponError("");
+      } catch (error) {
+        setCouponError(error instanceof Error ? error.message : "Cupón no válido.");
+      }
+      return;
+    }
     const result = couponsStore.validate(couponInput, {
       userId: state.user.id,
       email: state.user.email,
@@ -220,6 +244,51 @@ export function CartClient() {
   const handleRemoveItem = (item: (typeof cartItems)[number]) => {
     updateQuantity(item.productId, -item.quantity, item);
   };
+
+  // Checkout contra el backend (Fase 7): el servidor tasa, reserva stock,
+  // valida el cupón y crea el intento en una transacción. Luego pide la
+  // preferencia MP: si hay token redirige a MercadoPago, si no (mock)
+  // confirma como hoy y el pago se concilia por webhook/simulador.
+  async function submitApiOrder(snapshot: Address, shippingAddressId?: string) {
+    if (!state.user) return;
+    // Resolver ids del backend por slug (los del carrito son locales).
+    const items: ApiCheckoutItem[] = [];
+    for (const cartItem of cartItems) {
+      const remote = await apiGetProductBySlug(cartItem.product.slug);
+      if (!remote) {
+        window.alert(`"${cartItem.product.name}" ya no está disponible.`);
+        setSubmitting(false);
+        return;
+      }
+      items.push({
+        productId: remote.id,
+        size: cartItem.size,
+        color: cartItem.color,
+        quantity: cartItem.quantity,
+      });
+    }
+    try {
+      const order = await apiCreateOrder({
+        items,
+        fulfillmentType,
+        couponCode: couponCode ?? undefined,
+        paymentMethod,
+        shippingAddressId,
+        shippingAddress: snapshot,
+      });
+      clearCart();
+      const preference = await apiMpPreference(order.id);
+      if (!preference.mock) {
+        window.location.assign(preference.initPoint);
+        return;
+      }
+      showOrderConfirmedToast(order.id, order.total);
+      router.push(`${ROUTES.pedidoConfirmado}?orderId=${order.id}`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "No se pudo crear el pedido");
+      setSubmitting(false);
+    }
+  }
 
   const handleSubmit = () => {
     if (!isShippingValid || submitting) return;
@@ -296,6 +365,29 @@ export function CartClient() {
       finalCoupon = recheck.coupon.code;
     }
 
+    const snapshot: Address = {
+      id: shippingAddressId ?? "",
+      userId: state.user?.id ?? "guest",
+      label: addressLabel.trim() || "Envío",
+      fullName: state.user?.name ?? "Cliente",
+      street: selectedSavedAddress?.street ?? address,
+      district: selectedSavedAddress?.district ?? selectedDistrict,
+      city: selectedSavedAddress?.city ?? selectedProvince,
+      state: selectedSavedAddress?.state ?? department,
+      zip: selectedSavedAddress?.zip ?? "",
+      country: "Perú",
+      phone: state.user?.phone ?? "",
+      isDefault: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Vía API: el backend tasa, reserva y audita en una transacción.
+    if (isApiEnabled()) {
+      void submitApiOrder(snapshot, shippingAddressId);
+      return;
+    }
+
     const order = ordersStore.create({
       userId: state.user?.id ?? "guest",
       shippingAddressId,
@@ -313,22 +405,7 @@ export function CartClient() {
       paymentStatus: "pendiente",
       fulfillmentType,
       shipmentStatus: "pendiente",
-      shippingAddressSnapshot: {
-        id: shippingAddressId ?? "",
-        userId: state.user?.id ?? "guest",
-        label: addressLabel.trim() || "Envío",
-        fullName: state.user?.name ?? "Cliente",
-        street: selectedSavedAddress?.street ?? address,
-        district: selectedSavedAddress?.district ?? selectedDistrict,
-        city: selectedSavedAddress?.city ?? selectedProvince,
-        state: selectedSavedAddress?.state ?? department,
-        zip: selectedSavedAddress?.zip ?? "",
-        country: "Perú",
-        phone: state.user?.phone ?? "",
-        isDefault: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
+      shippingAddressSnapshot: snapshot,
     });
 
     stockMovementsStore.createFromOrderDiff({

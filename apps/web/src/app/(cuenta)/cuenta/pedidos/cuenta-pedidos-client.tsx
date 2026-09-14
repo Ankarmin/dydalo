@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { paymentsStore } from "@/lib/stores/data-store.payments";
 import { returnsStore } from "@/lib/stores/data-store.returns";
 import { seedIfEmpty } from "@/config/seed-data";
-import { PAYMENT_STATUS_LABELS, SHIPMENT_STATUS_LABELS, FULFILLMENT_SHORT_LABELS, RETURN_REASON_LABELS, RETURN_STATUS_LABELS, type PaymentStatus, type FulfillmentType, type ShipmentStatus, type ReturnReason, type Order } from "@/lib/stores";
+import { PAYMENT_STATUS_LABELS, SHIPMENT_STATUS_LABELS, FULFILLMENT_SHORT_LABELS, RETURN_REASON_LABELS, RETURN_STATUS_LABELS, type PaymentStatus, type FulfillmentType, type ShipmentStatus, type ReturnReason, type Order, type PaymentAttempt, type ReturnRequest } from "@/lib/stores";
 import { ROUTES } from "@/lib/utils/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,32 @@ import {
 } from "@/components/ui/select";
 import { PageBreadcrumbs } from "@/components/breadcrumbs/page-breadcrumbs";
 import { formatPrice } from "@/lib/utils/format";
+import { isApiEnabled } from "@/lib/api/client";
+import {
+  apiCreateReturn,
+  apiGetAttempts,
+  apiMpPreference,
+  apiMyOrders,
+  apiMyReturns,
+  apiRetryOrder,
+} from "@/lib/api/orders";
+
+function deliveredWithinSla(order: Order, days = 7): boolean {
+  const history = (order.statusHistory ?? []) as Array<{ to?: string; at?: string }>;
+  const last = [...history].reverse().find((h) => h.to === "entregado");
+  if (!last?.at) return false;
+  return Date.now() - new Date(last.at).getTime() <= days * 24 * 60 * 60 * 1000;
+}
 
 export function CuentaPedidosClient() {
-  seedIfEmpty();
+  const apiMode = isApiEnabled();
+  if (!apiMode) {
+    seedIfEmpty();
+  }
   const [housekeeping] = useState(() => {
-    ordersStore.expireStaleReservations();
+    if (!apiMode) {
+      ordersStore.expireStaleReservations();
+    }
     return true;
   });
   void housekeeping;
@@ -35,9 +56,72 @@ export function CuentaPedidosClient() {
   const [openReturn, setOpenReturn] = useState<string | null>(null);
   const [returnSel, setReturnSel] = useState<Record<string, { checked: boolean; quantity: number; reason: ReturnReason; note: string }>>({});
   const [returnMsg, setReturnMsg] = useState<Record<string, string>>({});
-  const orders = userId
-    ? ordersStore.getByUserId(userId).toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    : [];
+  const [apiOrders, setApiOrders] = useState<Order[] | null>(null);
+  const [apiAttempts, setApiAttempts] = useState<Record<string, PaymentAttempt[]>>({});
+  const [apiReturns, setApiReturns] = useState<ReturnRequest[] | null>(null);
+  const [retrying, setRetrying] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!apiMode || !userId) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const [orders, returns] = await Promise.all([apiMyOrders(), apiMyReturns()]);
+        if (!alive) return;
+        setApiOrders(orders);
+        setApiReturns(returns);
+        const entries = await Promise.all(
+          orders.map(async (o) => [o.id, await apiGetAttempts(o.id).catch(() => [])] as const),
+        );
+        if (!alive) return;
+        setApiAttempts(Object.fromEntries(entries));
+      } catch {
+        if (alive) {
+          setApiOrders([]);
+          setApiReturns([]);
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [apiMode, userId]);
+
+  async function refreshApi() {
+    if (!apiMode || !userId) return;
+    try {
+      const [orders, returns] = await Promise.all([apiMyOrders(), apiMyReturns()]);
+      setApiOrders(orders);
+      setApiReturns(returns);
+      const entries = await Promise.all(
+        orders.map(async (o) => [o.id, await apiGetAttempts(o.id).catch(() => [])] as const),
+      );
+      setApiAttempts(Object.fromEntries(entries));
+    } catch {
+      // Se conserva lo ya cargado.
+    }
+  }
+
+  const orders = apiMode
+    ? (apiOrders ?? [])
+    : userId
+      ? ordersStore.getByUserId(userId).toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      : [];
+
+  function attemptsFor(orderId: string): PaymentAttempt[] {
+    if (apiMode) return apiAttempts[orderId] ?? [];
+    return paymentsStore.getByOrderId(orderId);
+  }
+
+  function returnsFor(orderId: string): ReturnRequest[] {
+    if (apiMode) return (apiReturns ?? []).filter((r) => r.orderId === orderId);
+    return returnsStore.getByOrderId(orderId);
+  }
+
+  function eligibleForReturn(order: Order): boolean {
+    if (order.status !== "entregado") return false;
+    return apiMode ? deliveredWithinSla(order) : returnsStore.isWithinSla(order.id);
+  }
 
   function toggleReturnForm(order: Order) {
     if (openReturn === order.id) {
@@ -52,7 +136,7 @@ export function CuentaPedidosClient() {
     setOpenReturn(order.id);
   }
 
-  function submitReturn(order: Order) {
+  async function submitReturn(order: Order) {
     const items = order.items
       .filter((item) => returnSel[`${item.productId}|${item.variantId}`]?.checked)
       .map((item) => {
@@ -69,6 +153,17 @@ export function CuentaPedidosClient() {
       setReturnMsg((prev) => ({ ...prev, [order.id]: "Marca al menos un item." }));
       return;
     }
+    if (apiMode) {
+      const result = await apiCreateReturn({ orderId: order.id, items });
+      if (!result.success) {
+        setReturnMsg((prev) => ({ ...prev, [order.id]: result.error ?? "No se pudo crear la devolución" }));
+        return;
+      }
+      setOpenReturn(null);
+      setReturnMsg((prev) => ({ ...prev, [order.id]: `Solicitud ${result.data?.code} enviada. Te avisaremos por WhatsApp.` }));
+      void refreshApi();
+      return;
+    }
     const result = returnsStore.create({
       orderId: order.id,
       userId,
@@ -83,6 +178,26 @@ export function CuentaPedidosClient() {
     }
     setOpenReturn(null);
     setReturnMsg((prev) => ({ ...prev, [order.id]: `Solicitud ${result.data.code} enviada. Te avisaremos por WhatsApp.` }));
+  }
+
+  async function retryNow(orderId: string) {
+    setRetrying(orderId);
+    try {
+      await apiRetryOrder(orderId);
+      const preference = await apiMpPreference(orderId);
+      if (!preference.mock) {
+        window.location.assign(preference.initPoint);
+        return;
+      }
+      await refreshApi();
+    } catch (error) {
+      setReturnMsg((prev) => ({
+        ...prev,
+        [orderId]: error instanceof Error ? error.message : "No se pudo reintentar el pago",
+      }));
+    } finally {
+      setRetrying(null);
+    }
   }
 
   return (
@@ -117,12 +232,12 @@ export function CuentaPedidosClient() {
           const status = (PAYMENT_STATUS_LABELS[order.paymentStatus as PaymentStatus]
             ? (order.paymentStatus as PaymentStatus)
             : "sin_registro") as PaymentStatus;
-          const attempts = paymentsStore.getByOrderId(order.id);
+          const attempts = attemptsFor(order.id);
           const last = attempts[attempts.length - 1];
           const fulfillmentType = (order.fulfillmentType ?? "LIMA_APP") as FulfillmentType;
           const shipmentStatus = (order.shipmentStatus ?? "pendiente") as ShipmentStatus;
-          const myReturns = returnsStore.getByOrderId(order.id);
-          const eligibleReturn = order.status === "entregado" && returnsStore.isWithinSla(order.id);
+          const myReturns = returnsFor(order.id);
+          const eligibleReturn = eligibleForReturn(order);
           return (
             <div key={order.id} className="rounded-xl border border-border bg-card p-5">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -145,9 +260,19 @@ export function CuentaPedidosClient() {
                 <div className="mt-3 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm">
                   <p>{paymentsStore.getFriendlyRejectionMessage(last?.mpStatusDetail)}</p>
                   <div className="mt-2 flex gap-2">
-                    <Button size="sm" asChild>
-                      <Link href={paymentsStore.buildRetryLink(order.id, attempts.length + 1)}>Reintentar pago</Link>
-                    </Button>
+                    {apiMode ? (
+                      <Button
+                        size="sm"
+                        disabled={retrying === order.id}
+                        onClick={() => void retryNow(order.id)}
+                      >
+                        {retrying === order.id ? "Procesando..." : "Reintentar pago"}
+                      </Button>
+                    ) : (
+                      <Button size="sm" asChild>
+                        <Link href={paymentsStore.buildRetryLink(order.id, attempts.length + 1)}>Reintentar pago</Link>
+                      </Button>
+                    )}
                     <Button size="sm" variant="outline" asChild>
                       <Link href={ROUTES.contacto}>Ayuda por WhatsApp</Link>
                     </Button>
