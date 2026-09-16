@@ -1,5 +1,14 @@
 # SESION — estado entre sesiones
 
+## 2026-09-16 — Confirmar Pedido va directo a MP (para commit)
+
+- Objetivo: en el paso 3, Confirmar Pedido redirige a MercadoPago sin pantallas intermedias; `pedido-confirmado` queda solo como landing de retorno.
+- Hecho (código):
+  - `cart-client.tsx`: `submitApiOrder` separa fallos (crear pedido vs preferencia); error de preferencia muestra mensaje inline + link a Mis pedidos (el pedido ya quedó reservado, no se pierde).
+  - `pedido-confirmado/page.tsx`: estados por retorno (`success` verifica con spinner + botón re-verificar, `failure`/`pending` con mensajes propios); título y tarjeta cambian a "Verificando tu pago"/"Estado del pago"; disable justificado de `set-state-in-effect` en fetch (precedente `category-form`).
+- Verificado: web `check-types` + `lint` (0 errores) + `build` OK (136 páginas). Con API+token el flujo feliz nunca muestra instrucciones previas (eran del modo mock).
+- Próximo paso: prueba sandbox en vivo (link en entrada Fase 7b) + commit.
+
 ## 2026-09-16 — Tienda 100% MP + reembolsos reales (para commit)
 
 - Objetivo: la tienda web cobra solo por MercadoPago; Diego conserva su flujo manual en admin; los reembolsos de RMA son reales por API de MP.
