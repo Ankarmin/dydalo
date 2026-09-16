@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Check, Clock, AlertTriangle, Package, MapPin, CreditCard, ArrowRight, Home, ShoppingCart } from "lucide-react";
 import { ordersStore } from "@/lib/stores/data-store.orders";
 import { paymentsStore } from "@/lib/stores/data-store.payments";
@@ -23,32 +23,42 @@ export default function PedidoConfirmadoPage() {
   const [apiOrder, setApiOrder] = useState<Order | null>(null);
   const [apiAttempts, setApiAttempts] = useState<PaymentAttempt[]>([]);
   const [apiMissing, setApiMissing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  // Vuelta desde MercadoPago (mp=success|failure|pending) o visita directa.
+  const isReturn = mpStatus !== null;
 
-  useEffect(() => {
-    if (!apiMode || !orderId) return;
-    let alive = true;
-    void (async () => {
-      try {
-        // Vuelta desde MercadoPago: sincronizar antes de mostrar.
-        if (mpStatus === "success") {
+  const loadApiOrder = useCallback(
+    async (withSync: boolean): Promise<boolean> => {
+      if (!orderId) return false;
+      if (withSync && mpStatus === "success") {
+        setSyncing(true);
+        try {
           await apiMpSync(orderId).catch(() => null);
+        } finally {
+          setSyncing(false);
         }
+      }
+      try {
         const [order, attempts] = await Promise.all([
           apiGetOrder(orderId),
           apiGetAttempts(orderId).catch(() => [] as PaymentAttempt[]),
         ]);
-        if (alive) {
-          setApiOrder(order);
-          setApiAttempts(attempts);
-        }
+        setApiOrder(order);
+        setApiAttempts(attempts);
+        return true;
       } catch {
-        if (alive) setApiMissing(true);
+        setApiMissing(true);
+        return false;
       }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [apiMode, orderId, mpStatus]);
+    },
+    [orderId, mpStatus],
+  );
+
+  useEffect(() => {
+    if (!apiMode || !orderId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch de datos al montar/cambiar query (uso canónico de effects)
+    void loadApiOrder(true);
+  }, [apiMode, orderId, mpStatus, loadApiOrder]);
 
   const [localOrder] = useState<Order | null>(
     () => (apiMode ? null : orderId ? (ordersStore.getById(orderId) ?? null) : null),
@@ -136,14 +146,16 @@ export default function PedidoConfirmadoPage() {
               )}
             </div>
             <h1 className="mt-6 text-3xl font-bold uppercase tracking-tight">
-              {isPaid ? "¡Pedido Confirmado!" : isRejected ? "Pago observado" : "¡Pedido Recibido!"}
+              {isPaid ? "¡Pedido Confirmado!" : isRejected ? "Pago observado" : apiMode && isReturn ? "Verificando tu pago" : "¡Pedido Recibido!"}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Orden #{order.id.slice(0, 8)} · Pago: {PAYMENT_STATUS_LABELS[paymentStatus]}
             </p>
             {!isPaid && !isRejected && (
               <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                Tu stock está reservado por 24h. Completa el pago para confirmar tu pedido.
+                {apiMode && isReturn
+                  ? "Volviste de MercadoPago, estamos confirmando el estado de tu pago."
+                  : "Tu stock está reservado por 24h. Completa el pago para confirmar tu pedido."}
               </p>
             )}
           </div>
@@ -223,7 +235,7 @@ export default function PedidoConfirmadoPage() {
               <div className="flex items-center gap-3">
                 <CreditCard className="size-5 text-accent" />
                 <h2 className="text-sm font-bold uppercase tracking-wider">
-                  {isPaid ? "Pago confirmado" : "Instrucciones de pago"}
+                  {isPaid ? "Pago confirmado" : "Estado del pago"}
                 </h2>
               </div>
               <div className="mt-4 text-sm text-muted-foreground">
@@ -252,13 +264,62 @@ export default function PedidoConfirmadoPage() {
                     <p className="font-medium text-foreground">
                       Método: {paymentMethodLabel[order.paymentMethod ?? ""] ?? "MercadoPago"}
                     </p>
-                    <p className="mt-2">
-                      Completa tu pago en MercadoPago con tarjeta, Yape u otros medios.
-                      Tu pedido queda reservado hasta confirmar el pago.
-                    </p>
-                    <Button asChild variant="hero" className="mt-4">
-                      <Link href={retryLink}>Pagar con MercadoPago</Link>
-                    </Button>
+                    {apiMode && isReturn && mpStatus === "success" ? (
+                      <>
+                        <p className="mt-2">
+                          Estamos confirmando tu pago con MercadoPago, esto puede tomar unos segundos.
+                        </p>
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                          <Button
+                            variant="hero"
+                            disabled={syncing}
+                            onClick={() => void loadApiOrder(true)}
+                          >
+                            {syncing ? "Verificando…" : "Verificar de nuevo"}
+                          </Button>
+                          <Button asChild variant="outline">
+                            <Link href={retryLink}>Pagar con MercadoPago</Link>
+                          </Button>
+                        </div>
+                      </>
+                    ) : apiMode && isReturn && mpStatus === "failure" ? (
+                      <>
+                        <p className="mt-2">
+                          El pago no se completó en MercadoPago. Tu pedido sigue reservado.
+                        </p>
+                        <Button asChild variant="hero" className="mt-4">
+                          <Link href={retryLink}>Pagar con MercadoPago</Link>
+                        </Button>
+                      </>
+                    ) : apiMode && isReturn ? (
+                      <>
+                        <p className="mt-2">
+                          Tu pago sigue en proceso en MercadoPago. Verifícalo o reintenta.
+                        </p>
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                          <Button
+                            variant="outline"
+                            disabled={syncing}
+                            onClick={() => void loadApiOrder(true)}
+                          >
+                            {syncing ? "Verificando…" : "Verificar de nuevo"}
+                          </Button>
+                          <Button asChild variant="hero">
+                            <Link href={retryLink}>Pagar con MercadoPago</Link>
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="mt-2">
+                          Completa tu pago en MercadoPago con tarjeta, Yape u otros medios.
+                          Tu pedido queda reservado hasta confirmar el pago.
+                        </p>
+                        <Button asChild variant="hero" className="mt-4">
+                          <Link href={retryLink}>Pagar con MercadoPago</Link>
+                        </Button>
+                      </>
+                    )}
                   </>
                 )}
               </div>

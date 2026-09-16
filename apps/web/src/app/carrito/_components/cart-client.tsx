@@ -164,6 +164,7 @@ export function CartClient() {
     setReference("");
   }
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const shippingCost = fulfillmentType === "PROVINCIA_OLVA" ? SHIPPING_PROVINCIA_PRICE : 0;
   const fulfillmentNote =
@@ -265,8 +266,9 @@ export function CartClient() {
         quantity: cartItem.quantity,
       });
     }
+    let order: Awaited<ReturnType<typeof apiCreateOrder>>;
     try {
-      const order = await apiCreateOrder({
+      order = await apiCreateOrder({
         items,
         fulfillmentType,
         couponCode: couponCode ?? undefined,
@@ -274,23 +276,32 @@ export function CartClient() {
         shippingAddressId,
         shippingAddress: snapshot,
       });
-      clearCart();
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "No se pudo crear el pedido");
+      setSubmitting(false);
+      return;
+    }
+    clearCart();
+    try {
       const preference = await apiMpPreference(order.id);
       if (!preference.mock) {
         window.location.assign(preference.initPoint);
         return;
       }
-      showOrderConfirmedToast(order.id, order.total);
-      router.push(`${ROUTES.pedidoConfirmado}?orderId=${order.id}`);
-    } catch (error) {
-      window.alert(error instanceof Error ? error.message : "No se pudo crear el pedido");
+    } catch {
+      // El pedido ya quedó creado y reservado: se paga después.
+      setSubmitError("No pudimos abrir MercadoPago. Tu pedido quedó guardado, complétalo desde Mis pedidos.");
       setSubmitting(false);
+      return;
     }
+    showOrderConfirmedToast(order.id, order.total);
+    router.push(`${ROUTES.pedidoConfirmado}?orderId=${order.id}`);
   }
 
   const handleSubmit = () => {
     if (!isShippingValid || submitting) return;
     setSubmitting(true);
+    setSubmitError("");
 
     let shippingAddressId: string | undefined;
 
@@ -840,6 +851,17 @@ export function CartClient() {
               >
                 {submitting ? "Procesando..." : "Confirmar Pedido"}
               </Button>
+              {submitError && (
+                <div className="mt-3 rounded-md border border-danger/30 bg-danger/5 p-3 text-center">
+                  <p className="text-xs text-danger">{submitError}</p>
+                  <Link
+                    href={ROUTES.pedidos}
+                    className="mt-1 inline-block text-xs font-bold text-accent hover:underline"
+                  >
+                    Ir a Mis pedidos
+                  </Link>
+                </div>
+              )}
 
               <button
                 type="button"
