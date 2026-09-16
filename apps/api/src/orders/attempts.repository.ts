@@ -21,6 +21,15 @@ export class AttemptsRepository {
     return db.paymentAttempt.findFirst({ where: { orderId, mpPaymentId } });
   }
 
+  // Último intento aprobado con id de pago MP (origen para reembolsos).
+  findLastApprovedByOrder(orderId: string, tx?: Tx) {
+    const db = tx ?? this.prisma;
+    return db.paymentAttempt.findFirst({
+      where: { orderId, status: 'aprobado', mpPaymentId: { not: null } },
+      orderBy: { attemptNumber: 'desc' },
+    });
+  }
+
   // Número secuencial por pedido con reintento ante colisión
   // (unique orderId+attemptNumber): crea el intento de forma segura.
   async createSequential(

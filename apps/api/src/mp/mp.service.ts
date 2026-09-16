@@ -139,6 +139,28 @@ export class MpService {
     return { mock: false, initPoint, preferenceId: data.id ?? '', sandbox };
   }
 
+  // Reembolso real (total o parcial) de un pago aprobado.
+  // Se ejecuta ANTES de abrir la tx de cierre: si MP falla, no se toca la DB.
+  async refundPayment(mpPaymentId: string, amount?: number): Promise<string> {
+    this.requireConfigured();
+    const res = await fetch(`${MP_API}/v1/payments/${mpPaymentId}/refunds`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.token()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(amount !== undefined ? { amount } : {}),
+    });
+    if (!res.ok) {
+      this.logger.error(`MP refund falló: ${res.status} (pago ${mpPaymentId})`);
+      throw new BadGatewayException(
+        'MercadoPago no pudo procesar la devolución del dinero',
+      );
+    }
+    const data = (await res.json()) as { id?: number | string };
+    return String(data.id ?? '');
+  }
+
   async fetchPayment(mpPaymentId: string): Promise<MpPayment> {
     const res = await fetch(`${MP_API}/v1/payments/${mpPaymentId}`, {
       headers: { Authorization: `Bearer ${this.token()}` },

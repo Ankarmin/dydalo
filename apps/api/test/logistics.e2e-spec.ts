@@ -65,6 +65,24 @@ describe('Logística y postventa (e2e)', () => {
     }
   };
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  // Aprueba el pedido vía MP simulado (deja mpPaymentId trazable).
+  const approveViaMp = async (orderId: string, tag: string) => {
+    const hook = await admin
+      .post(`/admin/orders/${orderId}/payment/simulate-webhook`)
+      .send({ mpStatus: 'accredited', mpPaymentId: `mp-${tag}` });
+    expect(hook.status).toBe(201);
+  };
+
+  const mockMpRefund = (id = 'refund-e2e-1') =>
+    jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id }),
+    } as Response);
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -372,6 +390,7 @@ describe('Logística y postventa (e2e)', () => {
     const created = await makeOrder([item('S', 'Negro', 2)]);
     const id = json(created).id as string;
     await deliver(id);
+    await approveViaMp(id, `total-${stamp}`);
 
     const variant0 = await prisma.productVariant.findFirstOrThrow({
       where: { productId, size: 'S', color: 'Negro' },
@@ -441,6 +460,7 @@ describe('Logística y postventa (e2e)', () => {
     });
     expect(variant1.stock).toBe(variant0.stock + 1);
 
+    mockMpRefund('refund-total');
     const closed = await admin.post(`/admin/returns/${rmaId}/close`).send({
       refundAmount: 200,
       refundNote: 'Yape',
@@ -451,6 +471,12 @@ describe('Logística y postventa (e2e)', () => {
     const order = await prisma.order.findUniqueOrThrow({ where: { id } });
     expect(order.status).toBe('devuelto');
     expect(order.paymentStatus).toBe('reembolsado');
+
+    const refundAttempts = await prisma.paymentAttempt.findMany({
+      where: { orderId: id, status: 'reembolsado' },
+    });
+    expect(refundAttempts).toHaveLength(1);
+    expect(refundAttempts[0]?.mpPaymentId).toBe(`mp-total-${stamp}`);
 
     const variant2 = await prisma.productVariant.findFirstOrThrow({
       where: { productId, size: 'S', color: 'Negro' },
@@ -468,6 +494,7 @@ describe('Logística y postventa (e2e)', () => {
     const created = await makeOrder([item('M', 'Negro', 2)]);
     const id = json(created).id as string;
     await deliver(id);
+    await approveViaMp(id, `parcial-${stamp}`);
 
     const req = await customer.post('/returns').send({
       orderId: id,
@@ -509,6 +536,7 @@ describe('Logística y postventa (e2e)', () => {
         },
       ],
     });
+    mockMpRefund('refund-parcial');
     const closed = await admin.post(`/admin/returns/${rmaId}/close`).send({
       refundAmount: 50,
     });
@@ -541,6 +569,7 @@ describe('Logística y postventa (e2e)', () => {
     });
     expect(notDelivered.status).toBe(400);
     await deliver(pendingId);
+    await approveViaMp(pendingId, `guardias-${stamp}`);
 
     const otro = await customer.post('/returns').send({
       orderId: pendingId,
@@ -635,6 +664,7 @@ describe('Logística y postventa (e2e)', () => {
         refundAmount: 9999,
       });
     expect(overRefund.status).toBe(400);
+    mockMpRefund('refund-guardias');
     const closed = await admin.post(`/admin/returns/${firstId}/close`).send({
       refundAmount: 100,
     });
@@ -671,6 +701,89 @@ describe('Logística y postventa (e2e)', () => {
       ],
     });
     expect(late.status).toBe(400);
+  });
+
+  it('RMA: reembolso exige pago MP y no toca la DB si MP falla', async () => {
+    const created = await makeOrder([item('S', 'Negro', 1)]);
+    const id = json(created).id as string;
+    await deliver(id);
+    const req = await customer.post('/returns').send({
+      orderId: id,
+      items: [
+        {
+          productId,
+          variantId: variantS,
+          size: 'S',
+          color: 'Negro',
+          quantity: 1,
+          reason: 'talla',
+        },
+      ],
+    });
+    const rmaId = json(req).id as string;
+    await admin
+      .patch(`/admin/returns/${rmaId}/status`)
+      .send({ status: 'aprobada' });
+    await admin.post(`/admin/returns/${rmaId}/receive`).send({
+      lines: [
+        {
+          productId,
+          variantId: variantS,
+          size: 'S',
+          color: 'Negro',
+          quantity: 1,
+        },
+      ],
+    });
+    await admin.post(`/admin/returns/${rmaId}/inspect`).send({
+      lines: [
+        {
+          productId,
+          variantId: variantS,
+          size: 'S',
+          color: 'Negro',
+          restock: 1,
+          damage: 0,
+        },
+      ],
+    });
+
+    // Sin pago MP registrado → 409, nada cambia.
+    const noMp = await admin.post(`/admin/returns/${rmaId}/close`).send({
+      refundAmount: 100,
+    });
+    expect(noMp.status).toBe(409);
+
+    // Con pago MP pero MP caído → 502, sigue inspeccionada, sin intento.
+    await approveViaMp(id, `reembolso-${stamp}`);
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue({ ok: false } as Response);
+    const failed = await admin.post(`/admin/returns/${rmaId}/close`).send({
+      refundAmount: 100,
+    });
+    expect(failed.status).toBe(502);
+    const still = await prisma.returnRequest.findUniqueOrThrow({
+      where: { id: rmaId },
+    });
+    expect(still.status).toBe('inspeccionada');
+    expect(
+      await prisma.paymentAttempt.count({
+        where: { orderId: id, status: 'reembolsado' },
+      }),
+    ).toBe(0);
+
+    // MP ok → 201 con intento trazado al pago y al refund.
+    mockMpRefund('refund-retry');
+    const closed = await admin.post(`/admin/returns/${rmaId}/close`).send({
+      refundAmount: 100,
+    });
+    expect(closed.status).toBe(201);
+    const attempts = await prisma.paymentAttempt.findMany({
+      where: { orderId: id, status: 'reembolsado' },
+    });
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0]?.mpPaymentId).toBe(`mp-reembolso-${stamp}`);
   });
 
   it('admin: lista y detalle de devoluciones', async () => {

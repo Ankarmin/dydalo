@@ -39,6 +39,7 @@ import { ReservationsWorker } from './reservations.worker';
     PaymentsService,
     MovementsRepository,
     OrdersRepository,
+    AttemptsRepository,
   ],
 })
 export class OrdersModule {}

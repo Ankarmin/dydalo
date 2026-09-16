@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { ReturnOrigin, ReturnStatus } from '@prisma/client';
@@ -9,6 +10,8 @@ import type { AuditActor } from '../audit/audit.service';
 import { AuditService } from '../audit/audit.service';
 import { ProductsRepository } from '../catalog/products/products.repository';
 import type { Tx } from '../coupons/coupons.repository';
+import { MpService } from '../mp/mp.service';
+import { AttemptsRepository } from '../orders/attempts.repository';
 import { MovementsRepository } from '../orders/movements.repository';
 import { OrdersRepository } from '../orders/orders.repository';
 import type { OrderWithItems } from '../orders/orders.repository';
@@ -50,12 +53,16 @@ function padCode(n: number): string {
 
 @Injectable()
 export class ReturnsService {
+  private readonly logger = new Logger(ReturnsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly returns: ReturnsRepository,
     private readonly orders: OrdersRepository,
     private readonly ordersService: OrdersService,
     private readonly payments: PaymentsService,
+    private readonly attempts: AttemptsRepository,
+    private readonly mp: MpService,
     private readonly products: ProductsRepository,
     private readonly movements: MovementsRepository,
     private readonly audit: AuditService,
@@ -535,84 +542,136 @@ export class ReturnsService {
   }
 
   async close(id: string, dto: CloseReturnDto, actor: AuditActor) {
-    return this.prisma.$transaction(async (tx) => {
-      const rma = await this.returns.findById(id, tx);
-      if (!rma || rma.status !== 'inspeccionada') {
-        throw new BadRequestException('La devolución debe estar inspeccionada');
-      }
-      const approvedTotal = rma.items.reduce(
-        (s, i) => s + i.price * i.quantity,
-        0,
+    // 1) Validación previa sin tocar la DB.
+    const preview = await this.returns.findById(id);
+    if (!preview || preview.status !== 'inspeccionada') {
+      throw new BadRequestException('La devolución debe estar inspeccionada');
+    }
+    const previewTotal = preview.items.reduce(
+      (s, i) => s + i.price * i.quantity,
+      0,
+    );
+    if (dto.refundAmount < 0 || dto.refundAmount > previewTotal) {
+      throw new BadRequestException(
+        `Reembolso máximo S/${previewTotal.toFixed(2)}`,
       );
-      if (dto.refundAmount < 0 || dto.refundAmount > approvedTotal) {
-        throw new BadRequestException(
-          `Reembolso máximo S/${approvedTotal.toFixed(2)}`,
+    }
+    // 2) Dinero real primero: si MP falla, la DB queda intacta.
+    // Toda devolución web es 100% MercadoPago; sin pago MP registrado
+    // (histórico) no hay nada que devolver por pasarela.
+    let mpPaymentId: string | undefined;
+    let mpRefundId: string | undefined;
+    if (dto.refundAmount > 0) {
+      const approved = await this.attempts.findLastApprovedByOrder(
+        preview.orderId,
+      );
+      if (!approved?.mpPaymentId) {
+        throw new ConflictException(
+          'El pedido no tiene un pago de MercadoPago para devolver',
         );
       }
-      const order = await this.orders.findById(rma.orderId, tx);
-      // ¿Todo el pedido devuelto (cerradas + esta)? → pedido `devuelto`.
-      const siblings = await this.returns.listByOrder(rma.orderId, tx);
-      const allReturned =
-        !!order &&
-        order.items.every((oi) => {
-          const totalReturned = siblings
-            .filter((r) => r.status === 'cerrada' || r.id === rma.id)
-            .flatMap((r) => r.items)
-            .filter(
-              (i) =>
-                i.productId === oi.productId &&
-                (i.variantId ?? '') === (oi.variantId ?? ''),
-            )
-            .reduce((s, i) => s + i.quantity, 0);
-          return totalReturned >= oi.quantity;
-        });
-      if (allReturned && order && order.status === 'entregado') {
-        // Transición con vía RMA (única forma de llegar a `devuelto`).
-        // Nota: corre dentro de esta tx para no partir la operación.
-        await this.transitionToReturned(tx, order.id, actor);
-      }
-      const refreshed = await this.orders.findById(rma.orderId, tx);
-      const nettable = refreshed?.status === 'devuelto';
-      const damageWarnings = await this.recordDamage(tx, rma, nettable, actor);
-      if (dto.refundAmount > 0) {
-        await this.payments.recordAttempt(
+      mpPaymentId = approved.mpPaymentId;
+      mpRefundId = await this.mp.refundPayment(mpPaymentId, dto.refundAmount);
+    }
+    // 3) Tx con re-validación (carrera: otro cierre concurrente).
+    // Si la tx falla tras un refund exitoso, se loguea para conciliar
+    // en el panel de MP (el dinero ya se movió y no se puede revertir).
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const rma = await this.returns.findById(id, tx);
+        if (!rma || rma.status !== 'inspeccionada') {
+          throw new BadRequestException(
+            'La devolución debe estar inspeccionada',
+          );
+        }
+        const approvedTotal = rma.items.reduce(
+          (s, i) => s + i.price * i.quantity,
+          0,
+        );
+        if (dto.refundAmount < 0 || dto.refundAmount > approvedTotal) {
+          throw new BadRequestException(
+            `Reembolso máximo S/${approvedTotal.toFixed(2)}`,
+          );
+        }
+        const order = await this.orders.findById(rma.orderId, tx);
+        // ¿Todo el pedido devuelto (cerradas + esta)? → pedido `devuelto`.
+        const siblings = await this.returns.listByOrder(rma.orderId, tx);
+        const allReturned =
+          !!order &&
+          order.items.every((oi) => {
+            const totalReturned = siblings
+              .filter((r) => r.status === 'cerrada' || r.id === rma.id)
+              .flatMap((r) => r.items)
+              .filter(
+                (i) =>
+                  i.productId === oi.productId &&
+                  (i.variantId ?? '') === (oi.variantId ?? ''),
+              )
+              .reduce((s, i) => s + i.quantity, 0);
+            return totalReturned >= oi.quantity;
+          });
+        if (allReturned && order && order.status === 'entregado') {
+          // Transición con vía RMA (única forma de llegar a `devuelto`).
+          // Nota: corre dentro de esta tx para no partir la operación.
+          await this.transitionToReturned(tx, order.id, actor);
+        }
+        const refreshed = await this.orders.findById(rma.orderId, tx);
+        const nettable = refreshed?.status === 'devuelto';
+        const damageWarnings = await this.recordDamage(
           tx,
-          refreshed ?? (await this.orders.findById(rma.orderId, tx))!,
+          rma,
+          nettable,
+          actor,
+        );
+        if (dto.refundAmount > 0) {
+          await this.payments.recordAttempt(
+            tx,
+            refreshed ?? (await this.orders.findById(rma.orderId, tx))!,
+            {
+              status: 'reembolsado',
+              amount: dto.refundAmount,
+              method: 'MercadoPago',
+              mpPaymentId,
+              reason: `${rma.code}: reembolso S/${dto.refundAmount.toFixed(2)}${dto.refundNote ? ` — ${dto.refundNote}` : ''} (MP refund ${mpRefundId})`,
+              actor,
+            },
+            { updateOrderStatus: true },
+          );
+        }
+        const updated = await this.returns.update(
+          id,
           {
-            status: 'reembolsado',
-            amount: dto.refundAmount,
-            reason: `${rma.code}: reembolso S/${dto.refundAmount.toFixed(2)}${dto.refundNote ? ` — ${dto.refundNote}` : ''}`,
-            actor,
+            status: 'cerrada',
+            refundAmount: dto.refundAmount,
+            refundNote: dto.refundNote?.trim() || undefined,
           },
-          { updateOrderStatus: true },
+          tx,
+        );
+        const damageSummary =
+          damageWarnings.length > 0
+            ? ` Advertencias: ${damageWarnings.join('; ')}`
+            : rma.items.some((i) => i.damageQuantity > 0)
+              ? ` (${rma.items.reduce((s, i) => s + i.restockQuantity, 0)} reingresan, ${rma.items.reduce((s, i) => s + i.damageQuantity, 0)} a merma)`
+              : '';
+        await this.log(
+          tx,
+          updated,
+          'status_change',
+          `${rma.code} cerrada con reembolso S/${dto.refundAmount.toFixed(2)}${damageSummary}`,
+          actor,
+          { status: rma.status },
+          { status: 'cerrada' },
+        );
+        return { rma: updated, warnings: damageWarnings, mpRefundId };
+      });
+    } catch (e) {
+      if (mpRefundId) {
+        this.logger.error(
+          `Reembolso MP ${mpRefundId} aplicado pero el cierre falló (RMA ${preview.code}): conciliar en el panel de MercadoPago`,
         );
       }
-      const updated = await this.returns.update(
-        id,
-        {
-          status: 'cerrada',
-          refundAmount: dto.refundAmount,
-          refundNote: dto.refundNote?.trim() || undefined,
-        },
-        tx,
-      );
-      const damageSummary =
-        damageWarnings.length > 0
-          ? ` Advertencias: ${damageWarnings.join('; ')}`
-          : rma.items.some((i) => i.damageQuantity > 0)
-            ? ` (${rma.items.reduce((s, i) => s + i.restockQuantity, 0)} reingresan, ${rma.items.reduce((s, i) => s + i.damageQuantity, 0)} a merma)`
-            : '';
-      await this.log(
-        tx,
-        updated,
-        'status_change',
-        `${rma.code} cerrada con reembolso S/${dto.refundAmount.toFixed(2)}${damageSummary}`,
-        actor,
-        { status: rma.status },
-        { status: 'cerrada' },
-      );
-      return { rma: updated, warnings: damageWarnings };
-    });
+      throw e;
+    }
   }
 
   // Replica `OrdersService.transition(...,'devuelto',actor,'rma')` dentro
