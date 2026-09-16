@@ -51,7 +51,7 @@ Responsabilidades clave:
 - Cambiar estados logisticos.
 - Registrar courier, guia y despacho.
 - Gestionar devoluciones.
-- Validar pagos o comprobantes cuando el pago sea manual.
+- Validar pagos o comprobantes de pedidos manuales (la tienda web cobra 100% por MercadoPago).
 - Exportar informacion para control externo.
 - Conciliar intentos de pago y verificar comprobantes manuales.
 - Asignar fulfillment por pedido (App Lima, Olva provincia o recojo) con guia o DNI.
@@ -151,7 +151,7 @@ Necesidades del sistema:
 | Riesgo | Impacto |
 | --- | --- |
 | Stores/localStorage en vez de backend real | Datos no son confiables para produccion multiusuario |
-| Sin pagos reales/webhooks | Control manual de pago y riesgo operativo |
+| Sin activar MP en produccion (token prod + webhook público) | La tienda cobra en sandbox; falta el corte a producción |
 | SEO incompleto | Menor visibilidad organica |
 
 ## Prioridad Estrategica

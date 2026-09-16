@@ -1,5 +1,19 @@
 # SESION — estado entre sesiones
 
+## 2026-09-16 — Tienda 100% MP + reembolsos reales (para commit)
+
+- Objetivo: la tienda web cobra solo por MercadoPago; Diego conserva su flujo manual en admin; los reembolsos de RMA son reales por API de MP.
+- Hecho (código):
+  - Web `cart-client.tsx`: método único `mercadopago` + nota de redirect; `pedido-confirmado`: fuera instrucciones Yape/999 999 999, botón directo a MP.
+  - Admin intacto salvo FAQ seed ("tarjeta, Yape u otros medios a través de MercadoPago; WhatsApp se coordina").
+  - `MpService.refundPayment` (`POST /v1/payments/{id}/refunds`); `returns.close()` lo ejecuta ANTES de la tx (si MP falla no se toca la DB; si la tx falla después, loguea para conciliar); intento `reembolsado` con `method: MercadoPago` + `mpPaymentId` + refund id en motivo.
+  - `AttemptsRepository.findLastApprovedByOrder`; `OrdersModule` lo exporta; `ReturnsModule` importa `MpModule`.
+  - Tests: logística RMA con pago MP simulado + refund mockeado (éxito con trazabilidad, 409 sin pago MP, 502 sin cambios si MP falla).
+  - Docs: `decisiones.md` (nueva entrada), `business-context.md` (tienda 100% MP; riesgo de corte a producción).
+- Pendiente: pago manual sandbox del usuario + `mp-sync` + cierre RMA con reembolso real (orden `cmu0vod7r…`, link en entrada Fase 7b).
+- Verificado: e2e 45/45 + unit 14/14; `lint` + `check-types` api verdes; web `check-types` + `lint` (0 errores) + `build` OK (136 páginas).
+- Próximo paso: commit atómico + push; luego migrar el admin a la API.
+
 ## 2026-09-14 — Fase 7b: MP sandbox en vivo (commiteado; falta solo el pago manual)
 
 - Objetivo: probar la integración MP contra sandbox real (credenciales de prueba del usuario) + endpoint de sincronización.

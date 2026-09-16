@@ -41,3 +41,8 @@ Registro de decisiones vigentes (fecha + motivo). Solo cambios de arquitectura/s
 ## 2026-09-14 — MP por REST directo + corte web con flag + `costPrice` no público
 
 - Motivo: Fase 7. Sin SDK de MP (menos superficie ESM, flujo auditable con fetch nativo); webhook firmado HMAC idempotente por `mpPaymentId`, único que aprueba online (reemplaza al simulador cuando haya token; sin token hay modo mock + 503). La web migra tras `NEXT_PUBLIC_API_URL` (auth real, catálogo/blog lectura, checkout, pedidos; admin sigue local): sin la variable todo sigue mock, corte sin break. `costPrice` se oculta en lecturas públicas (dato interno B-06). Backups con `pg_dump` a `backups/` gitignored.
+
+## 2026-09-16 - Tienda 100% MercadoPago, admin manual intacto + reembolsos reales
+
+- Motivo: la pasarela web solo cobra por MP (tarjeta/Yape/otros medios en el checkout hospedado; sin datos de tarjeta en nuestros servidores por PCI y porque POST /v1/payments directo responde 401 con estas credenciales). El flujo manual de Diego (pedidos manuales + verificado_manual con evidencia) se conserva intacto. Cierre de RMA con refundAmount mayor a 0 ejecuta reembolso real (POST /v1/payments/{id}/refunds) ANTES de la tx; si MP falla no se toca la DB.
+
