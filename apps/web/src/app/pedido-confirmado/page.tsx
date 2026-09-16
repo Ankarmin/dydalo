@@ -97,8 +97,8 @@ export default function PedidoConfirmadoPage() {
   const order = shown;
 
   const paymentMethodLabel: Record<string, string> = {
-    "yape-plin": "Yape / Plin",
-    transferencia: "Transferencia bancaria",
+    mercadopago: "MercadoPago",
+    "Tarjeta MP": "MercadoPago",
     tarjeta: "Tarjeta",
   };
 
@@ -250,20 +250,13 @@ export default function PedidoConfirmadoPage() {
                 {!isPaid && !isRejected && (
                   <>
                     <p className="font-medium text-foreground">
-                      Método:{" "}
-                      {paymentMethodLabel["yape-plin"] ?? "Yape / Plin"}
+                      Método: {paymentMethodLabel[order.paymentMethod ?? ""] ?? "MercadoPago"}
                     </p>
                     <p className="mt-2">
-                      Realiza el pago por Yape o Plin al siguiente número:
+                      Completa tu pago en MercadoPago con tarjeta, Yape u otros medios.
+                      Tu pedido queda reservado hasta confirmar el pago.
                     </p>
-                    <p className="mt-1 text-lg font-bold text-foreground">
-                      999 999 999
-                    </p>
-                    <p className="mt-3">
-                      Una vez realizado el pago, envíanos el comprobante por WhatsApp
-                      para confirmar tu pedido.
-                    </p>
-                    <Button asChild variant="outline" className="mt-4">
+                    <Button asChild variant="hero" className="mt-4">
                       <Link href={retryLink}>Pagar con MercadoPago</Link>
                     </Button>
                   </>

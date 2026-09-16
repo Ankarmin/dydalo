@@ -42,9 +42,7 @@ const STEPS = [
 ] as const;
 
 const PAYMENT_METHODS = [
-  { value: "yape-plin", label: "Yape / Plin", disabled: false },
-  { value: "transferencia", label: "Transferencia bancaria", disabled: false },
-  { value: "tarjeta", label: "Tarjeta (próximamente)", disabled: true },
+  { value: "mercadopago", label: "Tarjeta online (MercadoPago)", disabled: false },
 ] as const;
 
 const checkoutLabelClass =
@@ -122,7 +120,7 @@ export function CartClient() {
   const [department, setDepartment] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("yape-plin");
+  const [paymentMethod, setPaymentMethod] = useState("mercadopago");
   const [address, setAddress] = useState("");
   const [reference, setReference] = useState("");
   const [addressLabel, setAddressLabel] = useState("");
@@ -754,6 +752,9 @@ export function CartClient() {
                   </div>
                 ))}
               </RadioGroup>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Serás redirigido a MercadoPago para pagar con tarjeta, Yape u otros medios de forma segura.
+              </p>
             </div>
 
             <div className="mt-6 rounded-xl border border-border bg-card p-4 sm:p-6">
