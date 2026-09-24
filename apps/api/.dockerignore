@@ -1,0 +1,13 @@
+# DYDALO API — lo que nunca entra al contexto de build.
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+.git
+.turbo
+.next

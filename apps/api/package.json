@@ -27,6 +27,7 @@
     "db:backup": "docker exec dydalo-postgres pg_dump -U dydalo -d dydalo -F c -f /tmp/dydalo-backup.dump && docker cp dydalo-postgres:/tmp/dydalo-backup.dump ../../backups/dydalo-backup.dump && docker exec dydalo-postgres rm /tmp/dydalo-backup.dump",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "prisma db seed"
   },

@@ -1,0 +1,94 @@
+# DYDALO CI — verifica cada PR y cada push a main/test.
+# Ramas: `test` = staging (deploy automático a Railway/Vercel),
+# `main` = prod futuro (protegida: exige este CI en verde).
+# Concurrencia por rama: un push nuevo cancela el run anterior.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, test]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  PNPM_VERSION: "11.17.0"
+
+jobs:
+  web:
+    name: web (lint + types + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @apps/web lint
+      - run: pnpm --filter @apps/web check-types
+      - run: pnpm --filter @apps/web build
+
+  api-unit:
+    name: api unit (lint + types + jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api prisma:generate
+      - run: pnpm --filter api lint
+      - run: pnpm --filter api check-types
+      - run: pnpm --filter api test
+
+  api-e2e:
+    name: api e2e (postgres + migrate + jest-e2e)
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: dydalo
+          POSTGRES_USER: dydalo
+          POSTGRES_PASSWORD: dydalo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dydalo -d dydalo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://dydalo:dydalo@localhost:5432/dydalo?schema=public
+      JWT_SECRET: ci-test-secret-no-usar-en-prod
+      JWT_EXPIRES_IN: 7d
+      ADMIN_SEED_PASSWORD: ci-local-dev
+      FRONTEND_URL: http://localhost:3000
+      API_PUBLIC_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api prisma:generate
+      # Prod-like: solo `migrate deploy`, nunca `migrate dev` ni `db push`.
+      - run: pnpm --filter api prisma:migrate:deploy
+      - run: pnpm --filter api test:e2e
