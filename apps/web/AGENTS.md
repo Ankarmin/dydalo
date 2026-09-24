@@ -18,7 +18,8 @@ Next.js 16.2 + React 19 + Tailwind v4. Con `src/`: App Router en `src/app/`. Dob
 - Cambiar el seed de `config/products.ts` cambia el hash y **re-siembran los productos** (se pierden ediciones locales del navegador).
 - `FEATURED_PRODUCTS_COUNT` es a la vez límite del admin y cantidad mostrada en la home (2 filas de 4).
 - Skeletons (`loading.tsx`) deben replicar la grilla real para evitar CLS.
-- Vía API (`NEXT_PUBLIC_API_URL` seteada): `auth-context` usa `/auth/*`; hooks `use-products|categories|blog|site-config` revalidan contra el backend (fallback a lo local si falla); checkout/cupón/pedidos/devoluciones van a `/orders|/coupons|/returns`; MP redirige a `initPoint` (mock sin token). Los ids del backend son cuid (no `"1"`): no mezclar sesiones entre modos sin limpiar `localStorage`. Carrito y admin no migrados (usan snapshots/tiendas locales).
+- Vía API (`NEXT_PUBLIC_API_URL` seteada): `auth-context` usa `/auth/*`; hooks `use-products|categories|blog|site-config` revalidan contra el backend (fallback a lo local si falla); checkout/cupón/pedidos/devoluciones van a `/orders|/coupons|/returns`; MP redirige a `initPoint` (mock sin token). Los ids del backend son cuid (no `"1"`): no mezclar sesiones entre modos sin limpiar `localStorage`. `use-products` expone `remoteOk` (lista del backend sí/no) con reintento + caché compartida; el checkout bloquea el pago si `!remoteOk` en modo API (los ids provisorios el backend los rechaza con 404). Carrito persiste en `localStorage` por diseño (el backend re-tasa todo); admin no migrado (tiendas locales).
+- Orden de arranque local: `db:up` → API lista (`GET :3001/health`) → web. Con la API fría, la web arranca en fallback local y el pago se bloquea hasta reconectar (banner + Reintentar).
 
 ## Comandos
 

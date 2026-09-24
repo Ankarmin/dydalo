@@ -1,5 +1,58 @@
 # SESION — estado entre sesiones
 
+## 2026-09-16 — Fix hydration mismatch + warnings consola (sin commit)
+
+- Causa del `Hydration failed` en home (`ProductCard` extra en cliente): los hooks `use-products|categories|blog|site-config` inicializaban con datos de `localStorage` (solo existen en cliente) mientras el SSR pintaba `[]`/default. Mismo patrón ya blindado en header/favoritos/cookies/theme con `useMounted`.
+- Hecho (web): los 4 hooks inician SSR-seguro (`[]`/`defaultConfig`, caché tibia) y pueblan en efecto (1 disable justificado c/u); `catalogo-client`/`categoria-client` con skeleton tras `loaded` (sin mensaje de vacío falso); `loaded` expuesto en favoritos y gateado en su página; `width/height` en `dydalo-blanco.svg`+`dydalo-negro.svg` (sin dims intrínsecas); `data-scroll-behavior="smooth"` en `<html>`.
+- No tocado a propósito: hero `sizes="100vw"` (correcto cuando visible; el warning es del gemelo `hidden`), `useStoreData` del admin (solo diverge con ediciones locales; se cubre al migrar el admin), `Date.now()` relativos (solo cruzarían el límite en el segundo exacto de hidratar).
+- Verificado: web `check-types` + `lint` (0 errores) + `build` OK (136 páginas); api `check-types` + `lint` + unit 14/14 verdes.
+- Pendiente: prueba visual del usuario (home sin overlay rojo, catálogos sin flash de "vacío") + commit.
+
+## 2026-09-16 — /fatal/ MP: lado MP confirmado, body inocente (sin commit)
+
+- La preferencia MÍNIMA (`df59e9f7`, S/10, back_urls https, sin notification_url, `binary_mode:true`) cae al MISMO `/fatal/` en perfil limpio, con tarjeta y con PagoEfectivo. Nuestro body queda descartado como causa.
+- Cadena probada: token test válido (colector `3689326986`, cuenta PE activa) → prefs 201 válidas → checkout no renderiza/procesa → 0 pagos creados. Falla dentro del frontend de MP (ni siquiera crea el pago).
+- Vías restantes: ticket a soporte MP (con pref-ids + timestamps), regenerar credenciales test, o esperar (en Fase 7b el mismo sandbox SÍ cargaba). Nuestra validación pendiente puede avanzar con el simulador webhook (`simulate-webhook`) sin sandbox real.
+
+- Corrección a la hipótesis anterior: el `MP_ACCESS_TOKEN` del `.env` YA es el de prueba (idéntico al del dashboard, sufijo `-3689326986`, verificado byte a byte; API `healthy` con él, sin restart necesario). El 401 `Unauthorized use of live credentials` en `POST /v1/payments` directo es propiedad conocida de estas credenciales (ya anotado en Fase 7b: solo vale Checkout hospedado), NO prueba de token productivo.
+- Estado probado por API directa (scripts en temp, secretos nunca impresos): preferencia 201 válida (colector/pe/ítem/referencia OK), cuenta test PE activa, 0 pagos creados (muere en frontend MP antes de crear pago), `back_urls` devueltas VACÍAS por MP (localhost no lo acepta como retorno).
+- Experimento pendiente del usuario: abrir preferencia MÍNIMA `3689326986-df59e9f7-6d00-420e-b164-b776e3c5657e` (S/10, back_urls https, sin notification_url, `binary_mode: true`): si procesa → culpable en nuestro body (`notification_url` localhost / `back_urls` / `binary_mode:false`) → fix en `mp-mapper.ts`; si también cae a `/fatal/` → lado MP (soporte con pref-ids + timestamps).
+- Higiene: el token test quedó pegado en el chat; regenerarlo cuando convenga (riesgo bajo: sandbox). Jamás pegar credenciales productivas.
+
+## 2026-09-16 — Catálogo con autoridad + checkout blindado ante API fría (sin commit)
+
+- Causa del `Producto no encontrado: 33`: la web cargó el catálogo del fallback local (fetch único sin reintento; API fría al arrancar) y nunca revalidó; el id mock `33` llegó al backend → 404. Verificado que el catálogo SÍ está migrado (80/80, slugs idénticos incl. `29-windbreaker-anorak` y `33-heavyweight-pullover`): era flujo, no datos.
+- Hecho (web, `lib/api/catalog.ts` + `use-products.ts` + `cart-context.tsx` + `cart-client.tsx`):
+  - `remoteOk` (lista del backend sí/no) + reintentos con backoff (3) + revalidación en `online`/`focus` + caché compartida con suscripción (todas las instancias convergen; un reintento manual actualiza todo).
+  - Checkout bloqueado sin catálogo remoto (banner + botón Reintentar; `handleSubmit` no llama al backend); `cartCount` sobre líneas resueltas; hidratación solo con autoridad.
+  - 404 de `POST /orders` mapeado a mensaje humano (con link a Mis pedidos intacto).
+- Docs: orden de arranque (`db:up` → API healthy → web) en `apps/web/AGENTS.md`.
+- Pendiente: matriz manual (API caída al cargar → bloqueo sin 404; boot escalonado → recupera sin F5; flujo feliz sandbox) + commit.
+
+## 2026-09-16 — Checkout 100% vía API: sin validación mock + direcciones/teléfono (sin commit)
+
+- Causa del `Producto no encontrado: X`: `handleSubmit` validaba stock contra el store local ANTES del branch API (`cart-client.tsx:343`); con ids `cuid` fallaba siempre y el backend nunca era alcanzado. Además `applyStockChange` habría mutado stock mock fantasma.
+- Hecho (web, `cart-client.tsx` + `lib/api/addresses.ts` nuevo + `cart-context.tsx` + `product-detail.tsx`):
+  - Vía API primero: sin stores locales; `submitApiOrder` manda ids reales (sin N+1 por slug); recheck de cupón local solo en mock (el backend revalida en tx).
+  - Direcciones reales: `GET/POST /addresses`; guardada manda id backend, nueva se crea solo si se pide; teléfono visible y validado (el snapshot del backend lo exige 9-15 dígitos; era el siguiente 400 cantado).
+  - Carrito: hidratación por fusión + reconciliación por slug (sobrevive swaps local↔API y clics pre-carga) + `updateQuantity` boolean + toast solo si agregó; items v2 (v1 legacy aceptada).
+- Verificado: web `check-types` + `lint` (0 errores) + `build` OK (136 páginas). Ojo lint: `set-state-in-effect` es error (no warning): se resolvió con derivación en render; solo queda 1 disable puntual (prefill teléfono, precedente `category-form`).
+- Pendiente: matriz manual del usuario (mock regresión + API incógnito: agregar rápido, F5, checkout sandbox, verde+mp-sync, rojo+reintento, cupón, dirección) + commit.
+
+## 2026-09-16 — Fix carrito/favoritos en modo API (sin commit)
+
+- Causa: `cart-context` y `favorites-context` resolvían contra `productsStore` local (ids `"1".."80"`); en modo API la UI muestra ids `cuid` → agregado y favoritos se ignoraban en silencio (ni incógnito lo salvaba).
+- Hecho: `use-products` expone `loaded`; `CartProvider`/`FavoritesProvider` consumen la lista fusionada (API primero, fallback local); el carrito hidrata solo con lista final; el guardado sigue en `localStorage` (sin tabla de carrito en backend: `POST /orders` re-tasa y revalida todo en 1 tx).
+- Verificado: web `check-types` + `lint` (0 errores, 1 warning preexistente en `admin/productos/[id]/page.tsx`).
+- Pendiente: prueba manual del usuario (agregar al carrito en modo API → sandbox) + commit.
+
+## 2026-09-16 — Web en modo API + Confirmar va directo a MP (sin commit)
+
+- Hallazgo: el usuario veía la pantalla de instrucciones porque la web corría en modo mock (no existía `apps/web/.env.local`, gitignored).
+- Hecho: creado `apps/web/.env.local` con `NEXT_PUBLIC_API_URL=http://localhost:3001`; reiniciados API (`dist/main`, token test vigente) y web dev (`:3000`, log confirma `Environments: .env.local`). Pedido de prueba viejo expiró y se canceló solo (reserva 24h funcionando).
+- Flujo real resultante: Confirmar Pedido → crea pedido → redirect a `sandbox_init_point`; vuelta a `pedido-confirmado` con verde (aprobado) / rojo (rechazado); sin pantallas previas.
+- Pendiente: pago manual del usuario en sandbox + `mp-sync` + cierre RMA con reembolso real.
+
 ## 2026-09-16 — Confirmar Pedido va directo a MP (para commit)
 
 - Objetivo: en el paso 3, Confirmar Pedido redirige a MercadoPago sin pantallas intermedias; `pedido-confirmado` queda solo como landing de retorno.
