@@ -1,5 +1,14 @@
 # SESION — estado entre sesiones
 
+## 2026-09-24 — Rama test + Dockerfile + CI (pusheado a `test`, falta cablear Railway/Vercel)
+
+- Hecho: pendiente del 16/09 commiteado en `main` (2 atómicos) + push; rama `test` creada desde `main` y pusheada.
+- Hecho (infra, en `test`): `apps/api/Dockerfile` multistage + `.dockerignore` + script `prisma:migrate:deploy` + `.github/workflows/ci.yml` (web lint/types/build, api unit, api e2e con PG16; concurrencia por rama).
+- Incidentes: `node:20-slim` no corre `pnpm 11` (`node:sqlite`, exige Node ≥22) → pinneado Node 24 (igual que el dev local v24); `prisma generate` fallaba si el install corría sin el schema → se copia el código antes del install.
+- Verificado: `docker build` OK + smoke del contenedor contra PG local (`GET /health → {status:ok,db:ok}`); contenedor e imagen de prueba eliminados. Web `check-types` + `lint` verdes (1 warning preexistente).
+- Pendiente (manual, con tus credenciales test): crear PG gestionada → Railway (servicio Docker desde raíz, envs + `MP_SANDBOX=true`) → `prisma db seed` una vez → Vercel (`NEXT_PUBLIC_API_URL` a la API test) → matriz MP (preferencia mínima vs completa, webhook real, `mp-sync`, RMA con refund). El push a `test` ya disparó el primer CI: revisarlo en GitHub Actions.
+- Verificado al cierre: `git status` limpio salvo estos 2 docs (se commitean ahora).
+
 ## 2026-09-16 — Fix hydration mismatch + warnings consola (sin commit)
 
 - Causa del `Hydration failed` en home (`ProductCard` extra en cliente): los hooks `use-products|categories|blog|site-config` inicializaban con datos de `localStorage` (solo existen en cliente) mientras el SSR pintaba `[]`/default. Mismo patrón ya blindado en header/favoritos/cookies/theme con `useMounted`.

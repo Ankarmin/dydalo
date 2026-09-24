@@ -46,3 +46,7 @@ Registro de decisiones vigentes (fecha + motivo). Solo cambios de arquitectura/s
 
 - Motivo: la pasarela web solo cobra por MP (tarjeta/Yape/otros medios en el checkout hospedado; sin datos de tarjeta en nuestros servidores por PCI y porque POST /v1/payments directo responde 401 con estas credenciales). El flujo manual de Diego (pedidos manuales + verificado_manual con evidencia) se conserva intacto. Cierre de RMA con refundAmount mayor a 0 ejecuta reembolso real (POST /v1/payments/{id}/refunds) ANTES de la tx; si MP falla no se toca la DB.
 
+## 2026-09-24 — Rama `test` + Node 24 + API contenerizada + CI en verde
+
+- Motivo: ambiente de pruebas para MP con URLs https públicas (el webhook real no llega a localhost; el `/fatal/` sandbox solo se puede debuggear contra MP con `notification_url`/`back_urls` alcanzables). `test` = staging con deploy automático (API en Railway desde `apps/api/Dockerfile`, web en Vercel, Postgres gestionada nueva con seed limpio); `main` = prod futuro protegida con CI obligatorio. Node 24 en Dockerfile + CI porque `pnpm 11.17.0` exige Node ≥22 (`node:sqlite`); el `Dockerfile` copiaba primero y fallaba igual — el orden real del fix fue Node 24 + instalar con el schema presente. Arranque del contenedor: `migrate deploy` (nunca `dev`) + `node dist/main`, `HEALTHCHECK` contra `GET /health`.
+
