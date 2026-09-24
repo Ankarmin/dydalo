@@ -14,7 +14,7 @@ import { ROUTES } from "@/lib/utils/routes";
 export function FavoritesPageClient() {
   const router = useRouter();
   const { state: authState, meta: authMeta } = useAuth();
-  const { favorites, favoritesCount, clearAll } = useFavorites();
+  const { favorites, favoritesCount, loaded: favoritesLoaded, clearAll } = useFavorites();
   const mounted = useMounted();
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function FavoritesPageClient() {
     }
   }, [authMeta.isAdmin, authState.status, router]);
 
-  if (!mounted) return null;
+  if (!mounted || !favoritesLoaded) return null;
   if (authState.status === "loading") return null;
   if (authMeta.isAdmin) return null;
 

@@ -29,9 +29,12 @@ function localConfig(): SiteConfig {
 }
 
 export function useSiteConfig() {
-  const [config, setConfig] = useState<SiteConfig>(() => localConfig());
+  // Inicial SSR-seguro (default ambos lados); lo local se puebla en el efecto.
+  const [config, setConfig] = useState<SiteConfig>(defaultConfig);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- populate inicial cliente post-hidratación, no suscripción reactiva
+    setConfig(localConfig());
     function refreshLocal() {
       if (!isApiEnabled()) setConfig(configStore.get());
     }

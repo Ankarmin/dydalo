@@ -26,14 +26,14 @@ import type { Address } from "@/lib/stores";
 import { departments, type Province } from "@/config/ubigeos";
 import { SHIPPING_PROVINCIA_PRICE } from "@/config/constants";
 import { getVariantStock } from "@/lib/utils/inventory";
-import { isApiEnabled } from "@/lib/api/client";
-import { apiGetProductBySlug } from "@/lib/api/catalog";
+import { ApiError, isApiEnabled } from "@/lib/api/client";
 import {
   apiCreateOrder,
   apiMpPreference,
   apiValidateCoupon,
   type ApiCheckoutItem,
 } from "@/lib/api/orders";
+import { apiCreateAddress, apiGetAddresses } from "@/lib/api/addresses";
 
 const STEPS = [
   { num: 1, label: "Carrito", icon: ShoppingCart },
@@ -98,7 +98,7 @@ function ProgressSteps({ current }: { current: number }) {
 export function CartClient() {
   const router = useRouter();
   const { state, meta } = useAuth();
-  const { cartItems, cartCount, subtotal, updateQuantity, clearCart } = useCart();
+  const { cartItems, cartCount, subtotal, catalogLive, retryCatalog, updateQuantity, clearCart } = useCart();
 
   const [step, setStep] = useState(1);
 
@@ -134,6 +134,8 @@ export function CartClient() {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [saveAddress, setSaveAddress] = useState(false);
+  const [phone, setPhone] = useState("");
+  const apiMode = isApiEnabled();
 
   const deptData = useMemo(
     () => departments.find((d) => d.name === department),
@@ -149,18 +151,49 @@ export function CartClient() {
   );
   const checkoutDistricts: string[] = checkoutProvinceData?.districts ?? [];
 
-  const savedAddresses = state.user
-    ? addressesStore.getByUserId(state.user.id)
-    : [];
+  // En modo API las guardadas viven en el backend (GET /addresses); en mock,
+  // en el store local. Se guarda el dueño para no mostrar lista ajena al
+  // cambiar de usuario sin recargar (derivación en render, sin efectos).
+  const userId = state.user?.id;
+  const [remote, setRemote] = useState<{ userId: string; list: Address[] } | null>(null);
+  useEffect(() => {
+    if (!apiMode || !userId) return;
+    let alive = true;
+    const owner = userId;
+    apiGetAddresses()
+      .then((list) => {
+        if (alive) setRemote({ userId: owner, list });
+      })
+      .catch(() => {
+        if (alive) setRemote({ userId: owner, list: [] });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [apiMode, userId]);
+  const remoteAddresses = remote && remote.userId === userId ? remote.list : null;
+
+  const savedAddresses: Address[] = useMemo(() => {
+    if (!state.user) return [];
+    if (apiMode) return remoteAddresses ?? [];
+    return addressesStore.getByUserId(state.user.id);
+  }, [apiMode, remoteAddresses, state.user]);
   const selectedSavedAddress = savedAddresses.find(
     (savedAddress) => savedAddress.id === selectedAddressId
   );
+
+  // Prefill del teléfono con el del perfil (el backend lo exige: 9-15 dígitos).
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- precarga puntual al cargar el usuario, no suscripción reactiva
+    if (state.user?.phone) setPhone((current) => current || state.user?.phone || "");
+  }, [state.user]);
 
   function fillFromAddress(addr: Address) {
     setAddress(addr.street);
     setDepartment(addr.state);
     setSelectedProvince(addr.city);
     setSelectedDistrict(addr.district);
+    setPhone(addr.phone);
     setReference("");
   }
   const [submitting, setSubmitting] = useState(false);
@@ -222,6 +255,16 @@ export function CartClient() {
   }
 
   const isCartValid = cartCount > 0;
+  // Sin catálogo del backend no se puede pagar: los ids provisorios el
+  // backend los rechaza ("Producto no encontrado"). Se reintenta solo.
+  const catalogBlocked = apiMode && !catalogLive;
+  const canGoToStep2 = isCartValid && !catalogBlocked;
+  const phoneDigits = phone.replace(/\D/g, "");
+  // El backend exige teléfono válido en el snapshot del pedido (vía mock no se valida).
+  const phoneValidationError =
+    apiMode && (phoneDigits.length < 9 || phoneDigits.length > 15)
+      ? "Ingresa un teléfono válido (9 a 15 dígitos)."
+      : null;
   const shippingValidationError =
     addressMode === "saved"
       ? selectedSavedAddress
@@ -235,37 +278,89 @@ export function CartClient() {
             ? "Selecciona un distrito."
             : !address.trim()
               ? "Ingresa una dirección."
-              : null;
+              : phoneValidationError;
   const isShippingValid = shippingValidationError === null;
-  const canGoToStep2 = isCartValid;
   const canGoToStep3 = canGoToStep2 && isShippingValid;
 
   const handleRemoveItem = (item: (typeof cartItems)[number]) => {
     updateQuantity(item.productId, -item.quantity, item);
   };
 
+  // El backend habla técnico ("Producto no encontrado: <id>"): al cliente se
+  // le muestra causa humana y el link a Mis pedidos que ya acompaña el error.
+  function friendlyOrderError(error: unknown): string {
+    if (error instanceof ApiError && error.status === 404) {
+      return "Uno de tus productos ya no está disponible. Revisa tu carrito e inténtalo de nuevo.";
+    }
+    return error instanceof Error ? error.message : "No se pudo crear el pedido";
+  }
+
   // Checkout contra el backend (Fase 7): el servidor tasa, reserva stock,
   // valida el cupón y crea el intento en una transacción. Luego pide la
   // preferencia MP: si hay token redirige a MercadoPago, si no (mock)
   // confirma como hoy y el pago se concilia por webhook/simulador.
-  async function submitApiOrder(snapshot: Address, shippingAddressId?: string) {
+  async function submitApiOrder() {
     if (!state.user) return;
-    // Resolver ids del backend por slug (los del carrito son locales).
-    const items: ApiCheckoutItem[] = [];
-    for (const cartItem of cartItems) {
-      const remote = await apiGetProductBySlug(cartItem.product.slug);
-      if (!remote) {
-        window.alert(`"${cartItem.product.name}" ya no está disponible.`);
-        setSubmitting(false);
-        return;
+    // Ids reales del backend (el carrito resuelve contra la lista fusionada
+    // API-primero): el servidor resuelve cada variante por talla/color.
+    const items: ApiCheckoutItem[] = cartItems.map((cartItem) => ({
+      productId: cartItem.product.id,
+      size: cartItem.size,
+      color: cartItem.color,
+      quantity: cartItem.quantity,
+    }));
+
+    // Dirección: las guardadas del backend tienen id real; una nueva solo se
+    // persiste si el usuario lo pide (nunca se manda un id local al backend).
+    let shippingAddressId: string | undefined;
+    let snapshot: Address;
+    if (addressMode === "saved" && selectedSavedAddress) {
+      shippingAddressId = selectedSavedAddress.id;
+      snapshot = { ...selectedSavedAddress, userId: state.user.id };
+    } else {
+      snapshot = {
+        id: "",
+        userId: state.user.id,
+        label: addressLabel.trim() || "Envío",
+        fullName: state.user.name,
+        street: address,
+        district: selectedDistrict,
+        city: selectedProvince,
+        state: department,
+        zip: "",
+        country: "Perú",
+        phone,
+        isDefault: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      if (saveAddress) {
+        try {
+          const created = await apiCreateAddress({
+            label: snapshot.label,
+            fullName: snapshot.fullName,
+            street: snapshot.street,
+            district: snapshot.district,
+            city: snapshot.city,
+            state: snapshot.state,
+            country: snapshot.country,
+            phone: snapshot.phone,
+          });
+          shippingAddressId = created.id;
+          const owner = state.user.id;
+          setRemote((prev) =>
+            prev && prev.userId === owner
+              ? { ...prev, list: [...prev.list, created] }
+              : { userId: owner, list: [created] },
+          );
+        } catch (error) {
+          setSubmitError(error instanceof Error ? error.message : "No pudimos guardar tu dirección.");
+          setSubmitting(false);
+          return;
+        }
       }
-      items.push({
-        productId: remote.id,
-        size: cartItem.size,
-        color: cartItem.color,
-        quantity: cartItem.quantity,
-      });
     }
+
     let order: Awaited<ReturnType<typeof apiCreateOrder>>;
     try {
       order = await apiCreateOrder({
@@ -277,7 +372,7 @@ export function CartClient() {
         shippingAddress: snapshot,
       });
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "No se pudo crear el pedido");
+      setSubmitError(friendlyOrderError(error));
       setSubmitting(false);
       return;
     }
@@ -300,8 +395,20 @@ export function CartClient() {
 
   const handleSubmit = () => {
     if (!isShippingValid || submitting) return;
+    if (catalogBlocked) {
+      setSubmitError("Sin conexión con el servidor. Revisa tu conexión y reintenta.");
+      return;
+    }
     setSubmitting(true);
     setSubmitError("");
+
+    // Vía API: el backend tasa, reserva stock, valida el cupón y audita en
+    // una transacción. Nada de stores locales en esta vía (sus ids no existen
+    // en la DB y rompían el pago con "Producto no encontrado").
+    if (apiMode) {
+      void submitApiOrder();
+      return;
+    }
 
     let shippingAddressId: string | undefined;
 
@@ -320,7 +427,7 @@ export function CartClient() {
         state: department,
         zip: "",
         country: "Perú",
-        phone: state.user.phone ?? "",
+        phone,
         isDefault: false,
       });
       shippingAddressId = createdAddress.id;
@@ -385,17 +492,11 @@ export function CartClient() {
       state: selectedSavedAddress?.state ?? department,
       zip: selectedSavedAddress?.zip ?? "",
       country: "Perú",
-      phone: state.user?.phone ?? "",
+      phone,
       isDefault: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
-    // Vía API: el backend tasa, reserva y audita en una transacción.
-    if (isApiEnabled()) {
-      void submitApiOrder(snapshot, shippingAddressId);
-      return;
-    }
 
     const order = ordersStore.create({
       userId: state.user?.id ?? "guest",
@@ -471,6 +572,17 @@ export function CartClient() {
 
       {step === 1 && (
         <div>
+          {catalogBlocked && (
+            <div className="mb-6 flex flex-col gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-snug">
+                <span className="font-bold">Sin conexión con el servidor.</span>{" "}
+                Tus productos se guardan igual, pero no podemos cobrar hasta reconectar.
+              </p>
+              <Button variant="outline" size="sm" className="shrink-0" onClick={retryCatalog}>
+                Reintentar conexión
+              </Button>
+            </div>
+          )}
           <ul className="divide-y divide-border border-y border-border">
             {cartItems.map((item) => {
               const product = item.product;
@@ -677,6 +789,11 @@ export function CartClient() {
             <div>
               <Label htmlFor="reference" className={checkoutLabelClass}>Referencia (opcional)</Label>
               <Input id="reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Cerca a..." className="mt-1.5 h-10 sm:h-9" />
+            </div>
+
+            <div>
+              <Label htmlFor="phone" className={checkoutLabelClass}>Teléfono</Label>
+              <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="999 999 999" inputMode="tel" className="mt-1.5 h-10 sm:h-9" />
             </div>
 
             {!isShippingValid && (

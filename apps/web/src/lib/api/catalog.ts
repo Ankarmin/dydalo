@@ -88,6 +88,55 @@ export function mapApiProduct(p: ApiProduct): AdminProduct {
 
 type Page<T> = { data: T[]; total: number; page: number; limit: number };
 
+// Caché compartida del catálogo base (sin filtros) entre todas las instancias
+// de useProducts: un solo vuelo a la red, reintento natural por remontaje y
+// notificación a todas las instancias cuando cualquier reintento tiene éxito
+// (p. ej. API que termina de arrancar después que la web).
+type ProductsListener = (list: AdminProduct[]) => void;
+
+const productsListeners = new Set<ProductsListener>();
+let cachedProducts: AdminProduct[] | null = null;
+let productsInflight: Promise<AdminProduct[]> | null = null;
+
+function setCachedProducts(list: AdminProduct[]): void {
+  cachedProducts = list;
+  productsListeners.forEach((listener) => listener(list));
+}
+
+export function getCachedProducts(): AdminProduct[] | null {
+  return cachedProducts;
+}
+
+export function subscribeProducts(listener: ProductsListener): () => void {
+  productsListeners.add(listener);
+  return () => {
+    productsListeners.delete(listener);
+  };
+}
+
+export function clearProductsCache(): void {
+  cachedProducts = null;
+  productsInflight = null;
+}
+
+export function apiGetProductsCached(): Promise<AdminProduct[]> {
+  if (cachedProducts) return Promise.resolve(cachedProducts);
+  if (!productsInflight) {
+    productsInflight = apiGetProducts().then(
+      (list) => {
+        productsInflight = null;
+        setCachedProducts(list);
+        return list;
+      },
+      (error: unknown) => {
+        productsInflight = null;
+        throw error;
+      },
+    );
+  }
+  return productsInflight;
+}
+
 export async function apiGetProducts(params: {
   category?: string;
   search?: string;

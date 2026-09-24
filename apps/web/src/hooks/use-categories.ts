@@ -12,9 +12,12 @@ function localCategories(): CatalogCategory[] {
 }
 
 export function useCategories(): CatalogCategory[] {
-  const [categories, setCategories] = useState<CatalogCategory[]>(() => localCategories());
+  // Inicial SSR-seguro ([] ambos lados); lo local se puebla en el efecto.
+  const [categories, setCategories] = useState<CatalogCategory[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- populate inicial cliente post-hidratación, no suscripción reactiva
+    setCategories(localCategories());
     function refreshLocal() {
       if (!isApiEnabled()) setCategories(categoriesStore.getActive());
     }

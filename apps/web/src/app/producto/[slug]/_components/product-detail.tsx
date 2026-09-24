@@ -81,7 +81,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
     if (authMeta.isAdmin) return;
     if (maxQty === 0) return;
     if (!selectedSize || !selectedColor) return;
-    updateQuantity(product.id, selectedQuantity, { size: selectedSize, color: selectedColor.name });
+    const added = updateQuantity(product.id, selectedQuantity, { size: selectedSize, color: selectedColor.name, productSlug: product.slug });
+    if (!added) return;
     showCartToast(
       `${product.name} — ${selectedColor?.name ?? ""} / ${selectedSize ?? ""}`,
       final,

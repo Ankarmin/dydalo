@@ -9,7 +9,7 @@ import {
   useEffect,
 } from "react";
 import type { ReactNode } from "react";
-import { productsStore } from "@/lib/stores/data-store.products";
+import { useProducts } from "@/hooks/use-products";
 import type { AdminProduct } from "@/lib/stores/data-store.types";
 import { isCookieAllowed } from "@/contexts/cookie-consent-context";
 
@@ -40,6 +40,7 @@ type FavoritesContextValue = {
   favorites: AdminProduct[];
   favoriteIds: Set<string>;
   favoritesCount: number;
+  loaded: boolean;
   isFavorite: (productId: string) => boolean;
   toggleFavorite: (productId: string) => void;
   clearAll: () => void;
@@ -77,9 +78,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const favoritesCount = favoriteIds.size;
 
+  // Misma fuente que la UI (API primero, fallback local): los ids cuid del
+  // backend no existen en el store local y se filtraban en silencio.
+  const { products, loaded } = useProducts();
   const favorites = useMemo(
-    () => productsStore.getAll().filter((p) => favoriteIds.has(p.id)),
-    [favoriteIds],
+    () => products.filter((p) => favoriteIds.has(p.id)),
+    [products, favoriteIds],
   );
 
   return (
@@ -88,6 +92,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         favorites,
         favoriteIds,
         favoritesCount,
+        loaded,
         isFavorite,
         toggleFavorite,
         clearAll,

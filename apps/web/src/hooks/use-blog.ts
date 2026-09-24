@@ -12,9 +12,12 @@ function localPosts(): BlogPost[] {
 }
 
 export function useBlogPosts(): BlogPost[] {
-  const [posts, setPosts] = useState<BlogPost[]>(() => localPosts());
+  // Inicial SSR-seguro ([] ambos lados); lo local se puebla en el efecto.
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- populate inicial cliente post-hidratación, no suscripción reactiva
+    setPosts(localPosts());
     function refreshLocal() {
       if (!isApiEnabled()) setPosts(blogStore.getAll());
     }
